@@ -1,7 +1,7 @@
-from dlpx.virtualization.platform import Mount
-from dlpx.virtualization.platform.exceptions import UserError
-
 import logging
+
+from dlpx.virtualization.platform import Mount
+
 # Global logger object for this file
 logger = logging.getLogger(__name__)
 
@@ -16,7 +16,8 @@ import time
 import re
 import os
 
-import linked, virtual, constants
+import linked
+
 
 def adjust_mount_env(imounts, inodes, itotalnodes):
     i = 0
@@ -30,6 +31,7 @@ def adjust_mount_env(imounts, inodes, itotalnodes):
         omounts.append(tmpmount)
         i = i + 1
     return omounts
+
 
 def cr_dir_structure(cend, send, mount_path, replicaset, connection):
     if replicaset:
@@ -56,6 +58,7 @@ def cr_dir_structure(cend, send, mount_path, replicaset, connection):
     cmd = "mkdir -p {}/{}".format(mount_path, "mgs0")
     res = execute_bash_cmd(connection, cmd, {})
 
+
 def cr_dir_structure_replicaset(mount_path, replicaset, rx_connection):
     if replicaset:
         mend = 3
@@ -73,17 +76,21 @@ def cr_dir_structure_replicaset(mount_path, replicaset, rx_connection):
     cmd = "mkdir -p {}/{}".format(mount_path, "logs")
     res = execute_bash_cmd(rx_connection, cmd, {})
 
-def extract_shard_config_backup(backupfile,mount_path,confignum,connection):
-    cmd = "tar -zxvf {} -C {}/c{}m0 --strip-components 1".format(backupfile,mount_path,confignum)
+
+def extract_shard_config_backup(backupfile, mount_path, confignum, connection):
+    cmd = "tar -zxvf {} -C {}/c{}m0 --strip-components 1".format(backupfile, mount_path, confignum)
     res = execute_bash_cmd_silent(connection, cmd, {})
 
-def extract_shard_backup(backupfile,mount_path,shardnum,connection):
-    cmd = "tar -zxvf {} -C {}/s{}m0 --strip-components 1".format(backupfile,mount_path,shardnum)
+
+def extract_shard_backup(backupfile, mount_path, shardnum, connection):
+    cmd = "tar -zxvf {} -C {}/s{}m0 --strip-components 1".format(backupfile, mount_path, shardnum)
     res = execute_bash_cmd_silent(connection, cmd, {})
 
-def extract_replicaset_backup(backupfile,mount_path,connection):
-    cmd = "tar -zxvf {} -C {}/s0m0 --strip-components 1".format(backupfile,mount_path)
+
+def extract_replicaset_backup(backupfile, mount_path, connection):
+    cmd = "tar -zxvf {} -C {}/s0m0 --strip-components 1".format(backupfile, mount_path)
     res = execute_bash_cmd_silent(connection, cmd, {})
+
 
 def gen_shard_config_list(nodes, start_portpool, cmax, smax, mmax, mount_path, mongos_port, replicaset):
     if replicaset:
@@ -258,6 +265,7 @@ def gen_shard_config_list(nodes, start_portpool, cmax, smax, mmax, mount_path, m
 
     return shard_cfg_list
 
+
 def gen_replicaset_config_list(nodes, start_portpool, mount_path, replicaset):
     if replicaset:
         mmax = 3
@@ -350,22 +358,26 @@ def gen_replicaset_config_list(nodes, start_portpool, mount_path, replicaset):
 
     return replicaset_cfg_list
 
-def get_kmip_key_id(db_path,rx_connection):
+
+def get_kmip_key_id(db_path, rx_connection):
     cmd = "cat {}/restoreInfo.txt|grep 'Master Key UUID'".format(db_path)
     res = execute_bash_cmd(rx_connection, cmd, {})
     kmip_key_id = res.split(':')[1].strip()
     logger.debug("kmip_key_id = {}".format(kmip_key_id))
     return kmip_key_id
 
+
 def get_shard_port(shard_config_list, dirname):
     for shard_config in shard_config_list:
         if shard_config['dirname'] == dirname:
             return shard_config['port']
 
+
 def get_shard_host(shard_config_list, dirname):
     for shard_config in shard_config_list:
         if shard_config['dirname'] == dirname:
             return shard_config['node']
+
 
 def get_node_conn(sourceobj, host, dataset_type='Virtual'):
     node_reference = host.split(':')[0]
@@ -393,10 +405,11 @@ def get_node_conn(sourceobj, host, dataset_type='Virtual'):
         logger.debug(e)
         return None
 
+
 def _handle_exit_code(exit_code, std_err=None, std_output=None, callback_func=None, silent_status='N'):
     if exit_code == 0:
         if silent_status == "N":
-            logger.debug("Code : {}, Response : {}".format(exit_code,std_output))
+            logger.debug("Code : {}, Response : {}".format(exit_code, std_output))
         elif silent_status == "Y":
             logger.debug("Code : {}".format(exit_code))
         return 0
@@ -423,6 +436,7 @@ def _handle_exit_code(exit_code, std_err=None, std_output=None, callback_func=No
     add_debug_space()
     raise Exception(error_details)
 
+
 def execute_bash_cmd(connection, cmd, env):
     logger.debug("")
     logger.debug("")
@@ -448,6 +462,7 @@ def execute_bash_cmd(connection, cmd, env):
 
     return outputmsg
 
+
 def execute_bash_cmd_nofail(connection, cmd, env):
     logger.debug("")
     logger.debug("")
@@ -469,6 +484,7 @@ def execute_bash_cmd_nofail(connection, cmd, env):
 
     return exit_code
 
+
 def execute_bash_cmd_silent(connection, cmd, env):
     logger.debug("")
     logger.debug("")
@@ -477,8 +493,8 @@ def execute_bash_cmd_silent(connection, cmd, env):
     logger.debug("cmd : {}".format(cmd))
     logger.debug(
         "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-    #logger.debug("")
-    #logger.debug("")
+    # logger.debug("")
+    # logger.debug("")
     callback_func = None
 
     res = libs.run_bash(connection, cmd, env)
@@ -494,6 +510,7 @@ def execute_bash_cmd_silent(connection, cmd, env):
     logger.debug("")
     logger.debug("")
     return outputmsg
+
 
 def execute_bash_cmd_silent_status(connection, cmd, env):
     callback_func = None
@@ -512,6 +529,7 @@ def execute_bash_cmd_silent_status(connection, cmd, env):
     if ret == 1:
         return 1
     return outputmsg
+
 
 def execute_bash_cmd_nocmdlog(connection, cmd, env):
     # logger.debug("cmd : {}".format(cmd))
@@ -537,7 +555,8 @@ def execute_bash_cmd_nocmdlog(connection, cmd, env):
         logger.debug(e)
         return 1
 
-def gen_shardserver_setting_list(shard_config_list, sourceobj, shard_count, mount_path, dataset_type = 'Virtual'):
+
+def gen_shardserver_setting_list(shard_config_list, sourceobj, shard_count, mount_path, dataset_type='Virtual'):
     shard_setting_list = []
     if dataset_type == 'Staging':
         make_shards_replicaset = False
@@ -565,7 +584,7 @@ def gen_shardserver_setting_list(shard_config_list, sourceobj, shard_count, moun
                 snm0 = "s{}m{}".format(shardnum, member)
                 snmn_port = get_shard_port(shard_config_list, snm0)
                 snmn_host = get_shard_host(shard_config_list, snm0)
-                snmn_conn = get_node_conn(sourceobj, snmn_host,dataset_type)
+                snmn_conn = get_node_conn(sourceobj, snmn_host, dataset_type)
                 snmn_host_name = execute_bash_cmd(snmn_conn, "hostname", {})
                 shardservercfg = shardservercfg + "," + \
                                  "{}:{}".format(snmn_host_name, snmn_port)
@@ -573,6 +592,7 @@ def gen_shardserver_setting_list(shard_config_list, sourceobj, shard_count, moun
         shard_setting_dict[snm0_replica_name] = shardservercfg
         shard_setting_list.append(shard_setting_dict)
     return shard_setting_list
+
 
 def gen_configsvrstring(dataset_type, sourceobj, shard_config_list):
     mount_path = sourceobj.parameters.mount_path
@@ -608,6 +628,7 @@ def gen_configsvrstring(dataset_type, sourceobj, shard_config_list):
     logger.debug("configsvrstring hostname={}".format(configsvrstring))
     return configsvrstring
 
+
 def gen_mongo_conf_files(dataset_type, sourceobj, shard_config_list, snapshot):
     mount_path = sourceobj.parameters.mount_path
 
@@ -627,7 +648,6 @@ def gen_mongo_conf_files(dataset_type, sourceobj, shard_config_list, snapshot):
         encryption_method = sourceobj.parameters.encryption_method
 
         d_source_type = sourceobj.parameters.d_source_type
-
 
     logger.debug("source_encrypted={}".format(source_encrypted))
     logger.debug("encryption_method={}".format(encryption_method))
@@ -679,11 +699,11 @@ def gen_mongo_conf_files(dataset_type, sourceobj, shard_config_list, snapshot):
         auditlog_params = sourceobj.parameters.auditlog_params
 
         if mongo_process_type == "mongos":
-            #mongo_cmd = "mongos"
+            # mongo_cmd = "mongos"
             mongo_cmd = "{}/mongos".format(os.path.dirname(sourceobj.mongo_install_path))
         else:
-            #mongo_process_type == "shard" or mongo_process_type == "config" or mongo_process_type == "repset":
-            #mongo_cmd = "mongod"
+            # mongo_process_type == "shard" or mongo_process_type == "config" or mongo_process_type == "repset":
+            # mongo_cmd = "mongod"
             mongo_cmd = sourceobj.mongo_install_path
         logger.info("After mongo_process_type - mongo_cmd = {}".format(mongo_cmd))
 
@@ -713,7 +733,7 @@ def gen_mongo_conf_files(dataset_type, sourceobj, shard_config_list, snapshot):
             logger.info("user_auth_mode: {}".format(user_auth_mode))
             if user_auth_mode == "None" or user_auth_mode == "SCRAM":
                 logger.info("keyfile_path: {}".format(keyfile_path))
-                if keyfile_path is not None and keyfile_path != "" :
+                if keyfile_path is not None and keyfile_path != "":
                     mongo_cmd = "{} --keyFile {}".format(mongo_cmd, keyfile_path)
                     logger.info("After add_keyfile_auth - mongo_cmd = {}".format(mongo_cmd))
                 else:
@@ -725,7 +745,7 @@ def gen_mongo_conf_files(dataset_type, sourceobj, shard_config_list, snapshot):
             mongo_cmd = add_keyfile_auth(mongo_cmd, user_auth_mode, keyfile_path)
             logger.info("After add_keyfile_auth - mongo_cmd = {}".format(mongo_cmd))
             add_debug_space()
-        
+
         mongo_cmd = add_cluster_auth(mongo_cmd, cluster_auth_mode, keyfile_path)
         logger.info("After add_cluster_auth - mongo_cmd = {}".format(mongo_cmd))
         add_debug_space()
@@ -792,7 +812,7 @@ def gen_mongo_conf_files(dataset_type, sourceobj, shard_config_list, snapshot):
         if mongo_process_type == "mongos":
             logger.debug("shard_config_list = {}".format(shard_config_list))
             logger.debug("dataset_type = {}".format(dataset_type))
-            cfgdblist = gen_configsvrstring(dataset_type,sourceobj,shard_config_list)
+            cfgdblist = gen_configsvrstring(dataset_type, sourceobj, shard_config_list)
             mongo_cmd = "{} --configdb {}".format(mongo_cmd, cfgdblist)
             logger.info("After configsvrstring - mongo_cmd = {}".format(mongo_cmd))
 
@@ -811,6 +831,7 @@ def gen_mongo_conf_files(dataset_type, sourceobj, shard_config_list, snapshot):
         res = execute_bash_cmd(mongod_conn, fix_mongod_cmd, {})
 
         i += 1
+
 
 def start_sharded_mongo(dataset_type, sourceobj):
     mount_path = sourceobj.parameters.mount_path
@@ -854,11 +875,11 @@ def start_sharded_mongo(dataset_type, sourceobj):
         start_string = "{}/cfg/dlpx.{}.{}.conf".format(
             mount_path, mongod_dirname, mongod_port)
         if jsonobj['type'] == 'mongos':
-            #cmd = "mongos -f {}".format(start_string)
-            cmd = "{}/mongos -f {}".format(os.path.dirname(sourceobj.mongo_install_path),start_string)
+            # cmd = "mongos -f {}".format(start_string)
+            cmd = "{}/mongos -f {}".format(os.path.dirname(sourceobj.mongo_install_path), start_string)
         else:
-            #cmd = "mongod -f {}".format(start_string)
-            cmd = "{} -f {}".format(sourceobj.mongo_install_path,start_string)
+            # cmd = "mongod -f {}".format(start_string)
+            cmd = "{} -f {}".format(sourceobj.mongo_install_path, start_string)
 
         res = execute_bash_cmd(mongod_conn, cmd, {})
         i += 1
@@ -870,11 +891,12 @@ def start_sharded_mongo(dataset_type, sourceobj):
         if mongos_port != start_portpool:
             # if both are same, it means nonsharded as we adjusted in mongopy.py
             mongo_shell_cmd = gen_mongo_cmd(dataset_type, sourceobj, hostname)
-            cmd = "{} --port {} --eval 'sh.startBalancer()'".format(mongo_shell_cmd,mongos_port)
+            cmd = "{} --port {} --eval 'sh.startBalancer()'".format(mongo_shell_cmd, mongos_port)
             logger.info("cmd = {}".format(cmd))
             res = execute_bash_cmd(connection, cmd, {})
 
-def stop_sharded_mongo(dataset_type,sourceobj):
+
+def stop_sharded_mongo(dataset_type, sourceobj):
     mount_path = sourceobj.parameters.mount_path
     mongos_port = sourceobj.parameters.mongos_port
 
@@ -890,20 +912,20 @@ def stop_sharded_mongo(dataset_type,sourceobj):
         connection = sourceobj.staged_connection
         d_source_type = sourceobj.parameters.d_source_type
 
-    #cmd = "ps -ef|grep mongo|grep {}|grep {}|grep {}|grep dlpx|grep -v grep|wc -l".format(
+    # cmd = "ps -ef|grep mongo|grep {}|grep {}|grep {}|grep dlpx|grep -v grep|wc -l".format(
     #    mount_path, "mgs0", mongos_port)
-    #res = execute_bash_cmd(connection, cmd, {})
+    # res = execute_bash_cmd(connection, cmd, {})
 
     cmd = "hostname"
     hostname = execute_bash_cmd(connection, cmd, {})
 
-    mongo_shell_cmd = gen_mongo_cmd(dataset_type,sourceobj, hostname)
+    mongo_shell_cmd = gen_mongo_cmd(dataset_type, sourceobj, hostname)
     mongos_port = sourceobj.parameters.mongos_port
 
     if d_source_type == "shardedsource":
         try:
             # Stop Balancer
-            cmd = "{} --port {} --eval 'sh.stopBalancer()'".format(mongo_shell_cmd,mongos_port)
+            cmd = "{} --port {} --eval 'sh.stopBalancer()'".format(mongo_shell_cmd, mongos_port)
             res = execute_bash_cmd_nofail(connection, cmd, {})
         except Exception as e:
             pass
@@ -938,10 +960,11 @@ def stop_sharded_mongo(dataset_type,sourceobj):
     # Sleep for 10 sec to cleanly get out of all killed processes.
     time.sleep(7)
 
-def get_status_sharded_mongo(dataset_type,sourceobj):
+
+def get_status_sharded_mongo(dataset_type, sourceobj):
     active_status_flag = 0
     mount_path = sourceobj.parameters.mount_path
-
+    dsource_type = ''
 
     if dataset_type == "Virtual":
         cfgfile = "{}/.delphix/.tgt_vdbcfg.txt".format(mount_path)
@@ -949,7 +972,11 @@ def get_status_sharded_mongo(dataset_type,sourceobj):
     elif dataset_type == "Staging":
         cfgfile = "{}/.delphix/.stg_dsourcecfg.txt".format(mount_path)
         connection = sourceobj.staged_connection
-    #logger.debug("cfgfile : {}".format(cfgfile))
+
+        cmd = "cat {}/.delphix/.stg_config.txt | grep DSOURCE_TYPE".format(mount_path)
+        res = execute_bash_cmd_silent_status(connection, cmd, {})
+        dsource_type = res.split(':')[1]
+    # logger.debug("cfgfile : {}".format(cfgfile))
 
     try:
         # Check if mongod/mongos process is running
@@ -974,16 +1001,20 @@ def get_status_sharded_mongo(dataset_type,sourceobj):
                 rec = rec + "}"
             rec = rec.replace("'", '"')
             jsonobj = json.loads(rec)
-            #logger.debug("Record = {}".format(rec))
+            # logger.debug("Record = {}".format(rec))
             mongod_port = jsonobj['port']
             mongod_conn = get_node_conn(sourceobj, jsonobj['node'], dataset_type)
             mongod_dirname = jsonobj['dirname']
-            cmd = "ps -ef|grep mongo|grep {}|grep {}|grep {}|grep dlpx|grep -v grep|wc -l".format(
-                mount_path, mongod_dirname, mongod_port)
+            if dsource_type == "stagingpush":
+                cmd = "netstat -an|grep {}|wc -l".format(mongod_port)
+            else:
+                cmd = "ps -ef|grep mongo|grep {}|grep {}|grep {}|grep dlpx|grep -v grep|wc -l".format(
+                    mount_path, mongod_dirname, mongod_port)
             res = execute_bash_cmd(mongod_conn, cmd, {})
 
             if int(res) == 0:
-                logger.debug("Process for {}/cfg/dlpx.{}.{}.conf not running".format(mount_path, mongod_dirname, mongod_port))
+                logger.debug(
+                    "Process for {}/cfg/dlpx.{}.{}.conf not running".format(mount_path, mongod_dirname, mongod_port))
                 active_status_flag = 1
                 return active_status_flag
                 break
@@ -991,12 +1022,15 @@ def get_status_sharded_mongo(dataset_type,sourceobj):
             i += 1
 
     except Exception as e:
-        logger.debug("ERROR : Checking status of sharded mongo - Mongos {} at {}".format(sourceobj.parameters.mongos_port, mount_path))
+        logger.debug(
+            "ERROR : Checking status of sharded mongo - Mongos {} at {}".format(sourceobj.parameters.mongos_port,
+                                                                                mount_path))
         logger.debug(e)
         active_status_flag = 1
         return active_status_flag
 
     return active_status_flag
+
 
 def create_mongoadmin_user(sourceobj, connection, shard_count, shard_config_list):
     logger.info("Creating Mongo Admin User")
@@ -1004,57 +1038,66 @@ def create_mongoadmin_user(sourceobj, connection, shard_count, shard_config_list
     mongo_db_password = sourceobj.parameters.mongo_db_password
     # In case of nonsharded source, start_portpool is copied to mongos_port in mongopy.py
     mongos_port = sourceobj.parameters.mongos_port
-    #mongo_shell_cmd = "mongo"
+    # mongo_shell_cmd = "mongo"
     mongo_shell_cmd = "{}/mongo".format(os.path.dirname(sourceobj.mongo_install_path))
 
-    #cmd = "{} --port {} --quiet --eval \"db.createRole({{ role: \"delphixadminrole\", privileges: [ {{ resource: {{ anyResource: true }}, actions: [ \"anyAction\" ] }}], roles: [{{ role: 'root', db: 'admin'}},{{ role: 'userAdminAnyDatabase', db: 'admin'}},{{ role: 'dbAdminAnyDatabase', db: 'admin'}},{{ role: 'readWriteAnyDatabase', db: 'admin'}},{{ role: 'clusterAdmin', db: 'admin'}}]}})\"".format(mongo_shell_cmd,mongos_port,mongo_db_user,mongo_db_password)
-    cmd = "{} admin --port {} --quiet --eval \"db.createRole({{ role: \\\"delphixadminrole\\\", privileges: [{{ resource: {{ anyResource: true }}, actions: [ \\\"anyAction\\\" ] }}], roles: []}})\"".format(mongo_shell_cmd, mongos_port, mongo_db_user, mongo_db_password)
+    # cmd = "{} --port {} --quiet --eval \"db.createRole({{ role: \"delphixadminrole\", privileges: [ {{ resource: {{ anyResource: true }}, actions: [ \"anyAction\" ] }}], roles: [{{ role: 'root', db: 'admin'}},{{ role: 'userAdminAnyDatabase', db: 'admin'}},{{ role: 'dbAdminAnyDatabase', db: 'admin'}},{{ role: 'readWriteAnyDatabase', db: 'admin'}},{{ role: 'clusterAdmin', db: 'admin'}}]}})\"".format(mongo_shell_cmd,mongos_port,mongo_db_user,mongo_db_password)
+    cmd = "{} admin --port {} --quiet --eval \"db.createRole({{ role: \\\"delphixadminrole\\\", privileges: [{{ resource: {{ anyResource: true }}, actions: [ \\\"anyAction\\\" ] }}], roles: []}})\"".format(
+        mongo_shell_cmd, mongos_port, mongo_db_user, mongo_db_password)
     res = execute_bash_cmd(connection, cmd, {})
 
-    cmd = "{} --port {} --quiet --eval \"db.getSiblingDB('admin').createUser({{ user : '{}', pwd :  '{}', roles : ['__system', 'delphixadminrole',{{ role: 'root', db: 'admin'}},{{ role: 'userAdminAnyDatabase', db: 'admin'}},{{ role: 'dbAdminAnyDatabase', db: 'admin'}},{{ role: 'readWriteAnyDatabase', db: 'admin'}},{{ role: 'clusterAdmin', db: 'admin'}}]}})\"".format(mongo_shell_cmd,mongos_port,mongo_db_user,mongo_db_password)
+    cmd = "{} --port {} --quiet --eval \"db.getSiblingDB('admin').createUser({{ user : '{}', pwd :  '{}', roles : ['__system', 'delphixadminrole',{{ role: 'root', db: 'admin'}},{{ role: 'userAdminAnyDatabase', db: 'admin'}},{{ role: 'dbAdminAnyDatabase', db: 'admin'}},{{ role: 'readWriteAnyDatabase', db: 'admin'}},{{ role: 'clusterAdmin', db: 'admin'}}]}})\"".format(
+        mongo_shell_cmd, mongos_port, mongo_db_user, mongo_db_password)
     res = execute_bash_cmd(connection, cmd, {})
 
     # In case of nonsharded source, below will not be executed as shard_count = 0 passed as parameter
     for shardnum in range(shard_count):
-        logger.info("Create {} user in Shard s{}".format(mongo_db_user,shardnum))
+        logger.info("Create {} user in Shard s{}".format(mongo_db_user, shardnum))
         snm0_port = get_shard_port(shard_config_list, 's{}m0'.format(shardnum))
         snm0_host = get_shard_host(shard_config_list, 's{}m0'.format(shardnum))
         snm0_conn = get_node_conn(sourceobj, snm0_host, 'Staging')
 
-        cmd = "{} --port {} --quiet --eval \"db.getSiblingDB('admin').createUser({{ user : '{}', pwd :  '{}', roles : [{{ role: 'userAdminAnyDatabase', db: 'admin'}},{{ role: 'dbAdminAnyDatabase', db: 'admin'}},{{ role: 'readWriteAnyDatabase', db: 'admin'}},{{ role: 'clusterAdmin', db: 'admin'}}]}});\"".format(mongo_shell_cmd,snm0_port,mongo_db_user,mongo_db_password)
+        cmd = "{} --port {} --quiet --eval \"db.getSiblingDB('admin').createUser({{ user : '{}', pwd :  '{}', roles : [{{ role: 'userAdminAnyDatabase', db: 'admin'}},{{ role: 'dbAdminAnyDatabase', db: 'admin'}},{{ role: 'readWriteAnyDatabase', db: 'admin'}},{{ role: 'clusterAdmin', db: 'admin'}}]}});\"".format(
+            mongo_shell_cmd, snm0_port, mongo_db_user, mongo_db_password)
         res = execute_bash_cmd(snm0_conn, cmd, {})
 
     logger.info("Creating Mongo Admin User - Done")
     return res
 
-def update_mongoadmin_pwd(sourceobj, connection, shard_count, shard_config_list,mongo_db_user, mongo_db_password, mongos_port ):
+
+def update_mongoadmin_pwd(sourceobj, connection, shard_count, shard_config_list, mongo_db_user, mongo_db_password,
+                          mongos_port):
     logger.info("Updating password of Mongo Admin User")
-    #mongo_shell_cmd = "mongo"
+    # mongo_shell_cmd = "mongo"
     mongo_shell_cmd = "{}/mongo".format(os.path.dirname(sourceobj.mongo_install_path))
 
     logger.info("Update {} password".format(mongo_db_user))
-    cmd = "{} --port {} --eval \"db.getSiblingDB('admin').updateUser('{}', {{pwd :  '{}'}});\"".format(mongo_shell_cmd,mongos_port,mongo_db_user,mongo_db_password)
+    cmd = "{} --port {} --eval \"db.getSiblingDB('admin').updateUser('{}', {{pwd :  '{}'}});\"".format(mongo_shell_cmd,
+                                                                                                       mongos_port,
+                                                                                                       mongo_db_user,
+                                                                                                       mongo_db_password)
     res = execute_bash_cmd(connection, cmd, {})
 
     for shardnum in range(shard_count):
-        logger.info("Update {} password in Shard s{}".format(mongo_db_user,shardnum))
+        logger.info("Update {} password in Shard s{}".format(mongo_db_user, shardnum))
         snm0_port = get_shard_port(shard_config_list, 's{}m0'.format(shardnum))
         snm0_host = get_shard_host(shard_config_list, 's{}m0'.format(shardnum))
         snm0_conn = get_node_conn(sourceobj, snm0_host, 'Virtual')
 
-        cmd = "{} --port {} --eval \"db.getSiblingDB('admin').updateUser('{}', {{pwd :  '{}'}});\"".format(mongo_shell_cmd,snm0_port,mongo_db_user,mongo_db_password)
+        cmd = "{} --port {} --eval \"db.getSiblingDB('admin').updateUser('{}', {{pwd :  '{}'}});\"".format(
+            mongo_shell_cmd, snm0_port, mongo_db_user, mongo_db_password)
         res = execute_bash_cmd(snm0_conn, cmd, {})
         time.sleep(1)
 
     logger.info("Updated Mongo Admin User password - Done")
     return res
 
+
 def gen_mongo_cmd(dataset_type, sourceobj, hostname):
     client_tls_cert = sourceobj.parameters.client_tls_cert
     client_tls_cacert = sourceobj.parameters.client_tls_cacert
     user_auth_mode = sourceobj.parameters.user_auth_mode
     mount_path = sourceobj.parameters.mount_path
-
 
     if dataset_type == "Staging":
         mongo_db_user = sourceobj.parameters.mongo_db_user
@@ -1065,7 +1108,7 @@ def gen_mongo_cmd(dataset_type, sourceobj, hostname):
         mongo_db_user = execute_bash_cmd(rx_connection, cmd, {})
         mongo_db_password = sourceobj.parameters.mongo_db_password
 
-    #mongo_shell_cmd = "mongo"
+    # mongo_shell_cmd = "mongo"
     mongo_shell_cmd = "{}".format(sourceobj.mongo_shell_path)
 
     logger.debug("sourceobj.parameters.enable_ssl_tls:{}".format(sourceobj.parameters.enable_ssl_tls))
@@ -1075,13 +1118,16 @@ def gen_mongo_cmd(dataset_type, sourceobj, hostname):
                                                                                                 client_tls_cert,
                                                                                                 client_tls_cacert)
     else:
-        #mongo_shell_cmd = "mongo"
+        # mongo_shell_cmd = "mongo"
         mongo_shell_cmd = "{}".format(sourceobj.mongo_shell_path)
 
     if user_auth_mode == "SCRAM":
-        mongo_shell_cmd = "{} --username {} --password {} --authenticationDatabase admin".format(mongo_shell_cmd, mongo_db_user, mongo_db_password)
+        mongo_shell_cmd = "{} --username {} --password {} --authenticationDatabase admin".format(mongo_shell_cmd,
+                                                                                                 mongo_db_user,
+                                                                                                 mongo_db_password)
 
     return mongo_shell_cmd
+
 
 def fsync_lock_sharded_mongo(sourceobj, dataset_type='Virtual'):
     mount_path = sourceobj.parameters.mount_path
@@ -1099,7 +1145,7 @@ def fsync_lock_sharded_mongo(sourceobj, dataset_type='Virtual'):
     mongo_shell_cmd = gen_mongo_cmd(dataset_type, sourceobj, hostname)
 
     # Stop Balancer
-    cmd = "{} --port {} --eval 'sh.stopBalancer()'".format(mongo_shell_cmd,mongos_port)
+    cmd = "{} --port {} --eval 'sh.stopBalancer()'".format(mongo_shell_cmd, mongos_port)
     logger.info("cmd = {}".format(cmd))
     res = execute_bash_cmd(connection, cmd, {})
 
@@ -1126,10 +1172,11 @@ def fsync_lock_sharded_mongo(sourceobj, dataset_type='Virtual'):
         mongod_conn = get_node_conn(sourceobj, jsonobj['node'], dataset_type)
 
         if jsonobj['type'] != 'mongos':
-            cmd = "{} --port {} --eval 'db.fsyncLock()'".format(mongo_shell_cmd,mongod_port)
+            cmd = "{} --port {} --eval 'db.fsyncLock()'".format(mongo_shell_cmd, mongod_port)
 
         res = execute_bash_cmd(mongod_conn, cmd, {})
         i += 1
+
 
 def fsync_unlock_sharded_mongo(sourceobj, dataset_type='Virtual'):
     mount_path = sourceobj.parameters.mount_path
@@ -1145,7 +1192,6 @@ def fsync_unlock_sharded_mongo(sourceobj, dataset_type='Virtual'):
 
     mongo_shell_cmd = gen_mongo_cmd(dataset_type, sourceobj, hostname)
 
-
     # Freeze mongod instances of shards
     cmd = "cat {}".format(cfgfile)
     res = execute_bash_cmd(connection, cmd, {})
@@ -1169,16 +1215,17 @@ def fsync_unlock_sharded_mongo(sourceobj, dataset_type='Virtual'):
         mongod_conn = get_node_conn(sourceobj, jsonobj['node'], dataset_type)
 
         if jsonobj['type'] != 'mongos':
-            cmd = "{} --port {} --eval 'db.fsyncUnlock()'".format(mongo_shell_cmd,mongod_port)
+            cmd = "{} --port {} --eval 'db.fsyncUnlock()'".format(mongo_shell_cmd, mongod_port)
 
         res = execute_bash_cmd(mongod_conn, cmd, {})
         i += 1
 
     # Start Balancer
     mongos_port = sourceobj.parameters.mongos_port
-    cmd = "{} --port {} --eval 'sh.startBalancer()'".format(mongo_shell_cmd,mongos_port)
+    cmd = "{} --port {} --eval 'sh.startBalancer()'".format(mongo_shell_cmd, mongos_port)
     logger.info("cmd = {}".format(cmd))
     res = execute_bash_cmd(connection, cmd, {})
+
 
 def fsync_lock_mongo(sourceobj, dataset_type):
     mount_path = sourceobj.parameters.mount_path
@@ -1217,10 +1264,11 @@ def fsync_lock_mongo(sourceobj, dataset_type):
         mongod_conn = get_node_conn(sourceobj, jsonobj['node'], dataset_type)
 
         if jsonobj['type'] != 'mongos':
-            cmd = "{} --port {} --eval 'db.fsyncLock()'".format(mongo_shell_cmd,mongod_port)
+            cmd = "{} --port {} --eval 'db.fsyncLock()'".format(mongo_shell_cmd, mongod_port)
 
         res = execute_bash_cmd(mongod_conn, cmd, {})
         i += 1
+
 
 def fsync_unlock_mongo(sourceobj, dataset_type):
     mount_path = sourceobj.parameters.mount_path
@@ -1258,10 +1306,11 @@ def fsync_unlock_mongo(sourceobj, dataset_type):
         mongod_conn = get_node_conn(sourceobj, jsonobj['node'], dataset_type)
 
         if jsonobj['type'] != 'mongos':
-            cmd = "{} --port {} --eval 'db.fsyncUnlock()'".format(mongo_shell_cmd,mongod_port)
+            cmd = "{} --port {} --eval 'db.fsyncUnlock()'".format(mongo_shell_cmd, mongod_port)
 
         res = execute_bash_cmd(mongod_conn, cmd, {})
         i += 1
+
 
 def setup_mongos(sourceobj, rx_connection, mount_path, membernum, mongos_port, configsvrstring, shard_config_list):
     logger.debug("Setup Mongos Servers")
@@ -1276,16 +1325,18 @@ def setup_mongos(sourceobj, rx_connection, mount_path, membernum, mongos_port, c
     hostname = execute_bash_cmd(rx_connection, cmd, {})
     logger.debug("{},{},{},{}".format(dbpath, mongos_port, cfgfile, hostname))
 
-    #cmd = "mongos --bind_ip 0.0.0.0 --port {} --configdb {} --logpath {} --fork".format(mongos_port, configsvrstring,
+    # cmd = "mongos --bind_ip 0.0.0.0 --port {} --configdb {} --logpath {} --fork".format(mongos_port, configsvrstring,
     #                                                                                        logfile)
-    cmd = "{}/mongos --bind_ip 0.0.0.0 --port {} --configdb {} --logpath {} --fork".format(os.path.dirname(sourceobj.mongo_install_path),mongos_port, configsvrstring,
-                                                                                        logfile)                                                                                                                                                                         
-    #restart_mongos_cmd = "mongos --bind_ip 0.0.0.0 --port {} --configdb {} --logpath {} --fork".format(mongos_port,
+    cmd = "{}/mongos --bind_ip 0.0.0.0 --port {} --configdb {} --logpath {} --fork".format(
+        os.path.dirname(sourceobj.mongo_install_path), mongos_port, configsvrstring,
+        logfile)
+    # restart_mongos_cmd = "mongos --bind_ip 0.0.0.0 --port {} --configdb {} --logpath {} --fork".format(mongos_port,
     #                                                                                                   configsvrstring,
     #                                                                                                   logfile)
-    restart_mongos_cmd = "{}/mongos --bind_ip 0.0.0.0 --port {} --configdb {} --logpath {} --fork".format(os.path.dirname(sourceobj.mongo_install_path),mongos_port,
-                                                                                                       configsvrstring,
-                                                                                                       logfile)
+    restart_mongos_cmd = "{}/mongos --bind_ip 0.0.0.0 --port {} --configdb {} --logpath {} --fork".format(
+        os.path.dirname(sourceobj.mongo_install_path), mongos_port,
+        configsvrstring,
+        logfile)
     res = execute_bash_cmd(rx_connection, cmd, {})
     time.sleep(3)
 
@@ -1293,19 +1344,22 @@ def setup_mongos(sourceobj, rx_connection, mount_path, membernum, mongos_port, c
     c0m0_port = get_shard_port(shard_config_list, "c0m0")
     logger.debug("mgs0_port: {}, c0m0_port: {}".format(mgs0_port, c0m0_port))
 
-    #cmd = "mongo --port {} --quiet --eval 'sh.status()'".format(mgs0_port)
-    cmd = "{} --port {} --quiet --eval 'sh.status()'".format(sourceobj.mongo_shell_path,mgs0_port)
+    # cmd = "mongo --port {} --quiet --eval 'sh.status()'".format(mgs0_port)
+    cmd = "{} --port {} --quiet --eval 'sh.status()'".format(sourceobj.mongo_shell_path, mgs0_port)
     res = execute_bash_cmd(rx_connection, cmd, {})
 
-    #cmd = "mongo --port {} --quiet --eval 'sh.startBalancer()'".format(mgs0_port)
-    cmd = "{} --port {} --quiet --eval 'sh.startBalancer()'".format(sourceobj.mongo_shell_path,mgs0_port)
+    # cmd = "mongo --port {} --quiet --eval 'sh.startBalancer()'".format(mgs0_port)
+    cmd = "{} --port {} --quiet --eval 'sh.startBalancer()'".format(sourceobj.mongo_shell_path, mgs0_port)
     res = execute_bash_cmd(rx_connection, cmd, {})
 
-    #cmd = "mongo admin --port {} --quiet --eval 'db.runCommand(\"getShardMap\")'".format(c0m0_port)
-    cmd = "{} admin --port {} --quiet --eval 'db.runCommand(\"getShardMap\")'".format(sourceobj.mongo_shell_path,c0m0_port)
+    # cmd = "mongo admin --port {} --quiet --eval 'db.runCommand(\"getShardMap\")'".format(c0m0_port)
+    cmd = "{} admin --port {} --quiet --eval 'db.runCommand(\"getShardMap\")'".format(sourceobj.mongo_shell_path,
+                                                                                      c0m0_port)
     res = execute_bash_cmd(rx_connection, cmd, {})
 
-def setup_config_member(sourceobj,rx_connection, mount_path, confignum, membernum, cfg_port, shardcount, shard_config_list,
+
+def setup_config_member(sourceobj, rx_connection, mount_path, confignum, membernum, cfg_port, shardcount,
+                        shard_config_list,
                         encryption_method, enc_params_list_string, shardserver_setting_list):
     dbpath = "{}/c{}m{}".format(mount_path, confignum, membernum)
     cfgdir = "{}/cfg".format(mount_path)
@@ -1323,19 +1377,23 @@ def setup_config_member(sourceobj,rx_connection, mount_path, confignum, membernu
     logger.debug("config_repset_name = {}".format(config_repset_name))
 
     if encryption_method is None:
-        cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} --fork".format(sourceobj.mongo_install_path,cfg_port, dbpath, logfile)
-        restart_mongod_cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} --fork --replSet {} --configsvr".format(sourceobj.mongo_install_path,
+        cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} --fork".format(sourceobj.mongo_install_path,
+                                                                                      cfg_port, dbpath, logfile)
+        restart_mongod_cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} --fork --replSet {} --configsvr".format(
+            sourceobj.mongo_install_path,
             cfg_port, dbpath, logfile, config_repset_name)
     else:
-        cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} {} --fork".format(sourceobj.mongo_install_path,cfg_port, dbpath, logfile,
-                                                                                             enc_params_list_string)
-        restart_mongod_cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} {} --fork --replSet {} --configsvr".format(sourceobj.mongo_install_path,
+        cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} {} --fork".format(sourceobj.mongo_install_path,
+                                                                                         cfg_port, dbpath, logfile,
+                                                                                         enc_params_list_string)
+        restart_mongod_cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} {} --fork --replSet {} --configsvr".format(
+            sourceobj.mongo_install_path,
             cfg_port, dbpath, logfile, enc_params_list_string, config_repset_name)
 
     res = execute_bash_cmd(rx_connection, cmd, {})
     time.sleep(7)
 
-    cmd = "{} local --port {} --quiet --eval 'db.dropDatabase()'".format(sourceobj.mongo_shell_path,cfg_port)
+    cmd = "{} local --port {} --quiet --eval 'db.dropDatabase()'".format(sourceobj.mongo_shell_path, cfg_port)
     res = execute_bash_cmd(rx_connection, cmd, {})
 
     for i in range(shardcount):
@@ -1344,11 +1402,12 @@ def setup_config_member(sourceobj,rx_connection, mount_path, confignum, membernu
         shard_dbpath = "{}/s{}m0".format(mount_path, i)
         logger.debug("{},{},{}".format(shardmember, snm0_port, shard_dbpath))
         logger.debug("adjust_config_shardinfo - Start")
-        adjust_config_shardinfo(sourceobj,rx_connection, shard_dbpath, cfg_port, hostname, snm0_port, shardserver_setting_list)
+        adjust_config_shardinfo(sourceobj, rx_connection, shard_dbpath, cfg_port, hostname, snm0_port,
+                                shardserver_setting_list)
         logger.debug("adjust_config_shardinfo - End")
 
     # cmd = "ps -ef|grep mongo|grep {}|grep {}|grep -v grep|awk '{ print \"kill \"$2}'|sh".format(dbpath, cfg_port)
-    cmd = "{} admin --port {} --quiet --eval 'db.shutdownServer()'".format(sourceobj.mongo_shell_path,cfg_port)
+    cmd = "{} admin --port {} --quiet --eval 'db.shutdownServer()'".format(sourceobj.mongo_shell_path, cfg_port)
     res = execute_bash_cmd(rx_connection, cmd, {})
     time.sleep(7)
 
@@ -1357,7 +1416,8 @@ def setup_config_member(sourceobj,rx_connection, mount_path, confignum, membernu
 
     return restart_mongod_cmd
 
-def setup_config_replset_members(sourceobj,shard_config_list, virtual_source, mount_path, encryption_method,
+
+def setup_config_replset_members(sourceobj, shard_config_list, virtual_source, mount_path, encryption_method,
                                  enc_params_list_string):
     confignum = 0
     c0m0_port = get_shard_port(shard_config_list, 'c0m0')
@@ -1380,7 +1440,8 @@ def setup_config_replset_members(sourceobj,shard_config_list, virtual_source, mo
 
         logger.debug("{},{},{},{}".format(dbpath, cnmn_port, cfgfile, cnmn_host_name))
 
-        cmd = "cp -p {}/c0m0/restoreInfo.txt {}/c{}m{}/restoreInfo.txt".format(mount_path, mount_path, confignum, membernum)
+        cmd = "cp -p {}/c0m0/restoreInfo.txt {}/c{}m{}/restoreInfo.txt".format(mount_path, mount_path, confignum,
+                                                                               membernum)
         res = execute_bash_cmd(c0m0_conn, cmd, {})
 
         cmd = "cat {}/c{}m{}/restoreInfo.txt|grep 'Replica Set:'".format(mount_path, "0", "0")
@@ -1390,22 +1451,26 @@ def setup_config_replset_members(sourceobj,shard_config_list, virtual_source, mo
         logger.debug("config_repset_name = {}".format(config_repset_name))
 
         if encryption_method is None:
-            cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} --fork".format(sourceobj.mongo_install_path,cnmn_port, dbpath,
-                                                                                              logfile)
-            restart_mongod_cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} --fork --replSet {} --configsvr".format(sourceobj.mongo_install_path,
+            cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} --fork".format(sourceobj.mongo_install_path,
+                                                                                          cnmn_port, dbpath,
+                                                                                          logfile)
+            restart_mongod_cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} --fork --replSet {} --configsvr".format(
+                sourceobj.mongo_install_path,
                 cnmn_port, dbpath, logfile, config_repset_name)
         else:
-            cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} {} --fork".format(sourceobj.mongo_install_path,cnmn_port, dbpath,
-                                                                                                 logfile,
-                                                                                                 enc_params_list_string)
-            restart_mongod_cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} {} --fork --replSet {} --configsvr".format(sourceobj.mongo_install_path,
+            cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} {} --fork".format(
+                sourceobj.mongo_install_path, cnmn_port, dbpath,
+                logfile,
+                enc_params_list_string)
+            restart_mongod_cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} {} --fork --replSet {} --configsvr".format(
+                sourceobj.mongo_install_path,
                 cnmn_port, dbpath, logfile, enc_params_list_string, config_repset_name)
 
         res = execute_bash_cmd(cnmn_conn, cmd, {})
         time.sleep(7)
 
         # cmd = "ps -ef|grep mongo|grep {}|grep {}|grep -v grep|awk '{ print \"kill \"$2}'|sh".format(dbpath, cnmn_port)
-        cmd = "{} admin --port {} --quiet --eval 'db.shutdownServer()'".format(sourceobj.mongo_shell_path,cnmn_port)
+        cmd = "{} admin --port {} --quiet --eval 'db.shutdownServer()'".format(sourceobj.mongo_shell_path, cnmn_port)
         res = execute_bash_cmd(cnmn_conn, cmd, {})
         time.sleep(7)
 
@@ -1414,12 +1479,14 @@ def setup_config_replset_members(sourceobj,shard_config_list, virtual_source, mo
 
         # Add Member to replicaset
         logger.info("Add replicaset Member c{}m{} to replicaset {}".format(confignum, membernum, config_repset_name))
-        cmd = '{} --port {} --eval \'rs.add("{}:{}")\''.format(sourceobj.mongo_shell_path,c0m0_port, cnmn_host_name, cnmn_port)
+        cmd = '{} --port {} --eval \'rs.add("{}:{}")\''.format(sourceobj.mongo_shell_path, c0m0_port, cnmn_host_name,
+                                                               cnmn_port)
         cmd_response = execute_bash_cmd(c0m0_conn, cmd, {})
         logger.info(
             "Add replicaset Member c{}m{} to replicaset {} - done".format(confignum, membernum, config_repset_name))
 
         add_debug_space()
+
 
 def setup_shard_replset_members(shard_config_list, virtual_source, mount_path, encryption_method,
                                 base_enc_params_list_string, shard_count):
@@ -1451,12 +1518,14 @@ def setup_shard_replset_members(shard_config_list, virtual_source, mount_path, e
             logger.debug("{},{},{}".format(dbpath, cfgfile, snmn_host_name))
 
             # Create restoreInfo.txt file and add correct encryption keyid for KMIP
-            cmd = "cp -p {}/s{}m0/restoreInfo.txt {}/s{}m{}/restoreInfo.txt".format(mount_path, shardnum, mount_path, shardnum,
+            cmd = "cp -p {}/s{}m0/restoreInfo.txt {}/s{}m{}/restoreInfo.txt".format(mount_path, shardnum, mount_path,
+                                                                                    shardnum,
+                                                                                    membernum)
+            res = execute_bash_cmd(snmn_conn, cmd, {})
+            cmd = "sed -i '/Master Key UUID/d' {}/s{}m{}/restoreInfo.txt".format(mount_path, shardnum, membernum)
+            res = execute_bash_cmd(snmn_conn, cmd, {})
+            cmd = "echo 'Master Key UUID: {}' >> {}/s{}m{}/restoreInfo.txt".format(kmip_key_id, mount_path, shardnum,
                                                                                    membernum)
-            res = execute_bash_cmd(snmn_conn, cmd, {})
-            cmd  = "sed -i '/Master Key UUID/d' {}/s{}m{}/restoreInfo.txt".format(mount_path, shardnum, membernum)
-            res = execute_bash_cmd(snmn_conn, cmd, {})
-            cmd = "echo 'Master Key UUID: {}' >> {}/s{}m{}/restoreInfo.txt".format(kmip_key_id, mount_path, shardnum, membernum)
             res = execute_bash_cmd(snmn_conn, cmd, {})
             logger.info("Copied and Adjusted restoreInfo.txt")
 
@@ -1466,16 +1535,20 @@ def setup_shard_replset_members(shard_config_list, virtual_source, mount_path, e
             logger.debug("shard_repset_name = {}".format(shard_repset_name))
 
             if encryption_method is None:
-                cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} --fork".format(virtual_source.mongo_install_path,snmn_port, dbpath,
-                                                                                                  logfile)
-                restart_mongod_cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} --fork --replSet {} --shardsvr".format(virtual_source.mongo_install_path,
+                cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} --fork".format(
+                    virtual_source.mongo_install_path, snmn_port, dbpath,
+                    logfile)
+                restart_mongod_cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} --fork --replSet {} --shardsvr".format(
+                    virtual_source.mongo_install_path,
 
                     snmn_port, dbpath, logfile, shard_repset_name)
             else:
-                cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} {} --fork".format(virtual_source.mongo_install_path,snmn_port, dbpath,
-                                                                                                     logfile,
-                                                                                                     enc_params_list_string)
-                restart_mongod_cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} {} --fork --replSet {} --shardsvr".format(virtual_source.mongo_install_path,
+                cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} {} --fork".format(
+                    virtual_source.mongo_install_path, snmn_port, dbpath,
+                    logfile,
+                    enc_params_list_string)
+                restart_mongod_cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} {} --fork --replSet {} --shardsvr".format(
+                    virtual_source.mongo_install_path,
                     snmn_port, dbpath, logfile, enc_params_list_string, shard_repset_name)
 
             res = execute_bash_cmd(snmn_conn, cmd, {})
@@ -1484,7 +1557,8 @@ def setup_shard_replset_members(shard_config_list, virtual_source, mount_path, e
             add_debug_space()
 
             # cmd = "ps -ef|grep mongo|grep {}|grep {}|grep -v grep|awk '{ print \"kill \"$2}'|sh".format(dbpath, snmn_conn)
-            cmd = "{} admin --port {} --quiet --eval 'db.shutdownServer()'".format(virtual_source.mongo_shell_path,snmn_port)
+            cmd = "{} admin --port {} --quiet --eval 'db.shutdownServer()'".format(virtual_source.mongo_shell_path,
+                                                                                   snmn_port)
             res = execute_bash_cmd(snmn_conn, cmd, {})
             time.sleep(7)
 
@@ -1495,16 +1569,17 @@ def setup_shard_replset_members(shard_config_list, virtual_source, mount_path, e
 
             # Add Member to replicaset
             logger.info("Add replicaset Member s{}m{} to replicaset {}".format(shardnum, membernum, shard_repset_name))
-            cmd = '{} --port {} --eval \'rs.add("{}:{}")\''.format(virtual_source.mongo_install_path,snm0_port, snmn_host_name, snmn_port)
+            cmd = '{} --port {} --eval \'rs.add("{}:{}")\''.format(virtual_source.mongo_install_path, snm0_port,
+                                                                   snmn_host_name, snmn_port)
             cmd_response = execute_bash_cmd(snm0_conn, cmd, {})
             logger.info(
                 "Add replicaset Member s{}m{} to replicaset {} - done".format(shardnum, membernum, shard_repset_name))
 
             add_debug_space()
 
-def add_replset_members(sourceobj, dataset_type, start_portpool,replicaset_config_list, mount_path, encryption_method,
-                                 enc_params_list_string):
 
+def add_replset_members(sourceobj, dataset_type, start_portpool, replicaset_config_list, mount_path, encryption_method,
+                        enc_params_list_string):
     if dataset_type == "Virtual":
         cfgfile = "{}/.delphix/.tgt_vdbcfg.txt".format(mount_path)
         rx_connection = sourceobj.connection
@@ -1518,9 +1593,9 @@ def add_replset_members(sourceobj, dataset_type, start_portpool,replicaset_confi
 
     for i in range(1, 3):
         membernum = i
-        add_debug_heading_block("Member: s0m{}".format( membernum))
-        snmn_port = get_shard_port(replicaset_config_list, 's0m{}'.format( membernum))
-        snmn_host = get_shard_host(replicaset_config_list, 's0m{}'.format( membernum))
+        add_debug_heading_block("Member: s0m{}".format(membernum))
+        snmn_port = get_shard_port(replicaset_config_list, 's0m{}'.format(membernum))
+        snmn_host = get_shard_host(replicaset_config_list, 's0m{}'.format(membernum))
         snmn_conn = get_node_conn(sourceobj, snmn_host)
         snmn_host_name = execute_bash_cmd(snmn_conn, "hostname", {})
 
@@ -1542,12 +1617,14 @@ def add_replset_members(sourceobj, dataset_type, start_portpool,replicaset_confi
         logger.debug("repset_name = {}".format(repset_name))
 
         if encryption_method is None:
-            #cmd = "mongod --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} --fork".format(snmn_port, dbpath, logfile)
-            restart_mongod_cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} --fork --replSet {}".format(sourceobj.mongo_install_path,
+            # cmd = "mongod --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} --fork".format(snmn_port, dbpath, logfile)
+            restart_mongod_cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} --fork --replSet {}".format(
+                sourceobj.mongo_install_path,
                 snmn_port, dbpath, logfile, repset_name)
         else:
-            #cmd = "mongod --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} {} --fork".format(snmn_port, dbpath, logfile, enc_params_list_string)
-            restart_mongod_cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} {} --fork --replSet {}".format(sourceobj.mongo_install_path,
+            # cmd = "mongod --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} {} --fork".format(snmn_port, dbpath, logfile, enc_params_list_string)
+            restart_mongod_cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} {} --fork --replSet {}".format(
+                sourceobj.mongo_install_path,
                 snmn_port, dbpath, logfile, enc_params_list_string, repset_name)
 
         res = execute_bash_cmd(snmn_conn, restart_mongod_cmd, {})
@@ -1555,14 +1632,17 @@ def add_replset_members(sourceobj, dataset_type, start_portpool,replicaset_confi
 
         # Add Member to replicaset
         logger.info("Add replicaset Member s0m{} to replicaset {}".format(membernum, repset_name))
-        cmd = '{} --port {} --eval \'rs.add("{}:{}")\''.format(sourceobj.mongo_shell_path,s0m0_port, snmn_host_name, snmn_port)
+        cmd = '{} --port {} --eval \'rs.add("{}:{}")\''.format(sourceobj.mongo_shell_path, s0m0_port, snmn_host_name,
+                                                               snmn_port)
         cmd_response = execute_bash_cmd(s0m0_conn, cmd, {})
         logger.info(
             "Add replicaset Member s0m{} to replicaset {} - done".format(membernum, repset_name))
 
         add_debug_space()
 
-def adjust_config_shardinfo(sourceobj,rx_connection, shard_dbpath, cfg_port, hostname, shard_port, shardserver_setting_list):
+
+def adjust_config_shardinfo(sourceobj, rx_connection, shard_dbpath, cfg_port, hostname, shard_port,
+                            shardserver_setting_list):
     cmd = "cat {}/restoreInfo.txt|grep 'Replica Set:'".format(shard_dbpath)
     res = execute_bash_cmd(rx_connection, cmd, {})
     shard_repset_name = res.split(':')[1]
@@ -1578,11 +1658,14 @@ def adjust_config_shardinfo(sourceobj,rx_connection, shard_dbpath, cfg_port, hos
             shard_host_cfg = shardserver_setting[shard_repset_name]
     logger.debug("shard_host_cfg: {}".format(shard_host_cfg))
 
-    cmd = "{} config --port {} --quiet --eval 'db.shards.updateOne({{ _id : \"{}\" }},{{ $set : {{ host : \"{}\", state : 1 }} }})'".format(sourceobj.mongo_shell_path,
+    cmd = "{} config --port {} --quiet --eval 'db.shards.updateOne({{ _id : \"{}\" }},{{ $set : {{ host : \"{}\", state : 1 }} }})'".format(
+        sourceobj.mongo_shell_path,
         cfg_port, shard_repset_name, shard_host_cfg)
     res = execute_bash_cmd(rx_connection, cmd, {})
 
-def setup_shard_member(sourceobj,rx_connection, mount_path, shardnum, membernum, snm0_port, shardcount, shard_config_list,
+
+def setup_shard_member(sourceobj, rx_connection, mount_path, shardnum, membernum, snm0_port, shardcount,
+                       shard_config_list,
                        encryption_method, enc_params_list_string, configsvrstring):
     dbpath = "{}/s{}m{}".format(mount_path, shardnum, membernum)
     cfgdir = "{}/cfg".format(mount_path)
@@ -1600,35 +1683,43 @@ def setup_shard_member(sourceobj,rx_connection, mount_path, shardnum, membernum,
     logger.debug("shard_repset_name = {}".format(shard_repset_name))
 
     if encryption_method is None:
-        cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} --fork".format(sourceobj.mongo_install_path, snm0_port, dbpath, logfile)
-        restart_mongod_cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} --fork --replSet {} --shardsvr".format(sourceobj.mongo_install_path,
+        cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} --fork".format(sourceobj.mongo_install_path,
+                                                                                      snm0_port, dbpath, logfile)
+        restart_mongod_cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} --fork --replSet {} --shardsvr".format(
+            sourceobj.mongo_install_path,
             snm0_port, dbpath, logfile, shard_repset_name)
 
     else:
-        cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} {} --fork".format(sourceobj.mongo_install_path,snm0_port, dbpath, logfile,                                                                                             enc_params_list_string)
-        restart_mongod_cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} {} --fork --replSet {} --shardsvr".format(sourceobj.mongo_install_path,
+        cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} {} --fork".format(sourceobj.mongo_install_path,
+                                                                                         snm0_port, dbpath, logfile,
+                                                                                         enc_params_list_string)
+        restart_mongod_cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} {} --fork --replSet {} --shardsvr".format(
+            sourceobj.mongo_install_path,
             snm0_port, dbpath, logfile, enc_params_list_string, shard_repset_name)
 
     res = execute_bash_cmd(rx_connection, cmd, {})
     time.sleep(7)
 
-    cmd = "{} local --port {} --quiet --eval 'db.dropDatabase()'".format(sourceobj.mongo_shell_path,snm0_port)
+    cmd = "{} local --port {} --quiet --eval 'db.dropDatabase()'".format(sourceobj.mongo_shell_path, snm0_port)
     res = execute_bash_cmd(rx_connection, cmd, {})
 
-    cmd = "{} admin --port {} --quiet --eval 'db.system.version.deleteOne( {{ _id: \"minOpTimeRecovery\" }} )'".format(sourceobj.mongo_shell_path,
+    cmd = "{} admin --port {} --quiet --eval 'db.system.version.deleteOne( {{ _id: \"minOpTimeRecovery\" }} )'".format(
+        sourceobj.mongo_shell_path,
         snm0_port)
     res = execute_bash_cmd(rx_connection, cmd, {})
 
-    cmd = "{} admin --port {} --quiet --eval 'db.system.version.updateOne({{ \"_id\" : \"shardIdentity\" }},{{ $set :{{ \"configsvrConnectionString\" : \"{}\" }} }})'".format(sourceobj.mongo_shell_path,
+    cmd = "{} admin --port {} --quiet --eval 'db.system.version.updateOne({{ \"_id\" : \"shardIdentity\" }},{{ $set :{{ \"configsvrConnectionString\" : \"{}\" }} }})'".format(
+        sourceobj.mongo_shell_path,
         snm0_port, configsvrstring)
     res = execute_bash_cmd(rx_connection, cmd, {})
 
-    cmd = "{} admin --port {} --quiet --eval 'db.system.version.find( {{ \"_id\" : \"shardIdentity\" }} ).pretty()'".format(sourceobj.mongo_shell_path,
+    cmd = "{} admin --port {} --quiet --eval 'db.system.version.find( {{ \"_id\" : \"shardIdentity\" }} ).pretty()'".format(
+        sourceobj.mongo_shell_path,
         snm0_port)
     res = execute_bash_cmd(rx_connection, cmd, {})
 
     # cmd = "ps -ef|grep mongo|grep {}|grep {}|grep -v grep|awk '{ print \"kill \"$2}'|sh".format(dbpath, snm0_port)
-    cmd = "{} admin --port {} --quiet --eval 'db.shutdownServer()'".format(sourceobj.mongo_shell_path,snm0_port)
+    cmd = "{} admin --port {} --quiet --eval 'db.shutdownServer()'".format(sourceobj.mongo_shell_path, snm0_port)
     res = execute_bash_cmd(rx_connection, cmd, {})
     time.sleep(7)
 
@@ -1645,7 +1736,9 @@ def setup_shard_member(sourceobj,rx_connection, mount_path, shardnum, membernum,
     res = execute_bash_cmd(rx_connection, restart_mongod_cmd, {})
     time.sleep(7)
 
-def setup_replicaset_member(sourceobj, rx_connection, mount_path, cfg_port, encryption_method, enc_params_list_string, dsource_type):
+
+def setup_replicaset_member(sourceobj, rx_connection, mount_path, cfg_port, encryption_method, enc_params_list_string,
+                            dsource_type):
     dbpath = "{}/s0m0".format(mount_path)
     cfgdir = "{}/cfg".format(mount_path)
     logdir = "{}/logs".format(mount_path)
@@ -1656,21 +1749,26 @@ def setup_replicaset_member(sourceobj, rx_connection, mount_path, cfg_port, encr
     hostname = execute_bash_cmd(rx_connection, cmd, {})
     logger.debug("{},{},{},{}".format(dbpath, cfg_port, cfgfile, hostname))
 
-    cmd = "cat {}/s0m0/restoreInfo.txt|grep 'Replica Set:'".format(mount_path )
+    cmd = "cat {}/s0m0/restoreInfo.txt|grep 'Replica Set:'".format(mount_path)
     res = execute_bash_cmd(rx_connection, cmd, {})
     repset_name = res.split(':')[1].strip()
     logger.debug("repset_name = {}".format(repset_name))
 
     if encryption_method is None:
-        cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} --fork".format(sourceobj.mongo_install_path,cfg_port, dbpath, logfile)
-        restart_mongod_cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} --fork --replSet {}".format(sourceobj.mongo_install_path,
+        cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} --fork".format(sourceobj.mongo_install_path,
+                                                                                      cfg_port, dbpath, logfile)
+        restart_mongod_cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} --fork --replSet {}".format(
+            sourceobj.mongo_install_path,
             cfg_port, dbpath, logfile, repset_name)
         restart_mongod_cmd_stdalone = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} --fork ".format(
             sourceobj.mongo_install_path,
             cfg_port, dbpath, logfile)
     else:
-        cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} {} --fork".format(sourceobj.mongo_install_path,cfg_port, dbpath, logfile, enc_params_list_string)
-        restart_mongod_cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} {} --fork --replSet {} ".format(sourceobj.mongo_install_path,
+        cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} {} --fork".format(sourceobj.mongo_install_path,
+                                                                                         cfg_port, dbpath, logfile,
+                                                                                         enc_params_list_string)
+        restart_mongod_cmd = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} {} --fork --replSet {} ".format(
+            sourceobj.mongo_install_path,
             cfg_port, dbpath, logfile, enc_params_list_string, repset_name)
         restart_mongod_cmd_stdalone = "{} --bind_ip 0.0.0.0 --port {} --dbpath {} --logpath {} {} --fork  ".format(
             sourceobj.mongo_install_path,
@@ -1701,41 +1799,47 @@ def setup_replicaset_member(sourceobj, rx_connection, mount_path, cfg_port, encr
         res = execute_bash_cmd(rx_connection, cmd, {})
         time.sleep(7)
 
-        cmd = "{} local --port {} --quiet --eval 'db.getSiblingDB(\"local\").replset.minvalid.drop()'".format(sourceobj.mongo_shell_path,cfg_port)
+        cmd = "{} local --port {} --quiet --eval 'db.getSiblingDB(\"local\").replset.minvalid.drop()'".format(
+            sourceobj.mongo_shell_path, cfg_port)
         res = execute_bash_cmd(rx_connection, cmd, {})
 
-        cmd = "{} local --port {} --quiet --eval 'db.getSiblingDB(\"local\").replset.oplogTruncateAfterPoint.drop()'".format(sourceobj.mongo_shell_path,cfg_port)
+        cmd = "{} local --port {} --quiet --eval 'db.getSiblingDB(\"local\").replset.oplogTruncateAfterPoint.drop()'".format(
+            sourceobj.mongo_shell_path, cfg_port)
         res = execute_bash_cmd(rx_connection, cmd, {})
 
-        cmd = "{} local --port {} --quiet --eval 'db.getSiblingDB(\"local\").replset.election.drop()'".format(sourceobj.mongo_shell_path,cfg_port)
+        cmd = "{} local --port {} --quiet --eval 'db.getSiblingDB(\"local\").replset.election.drop()'".format(
+            sourceobj.mongo_shell_path, cfg_port)
         res = execute_bash_cmd(rx_connection, cmd, {})
 
-        cmd = "{} local --port {} --quiet --eval 'db.getSiblingDB(\"local\").system.replset.remove({{ }})'".format(sourceobj.mongo_shell_path,cfg_port)
+        cmd = "{} local --port {} --quiet --eval 'db.getSiblingDB(\"local\").system.replset.remove({{ }})'".format(
+            sourceobj.mongo_shell_path, cfg_port)
         res = execute_bash_cmd(rx_connection, cmd, {})
 
-        cmd = "{} local --port {} --quiet --eval 'db.getSiblingDB(\"local\").system.replset.insert({{\"_id\" : \"{}\", \"version\" : NumberInt(1), \"protocolVersion\" : NumberInt(1), \"members\" : [{{ \"_id\" : NumberInt(0), \"host\" : \"{}:{}\"}}], \"settings\" : {{ }} }})'".format(sourceobj.mongo_shell_path,cfg_port,repset_name,hostname,cfg_port)
+        cmd = "{} local --port {} --quiet --eval 'db.getSiblingDB(\"local\").system.replset.insert({{\"_id\" : \"{}\", \"version\" : NumberInt(1), \"protocolVersion\" : NumberInt(1), \"members\" : [{{ \"_id\" : NumberInt(0), \"host\" : \"{}:{}\"}}], \"settings\" : {{ }} }})'".format(
+            sourceobj.mongo_shell_path, cfg_port, repset_name, hostname, cfg_port)
         res = execute_bash_cmd(rx_connection, cmd, {})
 
-        cmd = "{} local --port {} --quiet --eval 'db.getSiblingDB(\"local\").replset.minvalid.insert({{\"_id\" : ObjectId(), \"t\" : NumberLong(-1), \"ts\" : Timestamp(0,1) }})'".format(sourceobj.mongo_shell_path,cfg_port)
+        cmd = "{} local --port {} --quiet --eval 'db.getSiblingDB(\"local\").replset.minvalid.insert({{\"_id\" : ObjectId(), \"t\" : NumberLong(-1), \"ts\" : Timestamp(0,1) }})'".format(
+            sourceobj.mongo_shell_path, cfg_port)
         res = execute_bash_cmd(rx_connection, cmd, {})
 
         try:
             cmd = "cat {}/s0m0/restoreInfo.txt|grep 'Last Oplog Applied:'".format(mount_path)
             res = execute_bash_cmd_nofail(rx_connection, cmd, {})
-            extractTS = re.search(r'\(\d+,\s\d+\)',res)
+            extractTS = re.search(r'\(\d+,\s\d+\)', res)
             restoreTS = extractTS.group()
             truncateAfterPoint = "Timestamp{}".format(restoreTS)
 
             # AJAY This is imporatnt but temporary commented
-            #cmd = "mongo local --port {} --quiet --eval 'db.getSiblingDB(\"local\").replset.oplogTruncateAfterPoint.insert({{\"_id\" : \"oplogTruncateAfterPoint\", \"oplogTruncateAfterPoint\" : {} }})'".format(cfg_port,truncateAfterPoint)
-            #res = execute_bash_cmd(rx_connection, cmd, {})
+            # cmd = "mongo local --port {} --quiet --eval 'db.getSiblingDB(\"local\").replset.oplogTruncateAfterPoint.insert({{\"_id\" : \"oplogTruncateAfterPoint\", \"oplogTruncateAfterPoint\" : {} }})'".format(cfg_port,truncateAfterPoint)
+            # res = execute_bash_cmd(rx_connection, cmd, {})
         except:
             # This is valid in case of dsource type as "offlinemongodump" or "onlinemongodump". Gracefully proceed
             pass
 
         # cmd = "ps -ef|grep mongo|grep {}|grep {}|grep -v grep|awk '{ print \"kill \"$2}'|sh".format(dbpath, cfg_port)
         # cmd = "mongo admin --port {} --quiet --eval 'db.shutdownServer()'".format(cfg_port)
-        cmd = "{} --dbpath {} --port {} --shutdown".format(sourceobj.mongo_install_path,dbpath,cfg_port)
+        cmd = "{} --dbpath {} --port {} --shutdown".format(sourceobj.mongo_install_path, dbpath, cfg_port)
         res = execute_bash_cmd(rx_connection, cmd, {})
         time.sleep(3)
 
@@ -1744,6 +1848,7 @@ def setup_replicaset_member(sourceobj, rx_connection, mount_path, cfg_port, encr
 
     logger.info("setup_replicaset_member function is complete")
     return restart_mongod_cmd
+
 
 def add_net(mongo_cmd, bind_ip, mongod_port, enable_ssl_tls, ssl_tls_params):
     mongo_cmd = "{} --bind_ip {}".format(mongo_cmd, bind_ip)
@@ -1761,10 +1866,11 @@ def add_net(mongo_cmd, bind_ip, mongod_port, enable_ssl_tls, ssl_tls_params):
         mongo_cmd = "{} {}".format(mongo_cmd, ssl_tls_params_list_string)
     return mongo_cmd
 
+
 def add_keyfile_auth(mongo_cmd, user_auth_mode, keyfile_path):
     # user_auth_mode = None,SCRAM,x509,ldap
     if user_auth_mode == "None":
-        #mongo_cmd = "{} --noauth".format(mongo_cmd)
+        # mongo_cmd = "{} --noauth".format(mongo_cmd)
         mongo_cmd = mongo_cmd
     elif user_auth_mode == "SCRAM":
         if mongo_cmd.split(" ")[0] != "mongos":
@@ -1776,6 +1882,7 @@ def add_keyfile_auth(mongo_cmd, user_auth_mode, keyfile_path):
 
     return mongo_cmd
 
+
 def add_cluster_auth(mongo_cmd, cluster_auth_mode, keyfile_path):
     # cluster_auth_mode = None,keyFile,x509,sendKeyFile,sendX509
     if cluster_auth_mode == "None":
@@ -1783,6 +1890,7 @@ def add_cluster_auth(mongo_cmd, cluster_auth_mode, keyfile_path):
     else:
         mongo_cmd = "{} --clusterAuthMode {}".format(mongo_cmd, cluster_auth_mode)
     return mongo_cmd
+
 
 def add_ldap(mongo_cmd, enable_ldap, ldap_params):
     # simple / sasl
@@ -1797,6 +1905,7 @@ def add_ldap(mongo_cmd, enable_ldap, ldap_params):
         mongo_cmd = "{} {}".format(mongo_cmd, ldap_params_list_string)
     return mongo_cmd
 
+
 def add_set_parameters(mongo_cmd, enable_setparams, setparam_params):
     if enable_setparams:
         set_params_list_string = ""
@@ -1808,6 +1917,7 @@ def add_set_parameters(mongo_cmd, enable_setparams, setparam_params):
                                                                                     set_params_rec['value'])
         mongo_cmd = "{} {}".format(mongo_cmd, set_params_list_string)
     return mongo_cmd
+
 
 def add_encryption_kmip(mongo_cmd, kmip_params):
     if kmip_params:
@@ -1822,36 +1932,41 @@ def add_encryption_kmip(mongo_cmd, kmip_params):
         mongo_cmd = "{} {}".format(mongo_cmd, kmip_params_list_string)
     return mongo_cmd
 
+
 def add_encryption_keyfile(mongo_cmd, enc_key_file_name):
     if enc_key_file_name:
         mongo_cmd = "{} --enableEncryption".format(mongo_cmd)
         mongo_cmd = "{} --encryptionKeyFile {}".format(mongo_cmd, enc_key_file_name)
     return mongo_cmd
 
-def add_auditlog(mongo_cmd, enable_auditlog, auditlog_params):
-	if enable_auditlog:
-		auditlog_params_list_string = ""
-		for auditlog_params_rec in auditlog_params:
-			if auditlog_params_rec['value'].upper() == "TRUE":
-				auditlog_params_list_string = auditlog_params_list_string + " --{}".format(auditlog_params_rec['property_name'])
-			else:
-				auditlog_params_list_string = auditlog_params_list_string + " --{} {}".format(auditlog_params_rec['property_name'], auditlog_params_rec['value'])
-		mongo_cmd = "{} {}".format(mongo_cmd, auditlog_params_list_string)
-	return mongo_cmd
 
-def gen_config_files(dataset_type,sourceobj,shard_config_list,snapshot = None):
+def add_auditlog(mongo_cmd, enable_auditlog, auditlog_params):
+    if enable_auditlog:
+        auditlog_params_list_string = ""
+        for auditlog_params_rec in auditlog_params:
+            if auditlog_params_rec['value'].upper() == "TRUE":
+                auditlog_params_list_string = auditlog_params_list_string + " --{}".format(
+                    auditlog_params_rec['property_name'])
+            else:
+                auditlog_params_list_string = auditlog_params_list_string + " --{} {}".format(
+                    auditlog_params_rec['property_name'], auditlog_params_rec['value'])
+        mongo_cmd = "{} {}".format(mongo_cmd, auditlog_params_list_string)
+    return mongo_cmd
+
+
+def gen_config_files(dataset_type, sourceobj, shard_config_list, snapshot=None):
     if dataset_type == "Virtual":
         connection = sourceobj.connection
     elif dataset_type == "Staging":
         connection = sourceobj.staged_connection
 
     add_debug_space()
-    #logger.info("Generating Config Files")
-    #logger.info(snapshot)
+    # logger.info("Generating Config Files")
+    # logger.info(snapshot)
     if dataset_type == "Virtual":
-        gen_mongo_conf_files(dataset_type, sourceobj, shard_config_list,snapshot)
+        gen_mongo_conf_files(dataset_type, sourceobj, shard_config_list, snapshot)
     else:
-        gen_mongo_conf_files(dataset_type, sourceobj, shard_config_list,None)
+        gen_mongo_conf_files(dataset_type, sourceobj, shard_config_list, None)
     logger.info("Completed generating Config Files")
     add_debug_space()
 
@@ -1863,7 +1978,8 @@ def gen_config_files(dataset_type,sourceobj,shard_config_list,snapshot = None):
     logger.info("++++++++++ start_sharded_mongo +++++++++")
     start_sharded_mongo(dataset_type, sourceobj)
 
-def create_node_array(dataset_type,sourceobj):
+
+def create_node_array(dataset_type, sourceobj):
     if dataset_type == "Virtual":
         connection = sourceobj.connection
     elif dataset_type == "Staging":
@@ -1882,6 +1998,7 @@ def create_node_array(dataset_type,sourceobj):
     logger.debug("Total Nodes : {}".format(totalnodes))
     logger.info(" ")
     return nodes
+
 
 def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
     if dataset_type == 'Staging':
@@ -1945,7 +2062,7 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
     add_debug_heading_block("Create directory structure")
     if dsource_type == "shardedsource":
         cr_dir_structure(cmax, smax, mount_path, replicaset, rx_connection)
-    elif dsource_type == "nonshardedsource" or dsource_type == "offlinemongodump" or dsource_type == "onlinemongodump" or dsource_type == "extendedcluster":
+    elif dsource_type == "nonshardedsource" or dsource_type == "offlinemongodump" or dsource_type == "onlinemongodump" or dsource_type == "extendedcluster" or dsource_type == "stagingpush":
         cr_dir_structure_replicaset(mount_path, replicaset, rx_connection)
 
     if dataset_type == 'Virtual':
@@ -1964,7 +2081,7 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
             nodes, start_portpool, cmax, smax, mmax, mount_path, mongos_port, replicaset)
         for shard_config in shard_config_list:
             logger.info("shard config :{}".format(shard_config))
-    elif dsource_type == "nonshardedsource" or dsource_type == "offlinemongodump" or dsource_type == "onlinemongodump" or dsource_type == "extendedcluster":
+    elif dsource_type == "nonshardedsource" or dsource_type == "offlinemongodump" or dsource_type == "onlinemongodump" or dsource_type == "extendedcluster" or dsource_type == "stagingpush":
         # Generate replicaset mappings
         add_debug_heading_block("Generate replicaset mappings")
         replicaset_config_list = []
@@ -1981,7 +2098,7 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
         elif dataset_type == 'Virtual':
             cmd = "echo \"{}\" > {}/.delphix/.tgt_vdbcfg.txt".format(shard_config_list, mount_path)
         res = execute_bash_cmd(rx_connection, cmd, {})
-    elif dsource_type == "nonshardedsource" or dsource_type == "offlinemongodump" or dsource_type == "onlinemongodump" or dsource_type == "extendedcluster":
+    elif dsource_type == "nonshardedsource" or dsource_type == "offlinemongodump" or dsource_type == "onlinemongodump" or dsource_type == "extendedcluster" or dsource_type == "stagingpush":
         if dataset_type == 'Staging':
             cmd = "echo \"{}\" > {}/.delphix/.stg_dsourcecfg.txt".format(replicaset_config_list, mount_path)
         elif dataset_type == 'Virtual':
@@ -2068,11 +2185,15 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
         if dsource_type == "shardedsource":
             cmd = "echo \"SHARD_COUNT:{}\" > {}/.delphix/{}".format(smax, mount_path, dataset_cfgfile)
             res = execute_bash_cmd(rx_connection, cmd, {})
-        elif dsource_type == "nonshardedsource" or dsource_type == "offlinemongodump" or dsource_type == "onlinemongodump" or dsource_type == "extendedcluster":
+        elif dsource_type == "nonshardedsource" or dsource_type == "offlinemongodump" or dsource_type == "onlinemongodump" or dsource_type == "extendedcluster" or dsource_type == "stagingpush":
             cmd = "cat /dev/null > {}/.delphix/{}".format(mount_path, dataset_cfgfile)
             res = execute_bash_cmd(rx_connection, cmd, {})
         cmd = "echo \"DSOURCE_TYPE:{}\" >> {}/.delphix/{}".format(snapshot.d_source_type, mount_path, dataset_cfgfile)
         res = execute_bash_cmd(rx_connection, cmd, {})
+        if snapshot.d_source_type == "extendedcluster":
+            cmd = "echo \"MONGO_DB_USER:{}\" >> {}/.delphix/{}".format(snapshot.mongo_db_user, mount_path,
+                                                                      dataset_cfgfile)
+            res = execute_bash_cmd(rx_connection, cmd, {})
 
     if source_encrypted:
         cmd = "echo \"SOURCE_ENCRYPTED:{}\" >> {}/.delphix/{}".format("True", mount_path, dataset_cfgfile)
@@ -2122,26 +2243,27 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
 
         if source_encrypted:
             add_debug_heading_block("Encrypted - setup_config_member")
-            res = setup_config_member(sourceobj,rx_connection, mount_path, confignum, membernum, start_portpool, smax,
+            res = setup_config_member(sourceobj, rx_connection, mount_path, confignum, membernum, start_portpool, smax,
                                       shard_config_list, encryption_method, enc_params_list_string,
                                       shardserver_setting_list)
 
         else:
             add_debug_heading_block("Unencrypted - setup_config_member")
-            res = setup_config_member(sourceobj,rx_connection, mount_path, confignum, membernum, start_portpool, smax,
+            res = setup_config_member(sourceobj, rx_connection, mount_path, confignum, membernum, start_portpool, smax,
                                       shard_config_list, None, None)
 
-    elif dsource_type == "nonshardedsource" or dsource_type == "offlinemongodump" or dsource_type == "onlinemongodump" or dsource_type == "extendedcluster":
+    elif dsource_type == "nonshardedsource" or dsource_type == "offlinemongodump" or dsource_type == "onlinemongodump" or dsource_type == "extendedcluster" or dsource_type == "stagingpush":
 
         # setup Replicaset
         if source_encrypted:
             add_debug_heading_block("Encrypted - setup_replicaset_member")
-            res = setup_replicaset_member(sourceobj,rx_connection, mount_path, start_portpool, encryption_method,
-                                                 enc_params_list_string, dsource_type)
+            res = setup_replicaset_member(sourceobj, rx_connection, mount_path, start_portpool, encryption_method,
+                                          enc_params_list_string, dsource_type)
 
         else:
             add_debug_heading_block("Unencrypted - setup_replicaset_member")
-            res = setup_replicaset_member(sourceobj,rx_connection, mount_path, start_portpool, None, None, dsource_type)
+            res = setup_replicaset_member(sourceobj, rx_connection, mount_path, start_portpool, None, None,
+                                          dsource_type)
 
     cmd = "{} --port {} --quiet --eval 'rs.initiate()'".format(sourceobj.mongo_shell_path, start_portpool)
     res = execute_bash_cmd(rx_connection, cmd, {})
@@ -2162,14 +2284,14 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
                                          enc_params_list_string)
             add_debug_space()
 
-    elif dsource_type == "nonshardedsource" or dsource_type == "offlinemongodump" or dsource_type == "onlinemongodump" or dsource_type == "extendedcluster":
+    elif dsource_type == "nonshardedsource" or dsource_type == "offlinemongodump" or dsource_type == "onlinemongodump" or dsource_type == "extendedcluster" or dsource_type == "stagingpush":
 
         if replicaset:
             add_debug_heading_block("Replicaset - setup_replset_members")
-            logger.info("{},{},{},{},{},{} ".format(dataset_type,start_portpool, replicaset_config_list, mount_path,
-                                       encryption_method, enc_params_list_string))
-            add_replset_members(sourceobj,dataset_type,start_portpool, replicaset_config_list, mount_path,
-                                       encryption_method, enc_params_list_string)
+            logger.info("{},{},{},{},{},{} ".format(dataset_type, start_portpool, replicaset_config_list, mount_path,
+                                                    encryption_method, enc_params_list_string))
+            add_replset_members(sourceobj, dataset_type, start_portpool, replicaset_config_list, mount_path,
+                                encryption_method, enc_params_list_string)
             add_debug_space()
 
     if dsource_type == "shardedsource":
@@ -2196,13 +2318,13 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
                     enc_params_list_string = base_enc_params_list_string
                     enc_params_list_string = enc_params_list_string + " --kmipKeyIdentifier {}".format(kmip_key_id)
 
-                setup_shard_member(sourceobj,rx_connection, mount_path, shardnum, membernum, snm0_port, smax,
+                setup_shard_member(sourceobj, rx_connection, mount_path, shardnum, membernum, snm0_port, smax,
                                    shard_config_list, encryption_method, enc_params_list_string, configsvrstring)
 
-                cmd = "{} --port {} --quiet --eval 'rs.initiate()'".format(sourceobj.mongo_shell_path,snm0_port)
+                cmd = "{} --port {} --quiet --eval 'rs.initiate()'".format(sourceobj.mongo_shell_path, snm0_port)
                 res = execute_bash_cmd(rx_connection, cmd, {})
 
-                cmd = "{} --port {} --quiet --eval 'rs.status()'".format(sourceobj.mongo_shell_path,snm0_port)
+                cmd = "{} --port {} --quiet --eval 'rs.status()'".format(sourceobj.mongo_shell_path, snm0_port)
                 res = execute_bash_cmd(rx_connection, cmd, {})
         else:
             for i in range(smax):
@@ -2211,13 +2333,13 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
                 shardmember = "s{}m0".format(i)
                 snm0_port = get_shard_port(shard_config_list, shardmember)
                 logger.debug("{},{}".format(shardmember, snm0_port))
-                setup_shard_member(sourceobj,rx_connection, mount_path, shardnum, membernum, snm0_port, smax,
+                setup_shard_member(sourceobj, rx_connection, mount_path, shardnum, membernum, snm0_port, smax,
                                    shard_config_list, None, None, configsvrstring)
 
-                cmd = "{} --port {} --quiet --eval 'rs.initiate()'".format(sourceobj.mongo_shell_path,snm0_port)
+                cmd = "{} --port {} --quiet --eval 'rs.initiate()'".format(sourceobj.mongo_shell_path, snm0_port)
                 res = execute_bash_cmd(rx_connection, cmd, {})
 
-                cmd = "{} --port {} --quiet --eval 'rs.status()'".format(sourceobj.mongo_shell_path,snm0_port)
+                cmd = "{} --port {} --quiet --eval 'rs.status()'".format(sourceobj.mongo_shell_path, snm0_port)
                 res = execute_bash_cmd(rx_connection, cmd, {})
 
                 add_debug_space()
@@ -2247,10 +2369,11 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
         add_debug_heading_block("Generate Config files")
         gen_config_files(dataset_type, sourceobj, shard_config_list, snapshot)
 
-    elif dsource_type == "nonshardedsource" or dsource_type == "offlinemongodump" or dsource_type == "onlinemongodump" or dsource_type == "extendedcluster":
+    elif dsource_type == "nonshardedsource" or dsource_type == "offlinemongodump" or dsource_type == "onlinemongodump" or dsource_type == "extendedcluster" or dsource_type == "stagingpush":
         if dataset_type == 'Staging':
-            # Create mongo admin user
-            create_mongoadmin_user(sourceobj, rx_connection, 0, replicaset_config_list)
+            if dsource_type != "extendedcluster":
+                # Create mongo admin user
+                create_mongoadmin_user(sourceobj, rx_connection, 0, replicaset_config_list)
         elif dataset_type == 'Virtual':
             # Update mongo admin password
             update_mongoadmin_pwd(sourceobj, rx_connection, 0, replicaset_config_list, snapshot.mongo_db_user,
@@ -2259,6 +2382,7 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
         # Generate Config files
         add_debug_heading_block("Generate Config files")
         gen_config_files(dataset_type, sourceobj, replicaset_config_list, snapshot)
+
 
 def setup_sharded_mongo_dataset(sourceobj, dataset_type, snapshot):
     if dataset_type == 'Staging':
@@ -2409,6 +2533,8 @@ def setup_sharded_mongo_dataset(sourceobj, dataset_type, snapshot):
         cmd = "echo \"DSOURCE_TYPE:{}\" >> {}/.delphix/{}".format(snapshot.d_source_type, mount_path, dataset_cfgfile)
         res = execute_bash_cmd(rx_connection, cmd, {})
 
+
+
     if source_encrypted:
         cmd = "echo \"SOURCE_ENCRYPTED:{}\" >> {}/.delphix/{}".format("True", mount_path, dataset_cfgfile)
         res = execute_bash_cmd(rx_connection, cmd, {})
@@ -2456,18 +2582,18 @@ def setup_sharded_mongo_dataset(sourceobj, dataset_type, snapshot):
     if source_encrypted:
         add_debug_heading_block("Encrypted - setup_config_member")
         res = setup_config_member(rx_connection, mount_path, confignum, membernum, start_portpool, smax,
-                                         shard_config_list, encryption_method, enc_params_list_string,
-                                         shardserver_setting_list)
+                                  shard_config_list, encryption_method, enc_params_list_string,
+                                  shardserver_setting_list)
 
     else:
         add_debug_heading_block("Unencrypted - setup_config_member")
         res = setup_config_member(rx_connection, mount_path, confignum, membernum, start_portpool, smax,
-                                         shard_config_list, None, None)
+                                  shard_config_list, None, None)
 
-    cmd = "{} --port {} --quiet --eval 'rs.initiate()'".format(sourceobj.mongo_shell_path,start_portpool)
+    cmd = "{} --port {} --quiet --eval 'rs.initiate()'".format(sourceobj.mongo_shell_path, start_portpool)
     res = execute_bash_cmd(rx_connection, cmd, {})
 
-    cmd = "{} --port {} --quiet --eval 'rs.status()'".format(sourceobj.mongo_shell_path,start_portpool)
+    cmd = "{} --port {} --quiet --eval 'rs.status()'".format(sourceobj.mongo_shell_path, start_portpool)
     res = execute_bash_cmd(rx_connection, cmd, {})
     # OUTPUT=$(mongo --port $DBPORT --eval "rs.status()"|egrep "name|stateStr")
     add_debug_space()
@@ -2475,7 +2601,7 @@ def setup_sharded_mongo_dataset(sourceobj, dataset_type, snapshot):
     if replicaset:
         add_debug_heading_block("Replicaset - setup_config_replset_members")
         setup_config_replset_members(shard_config_list, sourceobj, mount_path, encryption_method,
-                                            enc_params_list_string)
+                                     enc_params_list_string)
 
     add_debug_space()
 
@@ -2502,13 +2628,13 @@ def setup_sharded_mongo_dataset(sourceobj, dataset_type, snapshot):
                 enc_params_list_string = base_enc_params_list_string
                 enc_params_list_string = enc_params_list_string + " --kmipKeyIdentifier {}".format(kmip_key_id)
 
-            setup_shard_member(sourceobj,rx_connection, mount_path, shardnum, membernum, snm0_port, smax,
-                                      shard_config_list, encryption_method, enc_params_list_string, configsvrstring)
+            setup_shard_member(sourceobj, rx_connection, mount_path, shardnum, membernum, snm0_port, smax,
+                               shard_config_list, encryption_method, enc_params_list_string, configsvrstring)
 
-            cmd = "{} --port {} --quiet --eval 'rs.initiate()'".format(sourceobj.mongo_shell_path,snm0_port)
+            cmd = "{} --port {} --quiet --eval 'rs.initiate()'".format(sourceobj.mongo_shell_path, snm0_port)
             res = execute_bash_cmd(rx_connection, cmd, {})
 
-            cmd = "{} --port {} --quiet --eval 'rs.status()'".format(sourceobj.mongo_shell_path,snm0_port)
+            cmd = "{} --port {} --quiet --eval 'rs.status()'".format(sourceobj.mongo_shell_path, snm0_port)
             res = execute_bash_cmd(rx_connection, cmd, {})
     else:
         for i in range(smax):
@@ -2517,13 +2643,13 @@ def setup_sharded_mongo_dataset(sourceobj, dataset_type, snapshot):
             shardmember = "s{}m0".format(i)
             snm0_port = get_shard_port(shard_config_list, shardmember)
             logger.debug("{},{}".format(shardmember, snm0_port))
-            setup_shard_member(sourceobj,rx_connection, mount_path, shardnum, membernum, snm0_port, smax,
-                                      shard_config_list, None, None, configsvrstring)
+            setup_shard_member(sourceobj, rx_connection, mount_path, shardnum, membernum, snm0_port, smax,
+                               shard_config_list, None, None, configsvrstring)
 
-            cmd = "{} --port {} --quiet --eval 'rs.initiate()'".format(sourceobj.mongo_shell_path,snm0_port)
+            cmd = "{} --port {} --quiet --eval 'rs.initiate()'".format(sourceobj.mongo_shell_path, snm0_port)
             res = execute_bash_cmd(rx_connection, cmd, {})
 
-            cmd = "{} --port {} --quiet --eval 'rs.status()'".format(sourceobj.mongo_shell_path,snm0_port)
+            cmd = "{} --port {} --quiet --eval 'rs.status()'".format(sourceobj.mongo_shell_path, snm0_port)
             res = execute_bash_cmd(rx_connection, cmd, {})
 
             add_debug_space()
@@ -2532,13 +2658,13 @@ def setup_sharded_mongo_dataset(sourceobj, dataset_type, snapshot):
         add_debug_heading_block("Replicaset - setup_shard_replset_members")
         logger.debug("setup_shard_replset_members() - Start")
         setup_shard_replset_members(shard_config_list, sourceobj, mount_path, encryption_method,
-                                           base_enc_params_list_string, smax)
+                                    base_enc_params_list_string, smax)
         logger.debug("setup_shard_replset_members() - End")
         add_debug_space()
 
     # setup mongos
     add_debug_heading_block("setup mongos")
-    setup_mongos(sourceobj,rx_connection, mount_path, membernum, mongos_port, configsvrstring, shard_config_list)
+    setup_mongos(sourceobj, rx_connection, mount_path, membernum, mongos_port, configsvrstring, shard_config_list)
 
     if dataset_type == 'Staging':
         # Create mongo admin user
@@ -2546,14 +2672,16 @@ def setup_sharded_mongo_dataset(sourceobj, dataset_type, snapshot):
     elif dataset_type == 'Virtual':
         # Update mongo admin password
         update_mongoadmin_pwd(sourceobj, rx_connection, smax, shard_config_list, snapshot.mongo_db_user,
-                                     snapshot.mongo_db_password, mongos_port)
+                              snapshot.mongo_db_password, mongos_port)
 
     # Generate Config files
     add_debug_heading_block("Generate Config files")
     gen_config_files(dataset_type, sourceobj, shard_config_list, snapshot)
 
+
 def add_debug_space():
     logger.debug("\n\n\n\n")
+
 
 def add_debug_heading_block(heading):
     logger.debug("\n\n\n\n")

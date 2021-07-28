@@ -22,3 +22,6 @@ docs/site
 build.sh
 .venv/
 venv/
+.Python
+mongo-plugin_artifact_*.json
+pip-selfcheck.json

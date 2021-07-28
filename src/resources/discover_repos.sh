@@ -1,4 +1,16 @@
 #!/bin/sh
+
+#DLPX_REPO_CFGFILE='ManualRepoDiscoveryFileNotProvided'
+#${DELPHIX_DIR}/../../..
+#DLPX_BIN_JQ=/u01/delphix/toolkit/Delphix_COMMON_56c4f1568fe9_a24eef3c6e13_14_host/scripts/jq/linux_x86/bin/jq
+TOOLKIT_VERSION="0.0.6"
+DLPX_TOOLKIT_NAME="mongo"
+DLPX_LOG_DIRECTORY="/tmp"
+TIMESTAMP=$(date +%Y-%m-%dT%H:%M:%S)
+CONFIG_OUTPUT_FILE="delphix_${DLPX_TOOLKIT_NAME}_config.dat"
+ERROR_LOG="${DLPX_LOG_DIRECTORY}/delphixpy_${DLPX_TOOLKIT_NAME}_error.log"
+DEBUG_LOG="${DLPX_LOG_DIRECTORY}/delphixpy_${DLPX_TOOLKIT_NAME}_debug.log"
+
 function log {
 	Parms=$@
 	TIMESTAMP=$(date +%Y-%m-%dT%H:%M:%S)
@@ -9,7 +21,7 @@ function log {
 		Parms=$@
 	fi
 	#printf "[${TIMESTAMP}][DEBUG][%s][%s]:[$Parms]\n" $DLPX_TOOLKIT_WORKFLOW $PGM_NAME
-	printf "[${TIMESTAMP}][DEBUG][%s][%s]:[$Parms]\n" $DLPX_TOOLKIT_WORKFLOW $PGM_NAME >>$DEBUG_LOG
+	printf "[${TIMESTAMP}][DEBUG][%s][%s]:[$Parms]\n" $DLPX_TOOLKIT_WORKFLOW $PGM_NAME >> $DEBUG_LOG
 	if [[ $die = 'yes' ]]; then
 		exit 2
 	fi
@@ -199,35 +211,28 @@ assembleJson()
 	REPOSITORIES=$(jq ". + [$CURRENT_REPO]" <<< "$REPOSITORIES")
 }
 
-DLPX_TOOLKIT_WORKFLOW="repositoryDiscovery"
-. $HOME/.setDelphixMongoEnv
-if [ $DLPX_TOOLKIT_WORKFLOW = "repositoryDiscovery" ]; then
-	log "MONGO_REPO_CFGFILE=$MONGO_REPO_CFGFILE"
+DLPX_TOOLKIT_WORKFLOW="repoDiscovery"
+if [ -f $HOME/.setDelphixMongoEnv ]; then
+    log "$HOME/.setDelphixMongoEnv exists"
+    . $HOME/.setDelphixMongoEnv
+else
+    log "$HOME/.setDelphixMongoEnv does not exists"
 fi
+
 if [ -z "$MONGO_REPO_CFGFILE" ]; then
-	if [ $DLPX_TOOLKIT_WORKFLOW = "repositoryDiscovery" ]; then
+	if [ "${DLPX_TOOLKIT_WORKFLOW}" = "repoDiscovery" ]; then
 		log "Env variable MONGO_REPO_CFGFILE not defined."
+		log "MONGO_REPO_CFGFILE=$MONGO_REPO_CFGFILE"
 		log "Manual/Custom repo Discovery disabled"
 	fi
 else
-	if [ $DLPX_TOOLKIT_WORKFLOW = "repositoryDiscovery" ]; then
+	if [ $DLPX_TOOLKIT_WORKFLOW = "repoDiscovery" ]; then
+	    log "MONGO_REPO_CFGFILE=$MONGO_REPO_CFGFILE"
 		log "Manual/Custom repo Discovery enabled"
 	fi
 fi
 
-
-
-#DLPX_REPO_CFGFILE='ManualRepoDiscoveryFileNotProvided'
-#${DELPHIX_DIR}/../../..
-#DLPX_BIN_JQ=/u01/delphix/toolkit/Delphix_COMMON_56c4f1568fe9_a24eef3c6e13_14_host/scripts/jq/linux_x86/bin/jq
-TOOLKIT_VERSION="0.0.1"
-DLPX_TOOLKIT_NAME="mongo"
-DLPX_LOG_DIRECTORY="/tmp"
-TIMESTAMP=$(date +%Y-%m-%dT%H:%M:%S)
-CONFIG_OUTPUT_FILE="delphix_${DLPX_TOOLKIT_NAME}_config.dat"
-ERROR_LOG="${DLPX_LOG_DIRECTORY}/delphixpy_${DLPX_TOOLKIT_NAME}_error.log"
-DEBUG_LOG="${DLPX_LOG_DIRECTORY}/delphixpy_${DLPX_TOOLKIT_NAME}_debug.log"
-if [[ $DLPX_TOOLKIT_WORKFLOW != "repositoryDiscovery" &&  $DLPX_TOOLKIT_WORKFLOW != "status" ]]; then
+if [[ $DLPX_TOOLKIT_WORKFLOW != "repoDiscovery" &&  $DLPX_TOOLKIT_WORKFLOW != "status" ]]; then
 	echo "============================================================================================================================================================"  >> $DEBUG_LOG
 	echo "Workflow : $DLPX_TOOLKIT_WORKFLOW - $PGM_NAME" >> $DEBUG_LOG
 	echo "============================================================================================================================================================"  >> $DEBUG_LOG
@@ -306,7 +311,7 @@ if [ $MANUAL_MONGO_FIND -eq 1 ]; then
 	done < 	$MANUAL_MONGO_FIND_FILE
 	log "Number of Installations found : $i"
 	if [ $i -eq 0 ]; then
-		echo "[]" >"$DLPX_OUTPUT_FILE"
+		echo "[]"
 		exit 0
 	fi
 else
@@ -316,12 +321,12 @@ else
 	INSTALLPATH=$(find $FIND_BIN_PATH -name mongod 2>&1 | head -1)
 	if [[ ${INSTALLPATH} = *"Permission denied"* ]]; then
 		log "Insufficient privileges to scan $FIND_BIN_PATH"
-		echo "[]" >"$DLPX_OUTPUT_FILE"
+		echo "[]"
 		exit 0
 	elif [[ "$INSTALLPATH" = '' ]]; then
 		# Install path not found - return empty repo config
 		log "Install path $FIND_BIN_PATH/*..*/mongod not found"
-		echo "[]" >"$DLPX_OUTPUT_FILE"
+		echo "[]"
 		exit 0
 	fi
 	log "INSTALLPATH=$INSTALLPATH"
@@ -330,7 +335,7 @@ else
 	if [[ "$SHELLPATH" = '' ]]; then
 		# Shell path not found - return empty repo config
 		log "Shell path $FIND_BIN_PATH/*..*/mongo not found"
-		echo "[]" >"$DLPX_OUTPUT_FILE"
+		echo "[]"
 		exit 0
 	fi
 	log "SHELLPATH=$SHELLPATH"

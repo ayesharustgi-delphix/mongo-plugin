@@ -75,7 +75,7 @@ def repository_discovery(source_connection):
     logger.debug("env: {}".format(env))
     repositories = []
     script_content = pkgutil.get_data('resources', 'discover_repos.sh')
-    logger.debug("discover_repos_repository_script: {}".format(script_content))
+    #logger.debug("discover_repos_repository_script: {}".format(script_content))
     res = libs.run_bash(source_connection, script_content, env)
     logger.debug("res = {}".format(res))
     logger.debug("res.stdout = {}".format(res.stdout))
@@ -119,12 +119,12 @@ def staged_mount_specification(staged_source, repository):
 
 
 @plugin.linked.pre_snapshot()
-def staged_pre_snapshot(repository, source_config, staged_source, snapshot_parameters):
+def staged_pre_snapshot(repository, source_config, staged_source, optional_snapshot_parameters):
     helpers._record_hook("staging pre snapshot",
                          staged_source.staged_connection)
     staged_source.mongo_install_path = repository.mongo_install_path
     staged_source.mongo_shell_path = repository.mongo_shell_path
-    if int(snapshot_parameters.resync) == 1:
+    if int(optional_snapshot_parameters.resync) == 1:
         if staged_source.parameters.d_source_type == "shardedsource":
             common.setup_dataset(staged_source, 'Staging', None, "shardedsource")
 
@@ -153,6 +153,12 @@ def staged_pre_snapshot(repository, source_config, staged_source, snapshot_param
             staged_source.parameters.mongos_port = staged_source.parameters.start_portpool
             linked.setup_replicaset_dsource(staged_source, 'Staging', "extendedcluster")
 
+        elif staged_source.parameters.d_source_type == "stagingpush":
+            staged_source.parameters.mongo_db_user = staged_source.parameters.src_db_user
+            staged_source.parameters.mongo_db_password = staged_source.parameters.src_db_password
+            staged_source.parameters.mongos_port = staged_source.parameters.start_portpool
+            linked.initiate_emptyfs_for_dsource(staged_source, 'Staging', "stagingpush")
+
     # Pre-Snapshot
     common.add_debug_space()
     common.add_debug_heading_block("Pre-Snapshot")
@@ -160,7 +166,7 @@ def staged_pre_snapshot(repository, source_config, staged_source, snapshot_param
         staged_source.parameters.mongo_db_user = staged_source.parameters.src_db_user
         staged_source.parameters.mongo_db_password = staged_source.parameters.src_db_password
 
-    if staged_source.parameters.d_source_type not in ["onlinemongodump","extendedcluster"]:
+    if staged_source.parameters.d_source_type not in ["onlinemongodump","extendedcluster","stagingpush"]:
         ret = linked.stg_pre_snapsync(staged_source)
     else:
         ret = 0
@@ -178,7 +184,7 @@ def staged_pre_snapshot(repository, source_config, staged_source, snapshot_param
             staged_source.parameters.mongos_port = staged_source.parameters.start_portpool
             linked.presync_mongodump_online(staged_source, 'Staging', None, "onlinemongodump")
 
-        if staged_source.parameters.d_source_type != "extendedcluster":
+        if staged_source.parameters.d_source_type != "extendedcluster" and staged_source.parameters.d_source_type != "stagingpush":
             # Write backup information
             cmd = "cat {}".format(staged_source.parameters.backup_metadata_file)
             src_lastbackup_datetime = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
@@ -194,7 +200,7 @@ def staged_pre_snapshot(repository, source_config, staged_source, snapshot_param
     logger.debug(" ")
 
 @plugin.linked.post_snapshot()
-def staged_post_snapshot(repository, source_config, staged_source, snapshot_parameters):
+def staged_post_snapshot(repository, source_config, staged_source, optional_snapshot_parameters):
     helpers._record_hook("staging post snapshot",
                          staged_source.staged_connection)
     helpers._set_running(staged_source.staged_connection, staged_source.guid)
@@ -204,13 +210,16 @@ def staged_post_snapshot(repository, source_config, staged_source, snapshot_para
     if staged_source.parameters.d_source_type == "extendedcluster":
         staged_source.parameters.mongo_db_user = staged_source.parameters.src_db_user
         staged_source.parameters.mongo_db_password = staged_source.parameters.src_db_password
+    elif staged_source.parameters.d_source_type == "stagingpush":
+        staged_source.parameters.mongo_db_user = staged_source.parameters.src_db_user
+        staged_source.parameters.mongo_db_password = staged_source.parameters.src_db_password
 
     if staged_source.parameters.d_source_type == "nonshardedsource":
         staged_source.parameters.mongos_port = staged_source.parameters.start_portpool
 
     logger.info("In Post snapshot...")
     logger.debug("len shard_backupfiles: {}".format(len(staged_source.parameters.shard_backupfiles)))
-    script_content = 'echo "$(uname):$(uname -p):$(cat /etc/redhat-release)"'
+    script_content = 'echo "$(uname):$(uname -p):$(cat /etc/*-release)"'
     res = common.execute_bash_cmd(staged_source.staged_connection, script_content, {})
     output = res.strip().split(":")
     logger.debug("output = {}".format(output))
@@ -267,6 +276,8 @@ def start_staging(repository, source_config, staged_source):
         staged_source.parameters.mongo_db_user = staged_source.parameters.src_db_user
         staged_source.parameters.mongo_db_password = staged_source.parameters.src_db_password
         linked.add_staging_to_primary(staged_source, 'Staging', "extendedcluster")
+    elif staged_source.parameters.d_source_type == "stagingpush":
+        logger.info("No action needed for stagingpsuh")
     else:
 
         if staged_source.parameters.d_source_type == "nonshardedsource":
@@ -291,6 +302,8 @@ def stop_staging(repository, source_config, staged_source):
         staged_source.parameters.mongo_db_user = staged_source.parameters.src_db_user
         staged_source.parameters.mongo_db_password = staged_source.parameters.src_db_password
         linked.drop_staging_from_primary(staged_source, 'Staging', "extendedcluster")
+    elif staged_source.parameters.d_source_type == "stagingpush":
+        logger.info("No action needed for stagingpsuh")
     else:
 
         if staged_source.parameters.d_source_type == "nonshardedsource":
@@ -316,11 +329,11 @@ def staged_status(staged_source, repository, source_config):
     staged_source.mongo_install_path = repository.mongo_install_path
     staged_source.mongo_shell_path = repository.mongo_shell_path
 
-    if staged_source.parameters.d_source_type == "extendedcluster":
+    if staged_source.parameters.d_source_type in ["extendedcluster","stagingpush"] :
         staged_source.parameters.mongo_db_user = staged_source.parameters.src_db_user
         staged_source.parameters.mongo_db_password = staged_source.parameters.src_db_password
 
-    if staged_source.parameters.d_source_type in ["nonshardedsource","extendedcluster"] :
+    if staged_source.parameters.d_source_type in ["nonshardedsource","extendedcluster","stagingpush"] :
         staged_source.parameters.mongos_port = staged_source.parameters.start_portpool
 
     get_status = common.get_status_sharded_mongo("Staging",staged_source)
@@ -393,6 +406,9 @@ def configure(virtual_source, repository, snapshot):
     elif d_source_type == "extendedcluster":
         virtual_source.parameters.mongos_port = virtual_source.parameters.start_portpool
         common.setup_dataset(virtual_source, 'Virtual', snapshot, "extendedcluster")
+    elif d_source_type == "stagingpush":
+        virtual_source.parameters.mongos_port = virtual_source.parameters.start_portpool
+        common.setup_dataset(virtual_source, 'Virtual', snapshot, "stagingpush")
 
     logger.debug("End of virtual configure")
     logger.debug(" ")
@@ -521,7 +537,12 @@ def post_snapshot(repository, source_config, virtual_source):
     snapshot.d_source_type = d_source_type
 
     snapshot.append_db_path = "N/A"
-    snapshot.mongo_db_user = "delphixadmin"
+    if d_source_type == "extendedcluster":
+        cmd = "cat {}|grep MONGO_DB_USER|awk -F: '{{ print $2 }}'".format(cfgfile)
+        mongo_db_user = common.execute_bash_cmd(virtual_source.connection, cmd, {})
+        snapshot.mongo_db_user = mongo_db_user
+    else:
+        snapshot.mongo_db_user = "delphixadmin"
     snapshot.mongo_db_password = virtual_source.parameters.mongo_db_password
 
     logger.debug("source_sharded = {}".format(source_sharded))

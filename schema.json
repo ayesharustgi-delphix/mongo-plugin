@@ -72,8 +72,7 @@
       "bind_ip",
       "oplog_size",
       "journal_interval",
-      "mongo_db_password",
-      "make_shards_replicaset"
+      "mongo_db_password"
     ],
     "ordering": [
       "mount_path",
@@ -187,13 +186,13 @@
         "type": "integer",
         "prettyName": "Mongos Port Number",
         "description": "",
-        "default": 29017
+        "default": 0
       },
       "start_portpool": {
         "type": "integer",
         "prettyName": "Target Port / Target Port Pool for Mongo Instance(s). Specify only first port for sharded mongo",
         "description": "",
-        "default": 29018
+        "default": 28500
       },
       "enable_ssl_tls": {
         "default": false,
@@ -495,7 +494,8 @@
           "offlinemongodump",
           "onlinemongodump",
           "extendedcluster",
-          "seed"
+          "seed",
+          "stagingpush"
         ],
         "default": "shardedsource"
       },
@@ -864,7 +864,7 @@
         "type": "integer",
         "prettyName": "Mongos Port Number (ONLY for sharded mongo)",
         "description": "",
-        "default": 28017
+        "default": 0
       },
       "start_portpool": {
         "type": "integer",
@@ -976,5 +976,18 @@
         "type": "array"
       }
     }
-  }
+  },
+  "snapshotParametersDefinition": {
+         "type" : "object",
+         "additionalProperties" : false,
+         "required": ["resync"],
+         "properties" : {
+             "resync" : {
+                 "type": "boolean",
+                 "default": true,
+                 "prettyName": "Resynchronize dSource",
+                 "description": "Resynchronizing dSource will force a non-incremental load of data from the source. This operation is similar to creating a new dSource, but     avoids duplicating storage requirements and maintains timeflow history."
+             }
+         }
+     }
 }

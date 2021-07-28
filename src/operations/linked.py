@@ -13,10 +13,11 @@ logger = logging.getLogger(__name__)
 
 def validate_backup_configfile(staged_source):
     if not staged_source.parameters.backup_metadata_file:
-        raise UserError(
-            "Backup DateConfig File Name cannot be empty",
-            'Make sure file exists with last backup time in format MMDDYYYY_HH24MISS',
-            '{}\n{}'.format("ls -l filename", " "))
+        if staged_source.parameters.d_source_type != "extendedcluster":
+            raise UserError(
+                "Backup DateConfig File Name cannot be empty",
+                'Make sure file exists with last backup time in format MMDDYYYY_HH24MISS',
+                '{}\n{}'.format("ls -l filename", " "))
 
 def write_first_backup_timestamp(staged_source):
     cmd = "(ls {} >> /dev/null 2>&1 && echo yes) || echo no".format(staged_source.parameters.backup_metadata_file)
@@ -654,6 +655,7 @@ def setup_replicaset_dsource(sourceobj, dataset_type, dsource_type):
     repset_name = res.strip()
     logger.debug("repset_name = {}".format(repset_name))
 
+    enc_params_list_string = ""
     if source_encrypted:
         if encryption_method == "KMIP":
 
@@ -866,3 +868,112 @@ def drop_staging_from_primary(sourceobj, dataset_type, dsource_type):
         sourceobj.mongo_shell_path, staging_host_port, src_db_user, src_db_password)
     res = common.execute_bash_cmd(rx_connection, cmd, {})
     logger.info(res)
+
+def initiate_emptyfs_for_dsource(sourceobj, dataset_type, dsource_type):
+    logger.info("dSource_Type:{}, dataset_type: {}".format(dsource_type,dataset_type))
+    dataset_cfgfile = ".stg_config.txt"
+
+    # Validate backup config file exists
+    validate_backup_configfile(sourceobj)
+
+    # Create delphix internal directory
+    cmd = "mkdir -p {}/.delphix".format(sourceobj.parameters.mount_path)
+    res = common.execute_bash_cmd(sourceobj.staged_connection, cmd, {})
+
+    # Generate and write config file
+    nodes = common.create_node_array(dataset_type, sourceobj)
+    common.add_debug_space()
+
+    rx_connection = sourceobj.staged_connection
+    src_db_user = sourceobj.parameters.src_db_user
+    src_db_password = sourceobj.parameters.src_db_password
+    src_mongo_host_conn = sourceobj.parameters.src_mongo_host_conn
+    source_encrypted = sourceobj.parameters.source_encrypted
+    encryption_method = sourceobj.parameters.encryption_method
+    mount_path = sourceobj.parameters.mount_path
+    mongo_host = sourceobj.parameters.mongo_host
+    mongod_port = sourceobj.parameters.mongos_port
+    staging_host_port = "{}:{}".format(mongo_host,mongod_port)
+    start_portpool = sourceobj.parameters.start_portpool
+
+    bind_ip = sourceobj.parameters.bind_ip
+    enable_ssl_tls = sourceobj.parameters.enable_ssl_tls
+    ssl_tls_params = sourceobj.parameters.ssl_tls_params
+
+    user_auth_mode = sourceobj.parameters.user_auth_mode
+    keyfile_path = sourceobj.parameters.keyfile_path
+
+    cluster_auth_mode = sourceobj.parameters.cluster_auth_mode
+
+    enable_ldap = sourceobj.parameters.enable_ldap
+    ldap_params = sourceobj.parameters.ldap_params
+
+    enable_setparams = sourceobj.parameters.enable_setparams
+    setparam_params = sourceobj.parameters.setparam_params
+
+    #kmip_params = sourceobj.parameters.kmip_params
+    #encryption_keyfile = sourceobj.parameters.encryption_keyfile
+
+    enable_auditlog = sourceobj.parameters.enable_auditlog
+    auditlog_params = sourceobj.parameters.auditlog_params
+
+    dbpath = "{}/s0m0".format(mount_path)
+    cfgdir = "{}/cfg".format(mount_path)
+    logdir = "{}/logs".format(mount_path)
+    cfgfile = "{}/dlpx.s0m0.{}.conf".format(cfgdir, mongod_port)
+    logfile = "{}/dlpx.s0m0.{}.mongod.log".format(logdir, mongod_port)
+
+    common.cr_dir_structure_replicaset(mount_path, False, rx_connection)
+
+    cmd = "hostname"
+    hostname = common.execute_bash_cmd(rx_connection, cmd, {})
+    logger.debug("{},{},{},{}".format(dbpath, mongod_port, cfgfile, hostname))
+
+    cmd = "{} --host {} --username {} --password {} --authenticationDatabase admin --quiet --eval \"db.isMaster().setName\"".format(
+        sourceobj.mongo_shell_path, src_mongo_host_conn, src_db_user, src_db_password)
+    res = common.execute_bash_cmd(rx_connection, cmd, {})
+    repset_name = res.strip()
+    logger.debug("repset_name = {}".format(repset_name))
+
+
+    # Generate replicaset mappings
+    common.add_debug_heading_block("Generate replicaset mappings")
+    replicaset_config_list = []
+    replicaset = False
+    replicaset_config_list = common.gen_replicaset_config_list(
+        nodes, start_portpool, mount_path, replicaset)
+
+    for replicaset_config in replicaset_config_list:
+        logger.info("replicaset_config :{}".format(replicaset_config))
+
+    cmd = "echo \"{}\" > {}/.delphix/.stg_dsourcecfg.txt".format(replicaset_config_list, mount_path)
+    res = common.execute_bash_cmd(rx_connection, cmd, {})
+
+    cmd = "echo \"DSOURCE_TYPE:{}\" > {}/.delphix/{}".format(dsource_type, mount_path,
+                                                             dataset_cfgfile)
+    res = common.execute_bash_cmd(rx_connection, cmd, {})
+
+    cmd = "echo \"MONGO_DB_USER:{}\" >> {}/.delphix/{}".format(sourceobj.parameters.mongo_db_user, mount_path,
+                                                               dataset_cfgfile)
+    res = common.execute_bash_cmd(rx_connection, cmd, {})
+
+    if source_encrypted:
+        cmd = "echo \"SOURCE_ENCRYPTED:{}\" >> {}/.delphix/{}".format("True", mount_path, dataset_cfgfile)
+        res = common.execute_bash_cmd(rx_connection, cmd, {})
+
+        cmd = "echo \"ENCRYPTION_METHOD:{}\" >> {}/.delphix/{}".format(encryption_method, mount_path, dataset_cfgfile)
+        res = common.execute_bash_cmd(rx_connection, cmd, {})
+    else:
+        cmd = "echo \"SOURCE_ENCRYPTED:{}\" >> {}/.delphix/{}".format("False", mount_path, dataset_cfgfile)
+        res = common.execute_bash_cmd(rx_connection, cmd, {})
+    common.add_debug_space()
+
+    cmd = "echo \"Replica Set: {}\" > {}/s0m0/restoreInfo.txt".format(repset_name, mount_path)
+    res = common.execute_bash_cmd(rx_connection, cmd, {})
+
+
+
+
+    cmd = "echo \"IGNORE dsPreSnapshot scripts\" >> {}/.delphix/NEWDSOURCEFILE.cfg".format(mount_path)
+    res = common.execute_bash_cmd(rx_connection, cmd, {})
+    common.add_debug_space()

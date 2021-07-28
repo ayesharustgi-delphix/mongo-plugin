@@ -3,8 +3,8 @@
 #
 id: 0b284512-edee-4a9f-95b1-980f093cd4dd
 name: mongopy
-externalVersion: 0.0.5
-buildNumber: 0.0.5
+externalVersion: 0.0.6
+buildNumber: 0.0.6
 hostTypes:
   - UNIX
 entryPoint: mongopy:plugin

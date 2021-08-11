@@ -1417,19 +1417,19 @@ def setup_config_member(sourceobj, rx_connection, mount_path, confignum, membern
     return restart_mongod_cmd
 
 
-def setup_config_replset_members(sourceobj, shard_config_list, virtual_source, mount_path, encryption_method,
+def setup_config_replset_members(shard_config_list, sourceobj, mount_path, encryption_method,
                                  enc_params_list_string):
     confignum = 0
     c0m0_port = get_shard_port(shard_config_list, 'c0m0')
     c0m0_host = get_shard_host(shard_config_list, 'c0m0')
-    c0m0_conn = get_node_conn(virtual_source, c0m0_host)
+    c0m0_conn = get_node_conn(sourceobj, c0m0_host)
 
     for i in range(1, 3):
         membernum = i
         add_debug_heading_block("Member: c{}m{}".format(confignum, membernum))
         cnmn_port = get_shard_port(shard_config_list, 'c{}m{}'.format(confignum, membernum))
         cnmn_host = get_shard_host(shard_config_list, 'c{}m{}'.format(confignum, membernum))
-        cnmn_conn = get_node_conn(virtual_source, cnmn_host)
+        cnmn_conn = get_node_conn(sourceobj, cnmn_host)
         cnmn_host_name = execute_bash_cmd(cnmn_conn, "hostname", {})
 
         dbpath = "{}/c{}m{}".format(mount_path, confignum, membernum)
@@ -2235,6 +2235,9 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
             cmd = "cp -p {} {}/.delphix/.dlpx_enckeyfile".format(sourceobj.parameters.encryption_keyfile,
                                                                  mount_path)
             res = execute_bash_cmd(rx_connection, cmd, {})
+    else:
+        enc_params_list_string = None
+        encryption_method = None
 
     if dsource_type == "shardedsource":
         # setup configserver
@@ -2250,7 +2253,7 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
         else:
             add_debug_heading_block("Unencrypted - setup_config_member")
             res = setup_config_member(sourceobj, rx_connection, mount_path, confignum, membernum, start_portpool, smax,
-                                      shard_config_list, None, None)
+                                      shard_config_list, None, None, shardserver_setting_list)
 
     elif dsource_type == "nonshardedsource" or dsource_type == "offlinemongodump" or dsource_type == "onlinemongodump" or dsource_type == "extendedcluster" or dsource_type == "stagingpush":
 
@@ -2282,6 +2285,7 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
             add_debug_heading_block("Replicaset - setup_config_replset_members")
             setup_config_replset_members(shard_config_list, sourceobj, mount_path, encryption_method,
                                          enc_params_list_string)
+
             add_debug_space()
 
     elif dsource_type == "nonshardedsource" or dsource_type == "offlinemongodump" or dsource_type == "onlinemongodump" or dsource_type == "extendedcluster" or dsource_type == "stagingpush":
@@ -2588,7 +2592,7 @@ def setup_sharded_mongo_dataset(sourceobj, dataset_type, snapshot):
     else:
         add_debug_heading_block("Unencrypted - setup_config_member")
         res = setup_config_member(rx_connection, mount_path, confignum, membernum, start_portpool, smax,
-                                  shard_config_list, None, None)
+                                  shard_config_list, None, None, shardserver_setting_list)
 
     cmd = "{} --port {} --quiet --eval 'rs.initiate()'".format(sourceobj.mongo_shell_path, start_portpool)
     res = execute_bash_cmd(rx_connection, cmd, {})

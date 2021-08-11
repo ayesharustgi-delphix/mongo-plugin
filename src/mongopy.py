@@ -124,7 +124,7 @@ def staged_pre_snapshot(repository, source_config, staged_source, optional_snaps
                          staged_source.staged_connection)
     staged_source.mongo_install_path = repository.mongo_install_path
     staged_source.mongo_shell_path = repository.mongo_shell_path
-    if int(optional_snapshot_parameters.resync) == 1:
+    if optional_snapshot_parameters is not None and optional_snapshot_parameters.resync:
         if staged_source.parameters.d_source_type == "shardedsource":
             common.setup_dataset(staged_source, 'Staging', None, "shardedsource")
 

@@ -677,6 +677,7 @@ def gen_mongo_conf_files(dataset_type, sourceobj, shard_config_list, snapshot):
         mongo_host_name = execute_bash_cmd(mongod_conn, "hostname", {})
 
         bind_ip = sourceobj.parameters.bind_ip
+        enable_user_auth = sourceobj.parameters.enable_authentication
         enable_ssl_tls = sourceobj.parameters.enable_ssl_tls
         ssl_tls_params = sourceobj.parameters.ssl_tls_params
 
@@ -742,7 +743,7 @@ def gen_mongo_conf_files(dataset_type, sourceobj, shard_config_list, snapshot):
             else:
                 logger.info("After add_keyfile_auth - mongo_cmd = {}".format(mongo_cmd))
         else:
-            mongo_cmd = add_keyfile_auth(mongo_cmd, user_auth_mode, keyfile_path)
+            mongo_cmd = add_keyfile_auth(mongo_cmd, enable_user_auth, user_auth_mode, keyfile_path)
             logger.info("After add_keyfile_auth - mongo_cmd = {}".format(mongo_cmd))
             add_debug_space()
 
@@ -1867,18 +1868,20 @@ def add_net(mongo_cmd, bind_ip, mongod_port, enable_ssl_tls, ssl_tls_params):
     return mongo_cmd
 
 
-def add_keyfile_auth(mongo_cmd, user_auth_mode, keyfile_path):
+def add_keyfile_auth(mongo_cmd, enable_user_auth, user_auth_mode, keyfile_path):
     # user_auth_mode = None,SCRAM,x509,ldap
     if user_auth_mode == "None":
         # mongo_cmd = "{} --noauth".format(mongo_cmd)
         mongo_cmd = mongo_cmd
-    elif user_auth_mode == "SCRAM":
+    elif user_auth_mode == "SCRAM" or user_auth_mode == "x509" or user_auth_mode == "ldap":
         if mongo_cmd.split(" ")[0] != "mongos":
-            mongo_cmd = "{} --auth".format(mongo_cmd)
+            if enable_user_auth:
+                mongo_cmd = "{} --auth".format(mongo_cmd)
+
+    if keyfile_path is not None and keyfile_path != "":
         mongo_cmd = "{} --keyFile {}".format(mongo_cmd, keyfile_path)
-    elif user_auth_mode == "x509" or user_auth_mode == "ldap":
-        if mongo_cmd.split(" ")[0] != "mongos":
-            mongo_cmd = "{} --auth".format(mongo_cmd)
+    else:
+        logger.info("Keyfile is empty")
 
     return mongo_cmd
 
@@ -1970,12 +1973,12 @@ def gen_config_files(dataset_type, sourceobj, shard_config_list, snapshot=None):
     logger.info("Completed generating Config Files")
     add_debug_space()
 
-    logger.info("++++++++++ stop_sharded_mongo ++++++++++")
+    logger.info("++++++++++ Stop Mongo ++++++++++")
     stop_sharded_mongo(dataset_type, sourceobj)
     logger.info("Sleeping for 60 seconds.......")
     time.sleep(60)
     add_debug_space()
-    logger.info("++++++++++ start_sharded_mongo +++++++++")
+    logger.info("++++++++++ Start Mongo +++++++++")
     start_sharded_mongo(dataset_type, sourceobj)
 
 

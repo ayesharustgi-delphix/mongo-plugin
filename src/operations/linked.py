@@ -63,32 +63,8 @@ def stg_pre_snapsync(staged_source):
                 cmd = "rm -Rf {}/s*".format(staged_source.parameters.mount_path)
                 res = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
 
-            elif staged_source.parameters.d_source_type == "nonshardedsource":
-                cmd = "rm -Rf {}/journal".format(staged_source.parameters.mount_path)
-                res = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
-
-                cmd = "rm -Rf {}/diagnostic.data".format(staged_source.parameters.mount_path)
-                res = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
-
-                cmd = "rm -Rf {}/mongod.lock".format(staged_source.parameters.mount_path)
-                res = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
-
-                cmd = "rm -Rf {}/collection-0*".format(staged_source.parameters.mount_path)
-                res = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
-
-                cmd = "rm -Rf {}/index-1--*".format(staged_source.parameters.mount_path)
-                res = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
-
-                cmd = "rm -Rf {}/WiredTiger.turtle".format(staged_source.parameters.mount_path)
-                res = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
-
-                cmd = "rm -Rf {}/WiredTiger.lock".format(staged_source.parameters.mount_path)
-                res = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
-
-                cmd = "rm -Rf {}/WiredTigerLAS.wt".format(staged_source.parameters.mount_path)
-                res = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
-
-                cmd = "rm -Rf {}/s0m0/*".format(staged_source.parameters.mount_path)
+            elif staged_source.parameters.d_source_type in ["nonshardedsource", "offlinemongodump"]:
+                cmd = "rm -Rf {}/s*".format(staged_source.parameters.mount_path)
                 res = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
 
             return 0
@@ -231,6 +207,82 @@ def setup_dataset_mongodump_offline(sourceobj, dataset_type, snapshot, dsource_t
     # restore mongodump backup
     common.add_debug_heading_block("restore mongodump backup")
     restore_mongodump(sourceobj, dataset_type)
+
+    cmd = "echo \"DSOURCE_TYPE:{}\" > {}/.delphix/{}".format(dsource_type, mount_path,
+                                                              dataset_cfgfile)
+    res = common.execute_bash_cmd(rx_connection, cmd, {})
+
+    cmd = "echo \"MONGO_DB_USER:{}\" >> {}/.delphix/{}".format(sourceobj.parameters.mongo_db_user, mount_path,
+                                                               dataset_cfgfile)
+    res = common.execute_bash_cmd(rx_connection, cmd, {})
+
+    if source_encrypted:
+        cmd = "echo \"SOURCE_ENCRYPTED:{}\" >> {}/.delphix/{}".format("True", mount_path, dataset_cfgfile)
+        res = common.execute_bash_cmd(rx_connection, cmd, {})
+
+        cmd = "echo \"ENCRYPTION_METHOD:{}\" >> {}/.delphix/{}".format(encryption_method, mount_path, dataset_cfgfile)
+        res = common.execute_bash_cmd(rx_connection, cmd, {})
+    else:
+        cmd = "echo \"SOURCE_ENCRYPTED:{}\" >> {}/.delphix/{}".format("False", mount_path, dataset_cfgfile)
+        res = common.execute_bash_cmd(rx_connection, cmd, {})
+    common.add_debug_space()
+
+    # Create mongo admin user
+    common.create_mongoadmin_user(sourceobj, rx_connection, 0, replicaset_config_list)
+
+    # Generate Config files
+    common.add_debug_heading_block("Generate Config files")
+    common.gen_config_files(dataset_type, sourceobj, replicaset_config_list, snapshot)
+
+def setup_dataset_seed(sourceobj, dataset_type, snapshot, dsource_type):
+    rx_connection = sourceobj.staged_connection
+    dataset_cfgfile = ".stg_config.txt"
+
+    # Create delphix internal directory
+    cmd = "mkdir -p {}/.delphix".format(sourceobj.parameters.mount_path)
+    res = common.execute_bash_cmd(sourceobj.staged_connection, cmd, {})
+
+    # Generate and write config file
+    nodes = common.create_node_array(dataset_type, sourceobj)
+    common.add_debug_space()
+
+    # Define variables
+    mount_path = sourceobj.parameters.mount_path
+    start_portpool = sourceobj.parameters.start_portpool
+    mongos_port = sourceobj.parameters.mongos_port
+    replicaset = sourceobj.parameters.make_shards_replicaset
+
+    config_backupfile = sourceobj.parameters.config_backupfile
+    rx_connection = sourceobj.staged_connection
+    source_encrypted = sourceobj.parameters.source_encrypted
+    encryption_method = sourceobj.parameters.encryption_method
+
+    logger.info("nodes = {}".format(nodes))
+    logger.info("start_portpool = {}".format(start_portpool))
+    logger.info("mount_path     = {}".format(mount_path))
+    logger.info("replicaset     = {}".format(replicaset))
+
+    # Create directory structure
+    common.add_debug_heading_block("Create directory structure")
+    common.cr_dir_structure_replicaset(mount_path, replicaset, rx_connection)
+
+    # Generate replicaset mappings
+    common.add_debug_heading_block("Generate replicaset mappings")
+    replicaset_config_list = []
+    replicaset_config_list = common.gen_replicaset_config_list(
+        nodes, start_portpool, mount_path, replicaset)
+
+    for replicaset_config in replicaset_config_list:
+        logger.info("replicaset_config :{}".format(replicaset_config))
+
+    common.add_debug_space()
+
+    cmd = "echo \"{}\" > {}/.delphix/.stg_dsourcecfg.txt".format(replicaset_config_list, mount_path)
+    res = common.execute_bash_cmd(rx_connection, cmd, {})
+
+    # create seed database
+    common.add_debug_heading_block("create seed database")
+    create_seed_database(sourceobj, dataset_type )
 
     cmd = "echo \"DSOURCE_TYPE:{}\" > {}/.delphix/{}".format(dsource_type, mount_path,
                                                               dataset_cfgfile)
@@ -618,6 +670,7 @@ def setup_replicaset_dsource(sourceobj, dataset_type, dsource_type):
     start_portpool = sourceobj.parameters.start_portpool
 
     bind_ip = sourceobj.parameters.bind_ip
+    enable_user_auth = sourceobj.parameters.enable_authentication
     enable_ssl_tls = sourceobj.parameters.enable_ssl_tls
     ssl_tls_params = sourceobj.parameters.ssl_tls_params
 
@@ -685,7 +738,7 @@ def setup_replicaset_dsource(sourceobj, dataset_type, dsource_type):
     logger.info("After add_net - mongo_cmd = {}".format(mongo_cmd))
     common.add_debug_space()
 
-    mongo_cmd = common.add_keyfile_auth(mongo_cmd, user_auth_mode, keyfile_path)
+    mongo_cmd = common.add_keyfile_auth(mongo_cmd, enable_user_auth, user_auth_mode, keyfile_path)
     logger.info("After add_keyfile_auth - mongo_cmd = {}".format(mongo_cmd))
     common.add_debug_space()
 

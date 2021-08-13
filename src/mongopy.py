@@ -166,7 +166,7 @@ def staged_pre_snapshot(repository, source_config, staged_source, optional_snaps
         staged_source.parameters.mongo_db_user = staged_source.parameters.src_db_user
         staged_source.parameters.mongo_db_password = staged_source.parameters.src_db_password
 
-    if staged_source.parameters.d_source_type not in ["onlinemongodump","extendedcluster","stagingpush"]:
+    if staged_source.parameters.d_source_type not in ["onlinemongodump","extendedcluster","stagingpush","seed"]:
         ret = linked.stg_pre_snapsync(staged_source)
     else:
         ret = 0
@@ -183,8 +183,10 @@ def staged_pre_snapshot(repository, source_config, staged_source, optional_snaps
         elif staged_source.parameters.d_source_type == "onlinemongodump":
             staged_source.parameters.mongos_port = staged_source.parameters.start_portpool
             linked.presync_mongodump_online(staged_source, 'Staging', None, "onlinemongodump")
+        elif staged_source.parameters.d_source_type == "seed":
+            staged_source.parameters.mongos_port = staged_source.parameters.start_portpool
 
-        if staged_source.parameters.d_source_type != "extendedcluster" and staged_source.parameters.d_source_type != "stagingpush":
+        if staged_source.parameters.d_source_type not in ["onlinemongodump", "extendedcluster", "stagingpush", "seed"]:
             # Write backup information
             cmd = "cat {}".format(staged_source.parameters.backup_metadata_file)
             src_lastbackup_datetime = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
@@ -352,7 +354,6 @@ def staged_worker(repository, source_config, staged_source):
 @plugin.virtual.mount_specification()
 def mount_specification(repository, virtual_source):
     helpers._record_hook("virtual mount spec", virtual_source.connection)
-
     virtual_source.mongo_install_path = repository.mongo_install_path
     virtual_source.mongo_shell_path = repository.mongo_shell_path
 

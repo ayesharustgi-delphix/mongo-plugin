@@ -931,35 +931,36 @@ def stop_sharded_mongo(dataset_type, sourceobj):
         except Exception as e:
             pass
 
-    # Stop mongod instances of shards
-    cmd = "cat {}".format(cfgfile)
-    res = execute_bash_cmd(connection, cmd, {})
+    if d_source_type != "stagingpush":
+        # Stop mongod instances of shards
+        cmd = "cat {}".format(cfgfile)
+        res = execute_bash_cmd(connection, cmd, {})
 
-    json_result = res
-    json_result = json_result.replace("[", "")
-    json_result = json_result.replace("]", "")
-    record_length = len(json_result.split("},"))
-    i = 1
-    for rec in json_result.split("},"):
-        if i != record_length:
-            rec = rec + "}"
-        rec = rec.replace("'", '"')
-        jsonobj = json.loads(rec)
-        logger.debug("Record = {}".format(rec))
-        mongod_port = jsonobj['port']
-        mongod_conn = get_node_conn(sourceobj, jsonobj['node'], dataset_type)
-        mongod_dirname = jsonobj['dirname']
+        json_result = res
+        json_result = json_result.replace("[", "")
+        json_result = json_result.replace("]", "")
+        record_length = len(json_result.split("},"))
+        i = 1
+        for rec in json_result.split("},"):
+            if i != record_length:
+                rec = rec + "}"
+            rec = rec.replace("'", '"')
+            jsonobj = json.loads(rec)
+            logger.debug("Record = {}".format(rec))
+            mongod_port = jsonobj['port']
+            mongod_conn = get_node_conn(sourceobj, jsonobj['node'], dataset_type)
+            mongod_dirname = jsonobj['dirname']
 
-        cmd = "ps -ef|grep mongo|grep {}|grep {}|grep {}|grep dlpx|grep -v grep|wc -l".format(
-            mount_path, mongod_dirname, mongod_port)
-        res = execute_bash_cmd(mongod_conn, cmd, {})
-        if int(res) == 1:
-            cmd = "ps -ef|grep mongo|grep {}|grep {}|grep {}|grep -v grep|awk '{{ print \"kill \"$2 }}'|sh".format(
+            cmd = "ps -ef|grep mongo|grep {}|grep {}|grep {}|grep dlpx|grep -v grep|wc -l".format(
                 mount_path, mongod_dirname, mongod_port)
             res = execute_bash_cmd(mongod_conn, cmd, {})
-        i += 1
-    # Sleep for 10 sec to cleanly get out of all killed processes.
-    time.sleep(7)
+            if int(res) == 1:
+                cmd = "ps -ef|grep mongo|grep {}|grep {}|grep {}|grep -v grep|awk '{{ print \"kill \"$2 }}'|sh".format(
+                    mount_path, mongod_dirname, mongod_port)
+                res = execute_bash_cmd(mongod_conn, cmd, {})
+            i += 1
+        # Sleep for 10 sec to cleanly get out of all killed processes.
+        time.sleep(7)
 
 
 def get_status_sharded_mongo(dataset_type, sourceobj):
@@ -2084,7 +2085,7 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
             nodes, start_portpool, cmax, smax, mmax, mount_path, mongos_port, replicaset)
         for shard_config in shard_config_list:
             logger.info("shard config :{}".format(shard_config))
-    elif dsource_type == "nonshardedsource" or dsource_type == "offlinemongodump" or dsource_type == "onlinemongodump" or dsource_type == "extendedcluster" or dsource_type == "stagingpush":
+    elif dsource_type in [ "nonshardedsource", "offlinemongodump", "onlinemongodump", "extendedcluster", "stagingpush", "seed" ]:
         # Generate replicaset mappings
         add_debug_heading_block("Generate replicaset mappings")
         replicaset_config_list = []
@@ -2101,7 +2102,7 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
         elif dataset_type == 'Virtual':
             cmd = "echo \"{}\" > {}/.delphix/.tgt_vdbcfg.txt".format(shard_config_list, mount_path)
         res = execute_bash_cmd(rx_connection, cmd, {})
-    elif dsource_type == "nonshardedsource" or dsource_type == "offlinemongodump" or dsource_type == "onlinemongodump" or dsource_type == "extendedcluster" or dsource_type == "stagingpush":
+    elif dsource_type in [ "nonshardedsource", "offlinemongodump", "onlinemongodump", "extendedcluster", "stagingpush", "seed" ]:
         if dataset_type == 'Staging':
             cmd = "echo \"{}\" > {}/.delphix/.stg_dsourcecfg.txt".format(replicaset_config_list, mount_path)
         elif dataset_type == 'Virtual':
@@ -2188,7 +2189,7 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
         if dsource_type == "shardedsource":
             cmd = "echo \"SHARD_COUNT:{}\" > {}/.delphix/{}".format(smax, mount_path, dataset_cfgfile)
             res = execute_bash_cmd(rx_connection, cmd, {})
-        elif dsource_type == "nonshardedsource" or dsource_type == "offlinemongodump" or dsource_type == "onlinemongodump" or dsource_type == "extendedcluster" or dsource_type == "stagingpush":
+        elif dsource_type in [ "nonshardedsource", "offlinemongodump", "onlinemongodump", "extendedcluster", "stagingpush", "seed" ]:
             cmd = "cat /dev/null > {}/.delphix/{}".format(mount_path, dataset_cfgfile)
             res = execute_bash_cmd(rx_connection, cmd, {})
         cmd = "echo \"DSOURCE_TYPE:{}\" >> {}/.delphix/{}".format(snapshot.d_source_type, mount_path, dataset_cfgfile)
@@ -2258,7 +2259,7 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
             res = setup_config_member(sourceobj, rx_connection, mount_path, confignum, membernum, start_portpool, smax,
                                       shard_config_list, None, None, shardserver_setting_list)
 
-    elif dsource_type == "nonshardedsource" or dsource_type == "offlinemongodump" or dsource_type == "onlinemongodump" or dsource_type == "extendedcluster" or dsource_type == "stagingpush":
+    elif dsource_type in [ "nonshardedsource", "offlinemongodump", "onlinemongodump", "extendedcluster", "stagingpush", "seed" ]:
 
         # setup Replicaset
         if source_encrypted:
@@ -2291,7 +2292,7 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
 
             add_debug_space()
 
-    elif dsource_type == "nonshardedsource" or dsource_type == "offlinemongodump" or dsource_type == "onlinemongodump" or dsource_type == "extendedcluster" or dsource_type == "stagingpush":
+    elif dsource_type in [ "nonshardedsource", "offlinemongodump", "onlinemongodump", "extendedcluster", "stagingpush", "seed" ]:
 
         if replicaset:
             add_debug_heading_block("Replicaset - setup_replset_members")
@@ -2376,7 +2377,7 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
         add_debug_heading_block("Generate Config files")
         gen_config_files(dataset_type, sourceobj, shard_config_list, snapshot)
 
-    elif dsource_type == "nonshardedsource" or dsource_type == "offlinemongodump" or dsource_type == "onlinemongodump" or dsource_type == "extendedcluster" or dsource_type == "stagingpush":
+    elif dsource_type in [ "nonshardedsource", "offlinemongodump", "onlinemongodump", "extendedcluster", "stagingpush", "seed" ]:
         if dataset_type == 'Staging':
             if dsource_type != "extendedcluster":
                 # Create mongo admin user

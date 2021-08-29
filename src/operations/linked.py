@@ -72,6 +72,19 @@ def stg_pre_snapsync(staged_source):
         logger.info("Backup File {} does not exists. Cannot determine new backups. Skipping step".format(staged_source.parameters.backup_metadata_file))
         return 1
 
+def stg_cleanup_pre_snapsync(staged_source):
+    common.stop_sharded_mongo('Staging', staged_source)
+    if staged_source.parameters.d_source_type == "shardedsource":
+        cmd = "rm -Rf {}/c*".format(staged_source.parameters.mount_path)
+        res = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
+
+        cmd = "rm -Rf {}/s*".format(staged_source.parameters.mount_path)
+        res = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
+
+    else:
+        cmd = "rm -Rf {}/s*".format(staged_source.parameters.mount_path)
+        res = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
+
 def create_seed_database(sourceobj, dataset_type ):
     if dataset_type == "Staging":
         rx_connection = sourceobj.staged_connection
@@ -927,7 +940,7 @@ def initiate_emptyfs_for_dsource(sourceobj, dataset_type, dsource_type):
     dataset_cfgfile = ".stg_config.txt"
 
     # Validate backup config file exists
-    validate_backup_configfile(sourceobj)
+    # validate_backup_configfile(sourceobj)
 
     # Create delphix internal directory
     cmd = "mkdir -p {}/.delphix".format(sourceobj.parameters.mount_path)

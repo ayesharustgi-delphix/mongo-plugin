@@ -65,6 +65,7 @@ plugin = Plugin()
 
 @plugin.discovery.repository()
 def repository_discovery(source_connection):
+    common.add_debug_heading_block("Start Repository Discovery")
     helpers._record_hook("repository_discovery", source_connection)
 
     env = {
@@ -97,34 +98,50 @@ def repository_discovery(source_connection):
     # res = libs.run_bash(source_connection, script_content, env)
     # data = json.loads(res.stdout)
     # logger.debug(data)
-
+    common.add_debug_heading_block("End Repository Discovery")
     return repositories
 
 
 @plugin.discovery.source_config()
 def source_config_discovery(source_connection, repository):
+    common.add_debug_heading_block("Start SourceConfig Discovery")
     helpers._record_hook("source_config_discovery", source_connection)
     # return [SourceConfigDefinition("Test"), SourceConfigDefinition("Test2")]
+    common.add_debug_heading_block("End SourceConfig Discovery")
     return []
 
 
 @plugin.linked.mount_specification()
 def staged_mount_specification(staged_source, repository):
+    common.add_debug_heading_block("Start Staged Mount Specification")
     helpers._record_hook("staging mount specification",
                          staged_source.staged_connection)
     logger.debug("mount_path={}".format(staged_source.parameters.mount_path))
     mount = Mount(staged_source.staged_connection.environment,
                   staged_source.parameters.mount_path)
+    common.add_debug_heading_block("End Staged Mount Specification")
     return MountSpecification([mount])
 
 
 @plugin.linked.pre_snapshot()
 def staged_pre_snapshot(repository, source_config, staged_source, optional_snapshot_parameters):
+    common.add_debug_heading_block("Start Staged Pre Snapshot")
     helpers._record_hook("staging pre snapshot",
                          staged_source.staged_connection)
     staged_source.mongo_install_path = repository.mongo_install_path
     staged_source.mongo_shell_path = repository.mongo_shell_path
     if optional_snapshot_parameters is not None and optional_snapshot_parameters.resync:
+        common.add_debug_heading_block("Start Staged Pre Snapshot Resync")
+
+        cmd = "(ls {}/.delphix/DSOURCE_RESYNC.cfg >> /dev/null 2>&1 && echo yes) || echo no".format(staged_source.parameters.mount_path)
+        res = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
+        if res == "yes":
+            logger.info("Its resync operation on dSource as File {}/.delphix/DSOURCE_RESYNC.cfg exists.".format(staged_source.parameters.mount_path))
+            linked.stg_cleanup_pre_snapsync(staged_source)
+        else:
+            logger.info("Its new dSource as File {}/.delphix/DSOURCE_RESYNC.cfg does not exists.".format(
+                staged_source.parameters.mount_path))
+
         if staged_source.parameters.d_source_type == "shardedsource":
             common.setup_dataset(staged_source, 'Staging', None, "shardedsource")
 
@@ -159,6 +176,10 @@ def staged_pre_snapshot(repository, source_config, staged_source, optional_snaps
             staged_source.parameters.mongos_port = staged_source.parameters.start_portpool
             linked.initiate_emptyfs_for_dsource(staged_source, 'Staging', "stagingpush")
 
+        cmd = "echo \"DO NOT DELETE THIS FILE. It is used to check if its resync or new dsource\" >> {}/.delphix/DSOURCE_RESYNC.cfg".format(staged_source.parameters.mount_path)
+        res = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
+
+        common.add_debug_heading_block("End Staged Pre Snapshot Resync")
     # Pre-Snapshot
     common.add_debug_space()
     common.add_debug_heading_block("Pre-Snapshot")
@@ -183,7 +204,7 @@ def staged_pre_snapshot(repository, source_config, staged_source, optional_snaps
         elif staged_source.parameters.d_source_type == "onlinemongodump":
             staged_source.parameters.mongos_port = staged_source.parameters.start_portpool
             linked.presync_mongodump_online(staged_source, 'Staging', None, "onlinemongodump")
-        elif staged_source.parameters.d_source_type == "seed":
+        elif staged_source.parameters.d_source_type in ["seed","stagingpush"]:
             staged_source.parameters.mongos_port = staged_source.parameters.start_portpool
 
         if staged_source.parameters.d_source_type not in ["onlinemongodump", "extendedcluster", "stagingpush", "seed"]:
@@ -199,10 +220,12 @@ def staged_pre_snapshot(repository, source_config, staged_source, optional_snaps
     #logger.debug("Staging Pre Snapshot - Freeze IO - done")
 
     logger.debug("End of pre snapshot")
+    common.add_debug_heading_block("End Staged Pre Snapshot")
     logger.debug(" ")
 
 @plugin.linked.post_snapshot()
 def staged_post_snapshot(repository, source_config, staged_source, optional_snapshot_parameters):
+    common.add_debug_heading_block("Start Staged Post Snapshot")
     helpers._record_hook("staging post snapshot",
                          staged_source.staged_connection)
     helpers._set_running(staged_source.staged_connection, staged_source.guid)
@@ -260,13 +283,14 @@ def staged_post_snapshot(repository, source_config, staged_source, optional_snap
     #logger.debug("Staging Post Snapshot - Unfreeze IO - done")
 
     logger.debug("snapshot schema: {}".format(snapshot))
-
+    common.add_debug_heading_block("End Staged Post Snapshot")
     # ADD start Balancer
     return snapshot
 
 
 @plugin.linked.start_staging()
 def start_staging(repository, source_config, staged_source):
+    common.add_debug_heading_block("Start Staged  - Start Staging")
     helpers._record_hook("staging start", staged_source.staged_connection)
     helpers._set_running(staged_source.staged_connection, staged_source.guid)
 
@@ -288,11 +312,13 @@ def start_staging(repository, source_config, staged_source):
         common.start_sharded_mongo('Staging', staged_source)
 
     logger.debug("End of start staging")
+    common.add_debug_heading_block("End Staged - Start Staging")
     logger.debug(" ")
 
 
 @plugin.linked.stop_staging()
 def stop_staging(repository, source_config, staged_source):
+    common.add_debug_heading_block("Start Staged  - Stop Staging")
     helpers._record_hook("staging stop", staged_source.staged_connection)
     helpers._set_stopped(staged_source.staged_connection, staged_source.guid)
 
@@ -314,6 +340,7 @@ def stop_staging(repository, source_config, staged_source):
         common.stop_sharded_mongo('Staging', staged_source)
 
     logger.debug("End of stop staging")
+    common.add_debug_heading_block("End Staged  - Stop Staging")
     logger.debug(" ")
 
 
@@ -392,24 +419,9 @@ def configure(virtual_source, repository, snapshot):
     logger.info("snapshot:{}".format(snapshot))
     logger.info("d_source_type:{}".format(snapshot.d_source_type))
     d_source_type = snapshot.d_source_type
-    if d_source_type == "shardedsource":
-        #common.setup_sharded_mongo_dataset(virtual_source, 'Virtual', snapshot)
-        common.setup_dataset(virtual_source, 'Virtual', snapshot, "shardedsource")
-    elif d_source_type == "nonshardedsource":
+    if d_source_type in  ["nonshardedsource","offlinemongodump","onlinemongodump","seed","stagingpush"]:
         virtual_source.parameters.mongos_port = virtual_source.parameters.start_portpool
-        #common.setup_nonsharded_mongo_dataset(virtual_source, 'Virtual', snapshot)
-        common.setup_dataset(virtual_source, 'Virtual', snapshot, "nonshardedsource")
-    elif d_source_type == "offlinemongodump" or d_source_type == "onlinemongodump":
-        virtual_source.parameters.mongos_port = virtual_source.parameters.start_portpool
-        common.setup_dataset(virtual_source, 'Virtual', snapshot, "offlinemongodump")
-        #linked.setup_dataset_mongodump(virtual_source, 'Virtual', snapshot, "mongodump")
-        #linked.resync_nonsharded(staged_source)
-    elif d_source_type == "extendedcluster":
-        virtual_source.parameters.mongos_port = virtual_source.parameters.start_portpool
-        common.setup_dataset(virtual_source, 'Virtual', snapshot, "extendedcluster")
-    elif d_source_type == "stagingpush":
-        virtual_source.parameters.mongos_port = virtual_source.parameters.start_portpool
-        common.setup_dataset(virtual_source, 'Virtual', snapshot, "stagingpush")
+    common.setup_dataset(virtual_source, 'Virtual', snapshot, d_source_type)
 
     logger.debug("End of virtual configure")
     logger.debug(" ")
@@ -417,14 +429,6 @@ def configure(virtual_source, repository, snapshot):
     discovery_type = "Auto"
     pretty_name = "{}-{}-{}".format(d_source_type, virtual_source.parameters.mount_path, virtual_source.parameters.start_portpool)
 
-    # return SourceConfigDefinition(
-    #     mongo_host=mongo_host,
-    #     start_portpool=start_portpool,
-    #     discovery_type=discovery_type,
-    #     pretty_name=pretty_name,
-    #     replica_set=replica_set,
-    #     db_path=db_path
-    # )
     return SourceConfigDefinition(
         discovery_type=discovery_type,
         pretty_name=pretty_name

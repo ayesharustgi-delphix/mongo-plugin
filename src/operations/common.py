@@ -1961,8 +1961,13 @@ def add_auditlog(mongo_cmd, enable_auditlog, auditlog_params):
 def gen_config_files(dataset_type, sourceobj, shard_config_list, snapshot=None):
     if dataset_type == "Virtual":
         connection = sourceobj.connection
+        cmd = "cat {}/.delphix/.tgt_config.txt|grep DSOURCE_TYPE".format(sourceobj.parameters.mount_path)
+        res = execute_bash_cmd(connection, cmd, {})
+        d_source_type = res.split(':')[1].strip()
     elif dataset_type == "Staging":
         connection = sourceobj.staged_connection
+        cfgfile = "{}/.delphix/.stg_dsourcecfg.txt".format(sourceobj.parameters.mount_path)
+        d_source_type = sourceobj.parameters.d_source_type
 
     add_debug_space()
     # logger.info("Generating Config Files")
@@ -1974,13 +1979,14 @@ def gen_config_files(dataset_type, sourceobj, shard_config_list, snapshot=None):
     logger.info("Completed generating Config Files")
     add_debug_space()
 
-    logger.info("++++++++++ Stop Mongo ++++++++++")
-    stop_sharded_mongo(dataset_type, sourceobj)
-    logger.info("Sleeping for 60 seconds.......")
-    time.sleep(60)
-    add_debug_space()
-    logger.info("++++++++++ Start Mongo +++++++++")
-    start_sharded_mongo(dataset_type, sourceobj)
+    if d_source_type != "stagingpush":
+        logger.info("++++++++++ Stop Mongo ++++++++++")
+        stop_sharded_mongo(dataset_type, sourceobj)
+        logger.info("Sleeping for 60 seconds.......")
+        time.sleep(60)
+        add_debug_space()
+        logger.info("++++++++++ Start Mongo +++++++++")
+        start_sharded_mongo(dataset_type, sourceobj)
 
 
 def create_node_array(dataset_type, sourceobj):

@@ -419,7 +419,7 @@ def configure(virtual_source, repository, snapshot):
     logger.info("snapshot:{}".format(snapshot))
     logger.info("d_source_type:{}".format(snapshot.d_source_type))
     d_source_type = snapshot.d_source_type
-    if d_source_type in  ["nonshardedsource","offlinemongodump","onlinemongodump","seed","stagingpush"]:
+    if d_source_type in  ["nonshardedsource","offlinemongodump","onlinemongodump","seed","stagingpush","extendedcluster"]:
         virtual_source.parameters.mongos_port = virtual_source.parameters.start_portpool
     common.setup_dataset(virtual_source, 'Virtual', snapshot, d_source_type)
 

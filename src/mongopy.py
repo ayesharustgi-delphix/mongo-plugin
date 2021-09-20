@@ -62,6 +62,9 @@ logger = logging.getLogger(__name__)
 
 plugin = Plugin()
 
+@plugin.upgrade.snapshot("2021.09.20.009")
+def add_new_flag_to_snapshot(old_snapshot):
+    return old_snapshot
 
 @plugin.discovery.repository()
 def repository_discovery(source_connection):

@@ -452,8 +452,8 @@ def execute_bash_cmd(connection, cmd, env):
     res = libs.run_bash(connection, cmd, env)
 
     # strip the each part of result to remove spaces from beginning and last of output
-    outputmsg = res.stdout.replace("\n", "").strip()
-    errmsg = res.stderr.replace("\n", "").strip()
+    outputmsg = res.stdout.replace("\n", "").strip().encode("ascii", "ignore")
+    errmsg = res.stderr.replace("\n", "").strip().encode("ascii", "ignore")
     exit_code = res.exit_code
 
     # Verify the exit code of each executed command. 0 means command ran successfully and for other code it is failed.
@@ -478,8 +478,8 @@ def execute_bash_cmd_nofail(connection, cmd, env):
     res = libs.run_bash(connection, cmd, env)
 
     # strip the each part of result to remove spaces from beginning and last of output
-    outputmsg = res.stdout.replace("\n", "").strip()
-    errmsg = res.stderr.replace("\n", "").strip()
+    outputmsg = res.stdout.replace("\n", "").strip().encode("ascii", "ignore")
+    errmsg = res.stderr.replace("\n", "").strip().encode("ascii", "ignore")
     exit_code = res.exit_code
 
     return exit_code
@@ -500,8 +500,8 @@ def execute_bash_cmd_silent(connection, cmd, env):
     res = libs.run_bash(connection, cmd, env)
 
     # strip the each part of result to remove spaces from beginning and last of output
-    outputmsg = res.stdout.replace("\n", "").strip()
-    errmsg = res.stderr.replace("\n", "").strip()
+    outputmsg = res.stdout.replace("\n", "").strip().encode("ascii", "ignore")
+    errmsg = res.stderr.replace("\n", "").strip().encode("ascii", "ignore")
     exit_code = res.exit_code
 
     # Verify the exit code of each executed command. 0 means command ran successfully and for other code it is failed.
@@ -518,8 +518,8 @@ def execute_bash_cmd_silent_status(connection, cmd, env):
     res = libs.run_bash(connection, cmd, env)
 
     # strip the each part of result to remove spaces from beginning and last of output
-    outputmsg = res.stdout.replace("\n", "").strip()
-    errmsg = res.stderr.replace("\n", "").strip()
+    outputmsg = res.stdout.replace("\n", "").strip().encode("ascii", "ignore")
+    errmsg = res.stderr.replace("\n", "").strip().encode("ascii", "ignore")
     exit_code = res.exit_code
 
     # Verify the exit code of each executed command. 0 means command ran successfully and for other code it is failed.
@@ -544,7 +544,7 @@ def execute_bash_cmd_nocmdlog(connection, cmd, env):
             return 1
 
         logger.debug("Response : {}".format(res.exit_code))
-        outputmsg = res.stdout.replace("\n", "").strip()
+        outputmsg = res.stdout.replace("\n", "").strip().encode("ascii", "ignore")
         logger.debug("Success outputmsg : {}".format(outputmsg))
         return outputmsg
 
@@ -1106,7 +1106,7 @@ def gen_mongo_cmd(dataset_type, sourceobj, hostname):
         mongo_db_password = sourceobj.parameters.mongo_db_password
     elif dataset_type == "Virtual":
         rx_connection = sourceobj.connection
-        cmd = "cat {}/.delphix/.stg_config.txt|grep 'MONGO_DB_USER:'".format(mount_path)
+        cmd = "cat {}/.delphix/.stg_config.txt|grep 'MONGO_DB_USER:'|cut -d':' -f2".format(mount_path)
         mongo_db_user = execute_bash_cmd(rx_connection, cmd, {})
         mongo_db_password = sourceobj.parameters.mongo_db_password
 

@@ -10,18 +10,56 @@ Prerequisites
 - Installation of the mongoDB Plugin is required before the discovery  
 - Environment variable `$MONGO_PATH ` should be set on staging/target host, which contains binary path of mongo
 
-Refresh Environment
-----------------------
-Environment refresh will update the metadata associated with that environment and copies new plugin to the host.
+Mongo Binaries Discovery  
+------------------------  
+Mongo can be installed in different ways and so the path can vary in different environments. To discover correct binaries, follow steps as below
 
 Steps: 
 
-1. Login to the Delphix Management application.
-2. Click Manage.
-3. Select Environments.
-4. In the Environments panel, click the name of the environment you want to refresh.
-5. Select the Refresh icon.
-6. In the Refresh confirmation dialog select Refresh.
+1. Login to the Staging Host as delphix os user.
+
+2. Create a file name ".setDelphixMongoEnv" in home directory of delphix user.  
+
+    ```
+    touch $HOME/.setDelphixMongoEnv
+    ```
+
+3. Define variable pointing to config file for manual discovery of mongodb instances. Example as below.  
+
+    ```
+    echo "MONGO_REPO_CFGFILE=/home/delphix/.mongorepos.txt" > $HOME/.setDelphixMongoEnv
+    ```
+
+4. Define full path to mongod binary in file represented by $MONGO_REPO_CFGFILE. Example as below.  
+
+    ```
+    source $HOME/.setDelphixMongoEnv  
+    ```
+
+    ```
+    echo "MONGO_PATH=/u01/mongodb366/bin/mongod" > $MONGO_REPO_CFGFILE  
+    ```
+
+    If there are multiple version binaries, specify each on seperate line as below  
+
+    ```
+    source $HOME/.setDelphixMongoEnv  
+    ```
+
+    ```
+    echo "MONGO_PATH=/u01/mongodb366/bin/mongod" > $MONGO_REPO_CFGFILE  
+    ```
+
+    ```
+    echo "MONGO_PATH=/u01/mongodb404/bin/mongod" >> $MONGO_REPO_CFGFILE  
+    ```
+
+5. Login to the Delphix Management application.
+6. Click Manage.
+7. Select Environments.
+8. In the Environments panel, click the name of the environment you want to refresh.
+9. Select the Refresh icon.
+10. In the Refresh confirmation dialog select Refresh.
 
     ![Screenshot](image/image9.png)
 

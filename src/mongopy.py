@@ -130,6 +130,7 @@ def staged_pre_snapshot(repository, source_config, staged_source, optional_snaps
                          staged_source.staged_connection)
     staged_source.mongo_install_path = repository.mongo_install_path
     staged_source.mongo_shell_path = repository.mongo_shell_path
+    logger.info("optional_snapshot_parameters={}".format(optional_snapshot_parameters))
     if optional_snapshot_parameters is not None and optional_snapshot_parameters.resync:
         common.add_debug_heading_block("Start Staged Pre Snapshot Resync")
 
@@ -137,7 +138,7 @@ def staged_pre_snapshot(repository, source_config, staged_source, optional_snaps
         res = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
         if res == "yes":
             logger.info("Its resync operation on dSource as File {}/.delphix/DSOURCE_RESYNC.cfg exists.".format(staged_source.parameters.mount_path))
-            linked.stg_cleanup_pre_snapsync(staged_source)
+            linked.stg_cleanup_pre_snapsync(staged_source, repository, None)
         else:
             logger.info("Its new dSource as File {}/.delphix/DSOURCE_RESYNC.cfg does not exists.".format(
                 staged_source.parameters.mount_path))

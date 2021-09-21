@@ -36,7 +36,7 @@
     
     
       
-        <title>PluginDevelopment - MongoDB Plugin</title>
+        <title>Release Notes - MongoDB Plugin</title>
       
     
     
@@ -92,7 +92,7 @@
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
     
-      <a href="#build-plugin" tabindex="1" class="md-skip">
+      <a href="#release-notes" tabindex="1" class="md-skip">
         Skip to content
       </a>
     
@@ -118,7 +118,7 @@
                 MongoDB Plugin
               </span>
               <span class="md-header-nav__topic">
-                PluginDevelopment
+                Release Notes
               </span>
             
           
@@ -299,52 +299,25 @@
     
     <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
     
+      
     
-      <label class="md-nav__link md-nav__link--active" for="__toc">
-        PluginDevelopment
-      </label>
     
-    <a href="PluginDevelopment.html" title="PluginDevelopment" class="md-nav__link md-nav__link--active">
-      PluginDevelopment
+    <a href="Release%20Notes.html" title="Release Notes" class="md-nav__link md-nav__link--active">
+      Release Notes
     </a>
     
-      
-<nav class="md-nav md-nav--secondary">
-  
-  
-  
-    <label class="md-nav__title" for="__toc">Table of contents</label>
-    <ul class="md-nav__list" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#build-plugin" title="Build plugin" class="md-nav__link">
-    Build plugin
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#upload-plugin" title="Upload plugin" class="md-nav__link">
-    Upload plugin
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#debug-plugin-logs" title="Debug plugin logs" class="md-nav__link">
-    Debug plugin logs
-  </a>
-  
-</li>
-      
-      
-      
-      
-      
-    </ul>
-  
-</nav>
+  </li>
+
     
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="Troubleshooting.html" title="Troubleshooting" class="md-nav__link">
+      Troubleshooting
+    </a>
   </li>
 
     
@@ -362,36 +335,8 @@
 <nav class="md-nav md-nav--secondary">
   
   
+    
   
-    <label class="md-nav__title" for="__toc">Table of contents</label>
-    <ul class="md-nav__list" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#build-plugin" title="Build plugin" class="md-nav__link">
-    Build plugin
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#upload-plugin" title="Upload plugin" class="md-nav__link">
-    Upload plugin
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#debug-plugin-logs" title="Debug plugin logs" class="md-nav__link">
-    Debug plugin logs
-  </a>
-  
-</li>
-      
-      
-      
-      
-      
-    </ul>
   
 </nav>
                   </div>
@@ -403,43 +348,18 @@
             <article class="md-content__inner md-typeset">
               
                 
-                  <a href="https://github.com/delphix/mongo-plugin/edit/master/docs/PluginDevelopment.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
+                  <a href="https://github.com/delphix/mongo-plugin/edit/master/docs/Release Notes.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
                 
                 
-                  <h1>PluginDevelopment</h1>
-                
-                <h2 id="build-plugin">Build plugin<a class="headerlink" href="#build-plugin" title="Permanent link">&para;</a></h2>
+                <h1 id="release-notes">Release Notes<a class="headerlink" href="#release-notes" title="Permanent link">&para;</a></h1>
+<h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<p>All notable changes to this project will be documented in this file.</p>
+<p>The format is based on <a href="http://keepachangelog.com/en/1.0.0/">Keep a Changelog</a></p>
+<h2 id="100-2021-09-20">[1.0.0] - 2021-09-20<a class="headerlink" href="#100-2021-09-20" title="Permanent link">&para;</a></h2>
+<h3 id="added">Added<a class="headerlink" href="#added" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Create python virtual environment and install required libraries (dvp, pytest, pytest-html &amp; pytest-cov) using script <code>virtualEnvSetup.sh</code>  </li>
+<li>First Version</li>
 </ul>
-<div class="codehilite"><pre><span></span><code><span class="nb">cd</span> &lt;full path of project directory till <span class="sb">`</span>mongo-plugin<span class="sb">`</span>&gt;  
-./test/virtualEnvSetup.sh &lt;virtual enviornment name&gt;  
-
-For example:  
-<span class="nb">cd</span> /u01/github/delphix/Plugins/mongo-plugin   
-./test/virtualEnvSetup.sh <span class="s2">&quot;MyLocalEnv&quot;</span>  
-</code></pre></div>
-
-<ul>
-<li>Run this command to activate the virtual environment created in step 1.</li>
-</ul>
-<div class="codehilite"><pre><span></span><code>. test/MyLocalEnv/bin/activate
-</code></pre></div>
-
-<ul>
-<li>Build the source code. It generates the build with name <code>artifacts.json</code>:</li>
-</ul>
-<div class="codehilite"><pre><span></span><code>dvp build
-</code></pre></div>
-
-<h2 id="upload-plugin">Upload plugin<a class="headerlink" href="#upload-plugin" title="Permanent link">&para;</a></h2>
-<p>Upload the <code>artifacts.json</code> ( generated in step 3 ) on Delphix Engine:</p>
-<div class="codehilite"><pre><span></span><code>dvp upload -e &lt;Delphix_Engine_Name&gt; -u &lt;username&gt; --password &lt;password&gt;
-</code></pre></div>
-
-<h2 id="debug-plugin-logs">Debug plugin logs<a class="headerlink" href="#debug-plugin-logs" title="Permanent link">&para;</a></h2>
-<p>Download the plugin logs using below command:</p>
-<p><code>dvp download-logs -c plugin_config.yml -e &lt;Delphix_Engine_Name&gt; -u admin --password &lt;password&gt;</code></p>
                 
                   
                 
@@ -474,6 +394,20 @@ For example:
             </div>
           </a>
         
+        
+          <a href="Troubleshooting.html" title="Troubleshooting" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Next
+                </span>
+                Troubleshooting
+              </span>
+            </div>
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
+            </div>
+          </a>
         
       </nav>
     </div>

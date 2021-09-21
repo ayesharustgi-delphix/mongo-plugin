@@ -292,8 +292,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#refresh-environment" title="Refresh Environment" class="md-nav__link">
-    Refresh Environment
+  <a href="#mongo-binaries-discovery" title="Mongo Binaries Discovery" class="md-nav__link">
+    Mongo Binaries Discovery
   </a>
   
 </li>
@@ -346,8 +346,20 @@
 
 
   <li class="md-nav__item">
-    <a href="PluginDevelopment.html" title="PluginDevelopment" class="md-nav__link">
-      PluginDevelopment
+    <a href="Release%20Notes.html" title="Release Notes" class="md-nav__link">
+      Release Notes
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="Troubleshooting.html" title="Troubleshooting" class="md-nav__link">
+      Troubleshooting
     </a>
   </li>
 
@@ -380,8 +392,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#refresh-environment" title="Refresh Environment" class="md-nav__link">
-    Refresh Environment
+  <a href="#mongo-binaries-discovery" title="Mongo Binaries Discovery" class="md-nav__link">
+    Mongo Binaries Discovery
   </a>
   
 </li>
@@ -421,11 +433,33 @@
 <li>Installation of the mongoDB Plugin is required before the discovery  </li>
 <li>Environment variable <code>$MONGO_PATH</code> should be set on staging/target host, which contains binary path of mongo</li>
 </ul>
-<h2 id="refresh-environment">Refresh Environment<a class="headerlink" href="#refresh-environment" title="Permanent link">&para;</a></h2>
-<p>Environment refresh will update the metadata associated with that environment and copies new plugin to the host.</p>
+<h2 id="mongo-binaries-discovery">Mongo Binaries Discovery<a class="headerlink" href="#mongo-binaries-discovery" title="Permanent link">&para;</a></h2>
+<p>Mongo can be installed in different ways and so the path can vary in different environments. To discover correct binaries, follow steps as below</p>
 <p>Steps: </p>
 <ol>
-<li>Login to the Delphix Management application.</li>
+<li>
+<p>Login to the Staging Host as delphix os user.</p>
+</li>
+<li>
+<p>Create a file name ".setDelphixMongoEnv" in home directory of delphix user.  </p>
+<p><code>touch $HOME/.setDelphixMongoEnv</code></p>
+</li>
+<li>
+<p>Define variable pointing to config file for manual discovery of mongodb instances. Example as below.  </p>
+<p><code>echo "MONGO_REPO_CFGFILE=/home/delphix/.mongorepos.txt" &gt; $HOME/.setDelphixMongoEnv</code></p>
+</li>
+<li>
+<p>Define full path to mongod binary in file represented by $MONGO_REPO_CFGFILE. Example as below.  </p>
+<p><code>source $HOME/.setDelphixMongoEnv</code></p>
+<p><code>echo "MONGO_PATH=/u01/mongodb366/bin/mongod" &gt; $MONGO_REPO_CFGFILE</code></p>
+<p>If there are multiple version binaries, specify each on seperate line as below  </p>
+<p><code>source $HOME/.setDelphixMongoEnv</code></p>
+<p><code>echo "MONGO_PATH=/u01/mongodb366/bin/mongod" &gt; $MONGO_REPO_CFGFILE</code></p>
+<p><code>echo "MONGO_PATH=/u01/mongodb404/bin/mongod" &gt;&gt; $MONGO_REPO_CFGFILE</code></p>
+</li>
+<li>
+<p>Login to the Delphix Management application.</p>
+</li>
 <li>Click Manage.</li>
 <li>Select Environments.</li>
 <li>In the Environments panel, click the name of the environment you want to refresh.</li>

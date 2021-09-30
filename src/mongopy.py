@@ -12,13 +12,14 @@ from dlpx.virtualization.platform import (
 )
 
 from operations import discovery, linked, virtual, constants, common
+import _version
 
 from utils import setup_logger
 
 import json
 import logging
 import pkgutil
-import re
+import re, copy
 import time
 # import pickle
 from datetime import datetime
@@ -137,8 +138,21 @@ def staged_pre_snapshot(repository, source_config, staged_source, optional_snaps
     if optional_snapshot_parameters is not None and optional_snapshot_parameters.resync:
         common.add_debug_heading_block("Start Staged Pre Snapshot Resync")
 
+        if staged_source.parameters.d_source_type == "stagingpush":
+            cmd = "(ls {}/.delphix/MongoOps_Automation_DSOURCE_RESYNC.cfg >> /dev/null 2>&1 && echo yes) || echo no".format(
+                staged_source.parameters.mount_path)
+            result = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
+
+            if result == "yes":
+                logger.error(
+                    "dSource Re-Syncronization is not a valid option for {} ingestion type on host: {}".format(
+                        staged_source.parameters.d_source_type,staged_source.parameters.mongo_host))
+                raise UserError(
+                    "dSource Re-Syncronization is not a valid option for {} ingestion type on host: {}".format(staged_source.parameters.d_source_type,staged_source.parameters.mongo_host), '\nPlease remove / cleanup the dSource manually in case of re-syncronizing dSource')
+
         cmd = "(ls {}/.delphix/DSOURCE_RESYNC.cfg >> /dev/null 2>&1 && echo yes) || echo no".format(staged_source.parameters.mount_path)
         res = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
+
         if res == "yes":
             logger.info("Its resync operation on dSource as File {}/.delphix/DSOURCE_RESYNC.cfg exists.".format(staged_source.parameters.mount_path))
             linked.stg_cleanup_pre_snapsync(staged_source, repository, None)
@@ -179,6 +193,8 @@ def staged_pre_snapshot(repository, source_config, staged_source, optional_snaps
             staged_source.parameters.mongo_db_password = staged_source.parameters.src_db_password
             staged_source.parameters.mongos_port = staged_source.parameters.start_portpool
             linked.initiate_emptyfs_for_dsource(staged_source, 'Staging', "stagingpush")
+            cmd = "echo \"DO NOT DELETE THIS FILE. It is used to check if its resync or new dsource\" >> {}/.delphix/MongoOps_Automation_DSOURCE_RESYNC.cfg".format(staged_source.parameters.mount_path)
+            status = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
 
         cmd = "echo \"DO NOT DELETE THIS FILE. It is used to check if its resync or new dsource\" >> {}/.delphix/DSOURCE_RESYNC.cfg".format(staged_source.parameters.mount_path)
         res = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
@@ -257,11 +273,11 @@ def staged_post_snapshot(repository, source_config, staged_source, optional_snap
     timestampStr = dateTimeObj.strftime("%m%d%Y-%H%M%S.%f")
     snapshot = SnapshotDefinition(validate=False)
 
-    snapshot.toolkit_version = repository.version
+    snapshot.toolkit_version = _version.Version
     snapshot.timestamp = timestampStr
     snapshot.architecture = output[1]
     snapshot.os_type = output[0]
-    snapshot.os_version = re.sub(r".*\s(\d)", r'\1', output[2]).split(" ")[0]
+    snapshot.os_version = re.search('.*"VERSION="([\d\.]+).*', output[2]).group(1)
     snapshot.mongo_version = repository.version
     snapshot.delphix_mount = staged_source.parameters.mount_path
     snapshot.storage_engine = staged_source.parameters.storage_engine
@@ -286,7 +302,9 @@ def staged_post_snapshot(repository, source_config, staged_source, optional_snap
     #common.fsync_unlock_sharded_mongo(staged_source, 'Staging')
     #logger.debug("Staging Post Snapshot - Unfreeze IO - done")
 
-    logger.debug("snapshot schema: {}".format(snapshot))
+    mask_snap = copy.deepcopy(snapshot)
+    mask_snap.mongo_db_password = 'xxxxxxxxxx'
+    logger.debug("snapshot schema: {}".format(mask_snap))
     common.add_debug_heading_block("End Staged Post Snapshot")
     # ADD start Balancer
     return snapshot
@@ -528,7 +546,7 @@ def post_snapshot(repository, source_config, virtual_source):
 
     snapshot = SnapshotDefinition(validate=False)
 
-    snapshot.toolkit_version = repository.version
+    snapshot.toolkit_version = _version.Version
     snapshot.timestamp = timestampStr
     snapshot.architecture = output[1]
     snapshot.os_type = output[0]
@@ -580,8 +598,10 @@ def post_snapshot(repository, source_config, virtual_source):
     #common.fsync_unlock_sharded_mongo(virtual_source, 'Virtual')
     #logger.debug("Virtual Post Snapshot - Unfreeze IO - done")
 
-    logger.debug("snapshot schema: {}".format(snapshot))
-
+    mask_snap = copy.deepcopy(snapshot)
+    mask_snap.mongo_db_password = 'xxxxxxxxxx'
+    logger.debug("snapshot schema: {}".format(mask_snap))
+    common.add_debug_heading_block("End Virtual Post Snapshot")
     return snapshot
 
 

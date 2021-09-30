@@ -461,6 +461,7 @@
       "backup_metadata_file",
       "mongo_db_user",
       "mongo_db_password",
+      "make_shards_replicaset",
       "source_sharded",
       "config_backupfile",
       "shard_backupfiles",

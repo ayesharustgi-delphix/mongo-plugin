@@ -204,6 +204,7 @@ def staged_pre_snapshot(repository, source_config, staged_source, optional_snaps
     common.add_debug_space()
     common.add_debug_heading_block("Pre-Snapshot")
     if staged_source.parameters.d_source_type == "extendedcluster":
+        linked.check_pre_snapshot_possible(staged_source, optional_snapshot_parameters)
         staged_source.parameters.mongo_db_user = staged_source.parameters.src_db_user
         staged_source.parameters.mongo_db_password = staged_source.parameters.src_db_password
 
@@ -255,6 +256,20 @@ def staged_post_snapshot(repository, source_config, staged_source, optional_snap
     if staged_source.parameters.d_source_type == "extendedcluster":
         staged_source.parameters.mongo_db_user = staged_source.parameters.src_db_user
         staged_source.parameters.mongo_db_password = staged_source.parameters.src_db_password
+
+        snapshot_possible_file_path = "{}/{}".format(staged_source.parameters.mount_path,
+                                                     ".delphix/snapshot_not_possible.txt")
+        cmd = "test -f {} && cat {} || echo 'file does not exist.'".format(snapshot_possible_file_path,
+                                                                           snapshot_possible_file_path)
+        res = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
+        if res != "file does not exist.":
+            cmd = "rm {}".format(snapshot_possible_file_path)
+            res_rm = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
+            errorMsg = "Cannot perform Snapshot as the host {} is in state {}".format(
+                res.split("  ")[1].split(" : ")[1], res.split("  ")[2].split(" : ")[1])
+            logger.info(errorMsg)
+            raise UserError(errorMsg)
+
     elif staged_source.parameters.d_source_type == "stagingpush":
         staged_source.parameters.mongo_db_user = staged_source.parameters.src_db_user
         staged_source.parameters.mongo_db_password = staged_source.parameters.src_db_password

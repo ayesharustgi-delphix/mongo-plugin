@@ -219,7 +219,7 @@
               "type": "string",
               "prettyName": "Parameter Name [ Enter command line parameter ]",
               "default": "",
-              "maxLength": 35,
+              "maxLength": 40,
               "description": "e.g. tlsMode, tlsCAFile, tlsPEMKeyFile, sslAllowConnectionsWithoutCertificates"
             },
             "value": {

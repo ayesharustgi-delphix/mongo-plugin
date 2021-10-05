@@ -25,3 +25,4 @@ venv/
 .Python
 mongo-plugin_artifact_*.json
 pip-selfcheck.json
+extra

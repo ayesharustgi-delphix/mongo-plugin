@@ -1917,7 +1917,7 @@ def add_set_parameters(mongo_cmd, enable_setparams, setparam_params):
             if set_params_rec['value'].upper() == "TRUE":
                 set_params_list_string = set_params_list_string + " --{}".format(set_params_rec['property_name'])
             else:
-                set_params_list_string = set_params_list_string + " --{} {}".format(set_params_rec['property_name'],
+                set_params_list_string = set_params_list_string + " --setParameter {}={}".format(set_params_rec['property_name'],
                                                                                     set_params_rec['value'])
         mongo_cmd = "{} {}".format(mongo_cmd, set_params_list_string)
     return mongo_cmd

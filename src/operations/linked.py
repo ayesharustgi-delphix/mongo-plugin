@@ -702,6 +702,43 @@ def get_current_oplog_position(sourceobj, dataset_type):
     return curroplogpos
 
 
+def check_pre_snapshot_possible(staged_source, optional_snapshot_parameters):
+    logger.debug("starting check_pre_snapshot_possible!!!!!!!!")
+    src_db_user = staged_source.parameters.src_db_user
+    src_db_password = staged_source.parameters.src_db_password
+    src_mongo_host_conn = staged_source.parameters.src_mongo_host_conn
+    mongo_host = staged_source.parameters.mongo_host
+    mongod_port = staged_source.parameters.start_portpool
+    staging_host_port = "{}:{}".format(mongo_host, mongod_port)
+    rx_connection = staged_source.staged_connection
+    mount_path = staged_source.parameters.mount_path
+
+    cmd = "{} --host {} --username {} --password {} --authenticationDatabase admin --quiet --eval \"rs.status()\" | grep \"name\|stateStr\" | awk '!(NR%2){{s = p; for (i = 3; i <= NF; i++) s = s $i \" \"; print s}}{{p=$3}}'| grep \"{}\"".format(staged_source.mongo_shell_path,src_mongo_host_conn, src_db_user, src_db_password,staging_host_port)
+    res = common.execute_bash_cmd(rx_connection, cmd, {})
+    logger.debug("check_pre_snapshot_possible output::" + str(res))
+    if len(res.split(",")) >= 3:
+        state_string = res.split(",")[-2][1:-1]
+    else:
+        state_string = "replicaset member not found!"
+    if state_string == "SECONDARY":
+        logger.debug("SNAPSHOT POSSIBLE")
+    else:
+        logger.debug("SNAPSHOT NOT POSSIBLE")
+        if optional_snapshot_parameters is not None and optional_snapshot_parameters.resync:
+            logger.info("Replica set member {} in state {}! Waiting for the replica set member to come into SECONDARY state.......".format(staging_host_port,state_string))
+            while True:
+                res = common.execute_bash_cmd(rx_connection, cmd, {})
+                state_string = res.split(",")[-2][1:-1]
+                logger.info("host : '{}' , state : '{}'".format(staging_host_port, state_string))
+                if state_string == "SECONDARY":
+                    logger.info("Replica set member now in SECONDARY state. Continuing with snapshot!")
+                    break
+                time.sleep(60)
+        else:
+            cmd_possible = "echo \"SNAPSHOT NOT POSSIBLE \n HOST : '{}' \n STATE : '{}'\" > {}/.delphix/snapshot_not_possible.txt".format(staging_host_port, state_string, mount_path)
+            res = common.execute_bash_cmd(rx_connection, cmd_possible, {})
+
+
 def setup_replicaset_dsource(sourceobj, dataset_type, dsource_type):
     dataset_cfgfile = ".stg_config.txt"
 

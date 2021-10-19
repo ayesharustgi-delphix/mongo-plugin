@@ -2200,10 +2200,9 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
             res = execute_bash_cmd(rx_connection, cmd, {})
         cmd = "echo \"DSOURCE_TYPE:{}\" >> {}/.delphix/{}".format(snapshot.d_source_type, mount_path, dataset_cfgfile)
         res = execute_bash_cmd(rx_connection, cmd, {})
-        if snapshot.d_source_type == "extendedcluster":
-            cmd = "echo \"MONGO_DB_USER:{}\" >> {}/.delphix/{}".format(snapshot.mongo_db_user, mount_path,
+        cmd = "echo \"MONGO_DB_USER:{}\" >> {}/.delphix/{}".format(snapshot.mongo_db_user, mount_path,
                                                                       dataset_cfgfile)
-            res = execute_bash_cmd(rx_connection, cmd, {})
+        res = execute_bash_cmd(rx_connection, cmd, {})
 
     if source_encrypted:
         cmd = "echo \"SOURCE_ENCRYPTED:{}\" >> {}/.delphix/{}".format("True", mount_path, dataset_cfgfile)
@@ -2377,7 +2376,7 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
         elif dataset_type == 'Virtual':
             # Update mongo admin password
             update_mongoadmin_pwd(sourceobj, rx_connection, smax, shard_config_list, snapshot.mongo_db_user,
-                                  snapshot.mongo_db_password, mongos_port)
+                                  sourceobj.parameters.mongo_db_password, mongos_port)
 
         # Generate Config files
         add_debug_heading_block("Generate Config files")
@@ -2390,8 +2389,8 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
                 create_mongoadmin_user(sourceobj, rx_connection, 0, replicaset_config_list)
         elif dataset_type == 'Virtual':
             # Update mongo admin password
-            update_mongoadmin_pwd(sourceobj, rx_connection, 0, replicaset_config_list, snapshot.mongo_db_user,
-                                  snapshot.mongo_db_password, mongos_port)
+            update_mongoadmin_pwd(sourceobj, rx_connection, 0, replicaset_config_list, snapshot.mongo_db_user, sourceobj.parameters.mongo_db_password,
+                                  mongos_port)
 
         # Generate Config files
         add_debug_heading_block("Generate Config files")

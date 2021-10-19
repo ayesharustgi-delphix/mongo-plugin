@@ -579,12 +579,9 @@ def post_snapshot(repository, source_config, virtual_source):
     snapshot.d_source_type = d_source_type
 
     snapshot.append_db_path = "N/A"
-    if d_source_type == "extendedcluster":
-        cmd = "cat {}|grep MONGO_DB_USER|awk -F: '{{ print $2 }}'".format(cfgfile)
-        mongo_db_user = common.execute_bash_cmd(virtual_source.connection, cmd, {})
-        snapshot.mongo_db_user = mongo_db_user
-    else:
-        snapshot.mongo_db_user = "delphixadmin"
+    cmd = "cat {}|grep MONGO_DB_USER|awk -F: '{{ print $2 }}'".format(cfgfile)
+    mongo_db_user = common.execute_bash_cmd(virtual_source.connection, cmd, {})
+    snapshot.mongo_db_user = mongo_db_user
     snapshot.mongo_db_password = virtual_source.parameters.mongo_db_password
 
     logger.debug("source_sharded = {}".format(source_sharded))

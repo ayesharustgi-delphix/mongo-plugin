@@ -284,7 +284,13 @@ def staged_post_snapshot(repository, source_config, staged_source, optional_snap
     output = res.strip().split(":")
     logger.debug("output = {}".format(output))
 
-    dateTimeObj = datetime.now()
+    if staged_source.parameters.d_source_type in ["shardedsource", "offlinemongodump", "nonshardedsource"]:
+        cmd = "cat {}".format(staged_source.parameters.backup_metadata_file)
+        lastbackup_datetime = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
+        dateTimeObj = datetime.strptime(lastbackup_datetime,"%m%d%Y_%H%M%S")
+    else:
+        dateTimeObj = datetime.now()
+
     timestampStr = dateTimeObj.strftime("%m%d%Y-%H%M%S.%f")
     snapshot = SnapshotDefinition(validate=False)
 

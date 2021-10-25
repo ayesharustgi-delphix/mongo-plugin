@@ -38,7 +38,7 @@ Following 2 methods can be used for upload mongo plugin to delphix appliance.
 
 ![Screenshot](image/image7.png)
 
-### <a id="DVP"></a>Using dvp (on command prompt)
+### <a id="DVP"></a>Using dvp (from plugin development environment)
 `dvp upload -e <Delphix_Engine_Name> -u <username> --password <password>`
 
 Delphix Engine's documentation on installing plugins: [PluginManagement](https://docs.delphix.com/docs/datasets/unstructured-files-and-app-data/delphix-engine-plugin-management)

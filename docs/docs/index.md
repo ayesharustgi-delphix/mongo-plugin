@@ -4,26 +4,34 @@ MongoDB plugin helps to virtualize mongoDB data source leveraging the following 
 
 Supported Backup Mechanisms:
 
+- **New Instance**     : Delphix creates new mongo instances when there is no source associated for ingestion.
 - **Mongodump**        : Export source data and import into Staging mongo instance (dSource). Useful for offline/online backups of small databases (onprem, Saas, MongoAtlas)
 - **Replication**      : Add replicaset member to existing cluster.
 - **Mongo Ops Manager**: Use existing backups downloaded as compressed file(s) from Mongo OPS Manager.
 
-Mongo plugin allows you to use Mongo Ops Manager / Mongodump Backups as the source of dataset in Delphix. It also supports to setup replication cluster node to collect instant data. Mongo Plugin supports following use cases :
 
-1. MongoDB cluster/single instance offline backups using mongodump mechanism (Zero Touch Production).
-2. MongoDB cluster/single instance online backups using mongodump mechanism.
-3. MongoDB extended cluster replicaset by adding replicaset member to existing source cluster using delphix filesystem.
-4. MongoDB sharded Cluster using Mongo OPS Manager backups (Zero Touch Production).
-5. MongoDB non-sharded Cluster using Mongo OPS Manager backups (Zero Touch Production).
-6. MongoDB seed database
+#### <a id="Ingestion_Types"></a> Ingestion Types:
 
-## Architecture
-![Screenshot](image/seed_architecture.png)
-![Screenshot](image/extendedcluster_architecture.png)
-![Screenshot](image/mongodump_architecture.png)
-![Screenshot](image/nonshard_networkports.png)
+| dSource Type         | Mechanism                        | Zero Touch Prod | Description |
+| :-------------       | :----------                      | :----------: | :---------- |
+| Seed                 | New Mongo Instance               | -                   | New empty mongo instance created by delphix. This is for development purpose without any source |
+| extendedcluster      | Add member to existing replicaset| N | Add member to existing source replicaset. Instant and near realtime snapshots |
+| onlinemongodump      | mongodump                        | N | Delphix connects to source from staging environments, executes mongodump and capture source data. |
+| offlinemongodump     | mongodump                        | Y | Delphix leverages existing mongodumps made available to staging host. Supports backups taken using "mongodump --oplog --gzip -o < bkp_dir >" command |
+| shardedsource        | Mongo OPS Manager Backups        | Y | Delphix leverages existing mongo ops manager backups of sharded source as backup files presented to staging host |
+| nonshardedsource     | Mongo OPS Manager Backups        | Y | Delphix leverages existing mongo ops manager backups of non sharded source as backup files presented to staging host |
+| stagingpush          | User created mongo instance      | Y/N | New empty mongo instance created by user or mongo ops manager automation. User responsible to create working mongo instance on staging host |
+
+## Architecture  
+#### Consolidated Seed, Extended Cluster, Offline/Online mongodump, Mongo Atlas, Non-Sharded Ingestion Types 
+![Screenshot](image/consolidated_architectures.png)
+
+#### Sharded Mongo Ingestion Type 
 ![Screenshot](image/sharded_architecture.png)
 
+## Network Port requirements
+#### Delphix Network Architecture 
+![Screenshot](image/mongo_networkports.png)
 
 Support Matrix
 --------------
@@ -74,18 +82,19 @@ db.createUser({user: "clusteradmin",pwd: "xxxxxx", roles: ["clusterAdmin","chang
 ***Database user with following privileges ( for onlinemongodump dSource type ) ***  
 ```
 use admin 
-db.createUser({user: "clusteradmin",pwd: "xxxxxx", roles: ["clusterAdmin","userAdminAnyDatabase"]})
+db.createUser({user: "clusteradmin",pwd: "xxxxxx", roles: ["clusterAdmin","backup"]})
 ```
 
 ### <a id="staging requirements-plugin"></a>Staging Requirements
-***O/S user with following privileges***  
-1. Regular o/s user with primary group as mongod.  
-2. Execute access on mongo/mongod binaries  
-3. mongo and mongod binaries to be in same folder [ if required create softlink ]
-4. Empty folder on host to hold delphix toolkit  [ approximate 2GB free space ]  
-5. Empty folder on host to mount nfs filesystem. This is just an empty folder with no space requirements and act as base folder for nfs mounts.  
-6. Access to source instance backup file(s) from Staging host logged as delphix user (applicable for mongo ops mgr / offline mongodump use case).
-7. sudo privileges for mount, umount. See sample below assuming `delphix_os` is used as delphix user.  
+***O/S user with following privileges***
+
+- Regular o/s user with primary group as mongod.  
+- Execute access on mongo/mongod binaries  
+- mongo and mongod binaries to be in same folder [ if required create softlink ]  
+- Empty folder on host to hold delphix toolkit  [ approximate 2GB free space ]  
+- Empty folder on host to mount nfs filesystem. This is just an empty folder with no space requirements and act as base folder for nfs mounts.  
+- Access to source instance backup file(s) from Staging host logged as delphix user (applicable for mongo ops mgr / offline mongodump use case).  
+- sudo privileges for mount, umount. See sample below assuming `delphix_os` is used as delphix user.  
 
 ```shell
 Defaults:delphixos !requiretty
@@ -93,31 +102,25 @@ delphixos ALL=NOPASSWD: \
 /bin/mount, /bin/umount
 ```  
 
-###### Network Port requirements
-![Screenshot](image/nonshard_networkports.png)
-![Screenshot](image/shard_networkports.png)
+
 
 ### <a id="target requirements-plugin"></a>Target Requirements  
 ***O/S user with following privileges***  
-1. Regular o/s user with primary group as mongod.  
-2. Execute access on mongo/mongod binaries  
-3. mongo and mongod binaries to be in same folder [ if required create softlink ]
-4. Empty folder on host to hold delphix toolkit  [ approximate 2GB free space ]  
-5. Empty folder on host to mount nfs filesystem. This is just an empty folder with no space requirements and act as base folder for nfs mounts.  
-6. sudo privileges for mount, umount. See sample below assuming `delphix_os` is used as delphix user.  
+
+- Regular o/s user with primary group as mongod.  
+- Execute access on mongo/mongod binaries  
+- mongo and mongod binaries to be in same folder [ if required create softlink ]  
+- Empty folder on host to hold delphix toolkit  [ approximate 2GB free space ]  
+- Empty folder on host to mount nfs filesystem. This is just an empty folder with no space requirements and act as base folder for nfs mounts.  
+- sudo privileges for mount, umount. See sample below assuming `delphix_os` is used as delphix user.  
 
 ```shell
 Defaults:delphixos !requiretty
 delphixos ALL=NOPASSWD: \
 /bin/mount
 ```
-
-###### Network Port requirements
-![Screenshot](image/nonshard_networkports.png)
-![Screenshot](image/shard_networkports.png)
-
 Limitations
 -----------
-- V2P Not supported
+- V2P not supported
 - Password Vault not supported
-- PITR
+- PITR not supported

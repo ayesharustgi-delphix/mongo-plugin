@@ -12,21 +12,13 @@ Prerequisites
 
 Create dSource
 --------------
-Steps:
+dSource is delphix representation of source database copy. Following are the steps to create dSource.
 
 1. Login to Delphix Management application.
 2. Click Manage >  Datasets
 3. Select Add dSource.
 4. In the Add dSource wizard, select the mongo source config you just created on the staging host.
-5. Select the dSource type from the drop-down available on dSource wizard.
-    dSource is delphix representation of source database copy. It can be created in different ways
-    1. Seed
-    2. Mongodump (offline)
-    3. Mongodump (online)
-    4. Online replicaset
-    5. Mongo OPS Manager backups (sharded cluster)
-    6. Mongo OPS Manager backups (non-sharded cluster)
-
+5. Select the dSource type from the drop-down available on dSource wizard. Refer different [dSource Types](https://delphix.github.io/mongo-plugin/index.html#ingestion-types)
 6. Enter the mongo-specific parameters for your dSource configuration.
 
 dSource Parameters

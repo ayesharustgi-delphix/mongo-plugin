@@ -22,26 +22,26 @@ Supported Backup Mechanisms:
 | nonshardedsource     | Mongo OPS Manager Backups        | Y | Delphix leverages existing mongo ops manager backups of non sharded source as backup files presented to staging host |
 | stagingpush          | User created mongo instance      | Y/N | New empty mongo instance created by user or mongo ops manager automation. User responsible to create working mongo instance on staging host |
 
-### <a id="Seed"></a>Seed
+##### <a id="Seed"></a>Seed
 This type of dSource is generally used for pure development purpose. There is no source instance associated with it. It creates a empty instance which is managed by delphix and helps to create virtual mongo instance to avail benefits of all delphix features.
 
 
-### <a id="Mongodump_offline"></a>Mongodump (offlinemongodump)
+##### <a id="Mongodump_offline"></a>Mongodump (offlinemongodump)
 This type of dsource is created using mongodump backup file of source mongo instance. It helps to create dsource using zero touch production. Periodic backups can be loaded to create timeline of dsource.
 
-### <a id="Mongodump_online"></a>Mongodump (onlinemongodump)
+##### <a id="Mongodump_online"></a>Mongodump (onlinemongodump)
 This type of dsource is created using mongodump backup file of source mongo instance. It helps to create dsource using online backup. It can run in regular mode or logsync mode. logsync mode helps to capture oplogs for incremental snapsyncs and reduce backup time and size. Periodic backups can be loaded to create timeline of dsource.
 
-### <a id="online_replicaset"></a>Extended Cluster (extendedcluster)
+##### <a id="online_replicaset"></a>Extended Cluster (extendedcluster)
 This type of dsource is created by adding secondary member to existing source cluster. This member does not participate in voting and never becomes primary nor serves any read operations. Its the fastest way of capturing incremental and multiple snapshots can be taken to get desired timeline.
 
-### <a id="opsmgr_sharded"></a>Mongo OPS Manager backups (sharded mongo)
+##### <a id="opsmgr_sharded"></a>Mongo OPS Manager backups (sharded mongo)
 This type of dsource is created using backup file of source mongo instance created by mongo ops manager. It helps to create dsource of sharded source cluster. It helps to create dsource using zero touch production. Periodic backups can be loaded to create timeline of dsource.
 
-### <a id="opsmgr_nonsharded"></a>Mongo OPS Manager backups (non-sharded mongo replicaet)
+##### <a id="opsmgr_nonsharded"></a>Mongo OPS Manager backups (non-sharded mongo replicaet)
 This type of dsource is created using backup file of source mongo instance created by mongo ops manager. It helps to create dsource of non-sharded source cluster. It helps to create dsource using zero touch production. Periodic backups can be loaded to create timeline of dsource.
 
-### <a id="stagingpush"></a>Staging Push ( Mongo OPS Manager with Automation ) (stagingpush)
+##### <a id="stagingpush"></a>Staging Push ( Mongo OPS Manager with Automation ) (stagingpush)
 This type of dsource is similar to extended cluster. When Mongo Ops Manager is configured with automation, it does not allow any cluster modification commands outside Mongo Ops Manager. When creating dsource of staging push type, delphix creates an empty filesystem on staging host. You can create mongo instance using Mongo Ops Manager on delphix filesystem and take new delphix snapshot. Delete any previous snapshot generateed before creating mongo instance. Delphix will take periodic snapshots based on snapsync policy which can be used to create VDBs.
 ## Architecture  
 #### Consolidated Seed, Extended Cluster, Offline/Online mongodump, Mongo Atlas, Non-Sharded Ingestion Types 

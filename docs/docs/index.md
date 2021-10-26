@@ -22,6 +22,27 @@ Supported Backup Mechanisms:
 | nonshardedsource     | Mongo OPS Manager Backups        | Y | Delphix leverages existing mongo ops manager backups of non sharded source as backup files presented to staging host |
 | stagingpush          | User created mongo instance      | Y/N | New empty mongo instance created by user or mongo ops manager automation. User responsible to create working mongo instance on staging host |
 
+### <a id="Seed"></a>Seed
+This type of dSource is generally used for pure development purpose. There is no source instance associated with it. It creates a empty instance which is managed by delphix and helps to create virtual mongo instance to avail benefits of all delphix features.
+
+
+### <a id="Mongodump_offline"></a>Mongodump (offlinemongodump)
+This type of dsource is created using mongodump backup file of source mongo instance. It helps to create dsource using zero touch production. Periodic backups can be loaded to create timeline of dsource.
+
+### <a id="Mongodump_online"></a>Mongodump (onlinemongodump)
+This type of dsource is created using mongodump backup file of source mongo instance. It helps to create dsource using online backup. It can run in regular mode or logsync mode. logsync mode helps to capture oplogs for incremental snapsyncs and reduce backup time and size. Periodic backups can be loaded to create timeline of dsource.
+
+### <a id="online_replicaset"></a>Extended Cluster (extendedcluster)
+This type of dsource is created by adding secondary member to existing source cluster. This member does not participate in voting and never becomes primary nor serves any read operations. Its the fastest way of capturing incremental and multiple snapshots can be taken to get desired timeline.
+
+### <a id="opsmgr_sharded"></a>Mongo OPS Manager backups (sharded mongo)
+This type of dsource is created using backup file of source mongo instance created by mongo ops manager. It helps to create dsource of sharded source cluster. It helps to create dsource using zero touch production. Periodic backups can be loaded to create timeline of dsource.
+
+### <a id="opsmgr_nonsharded"></a>Mongo OPS Manager backups (non-sharded mongo replicaet)
+This type of dsource is created using backup file of source mongo instance created by mongo ops manager. It helps to create dsource of non-sharded source cluster. It helps to create dsource using zero touch production. Periodic backups can be loaded to create timeline of dsource.
+
+### <a id="stagingpush"></a>Staging Push ( Mongo OPS Manager with Automation ) (stagingpush)
+This type of dsource is similar to extended cluster. When Mongo Ops Manager is configured with automation, it does not allow any cluster modification commands outside Mongo Ops Manager. When creating dsource of staging push type, delphix creates an empty filesystem on staging host. You can create mongo instance using Mongo Ops Manager on delphix filesystem and take new delphix snapshot. Delete any previous snapshot generateed before creating mongo instance. Delphix will take periodic snapshots based on snapsync policy which can be used to create VDBs.
 ## Architecture  
 #### Consolidated Seed, Extended Cluster, Offline/Online mongodump, Mongo Atlas, Non-Sharded Ingestion Types 
 ![Screenshot](image/consolidated_architectures.png)
@@ -36,7 +57,7 @@ Supported Backup Mechanisms:
 Support Matrix
 --------------
 ### <a id="support matrix"></a>Mongo Instance / OS Support Matrix
-| Mongo Versions                     | RHEL 6.4                         | RHEL 7.4                         | RHEL 7.9                         | Windows x.x |
+| Mongo Versions       | RHEL 6.4                         | RHEL 7.4                         | RHEL 7.9                         | Windows x.x |
 | :-------------       | :----------                      | :----------:                     | :----------                      | :---------- |
 | mongoDB 4.2          | ![Screenshot](image/check.svg)   | ![Screenshot](image/check.svg)   | ![Screenshot](image/check.svg)   | ![Screenshot](image/error.svg) |
 | mongoDB 4.4          | -                                | ![Screenshot](image/check.svg)   | ![Screenshot](image/check.svg)   | ![Screenshot](image/error.svg) |
@@ -44,12 +65,21 @@ Support Matrix
 | mongoDB 4.4(sharded) | -                                | ![Screenshot](image/check.svg)   | ![Screenshot](image/check.svg)   | ![Screenshot](image/error.svg) |
 
 ### <a id="engine_compatibility_matrix"></a>Engine Compatibility Matrix
-| Engine Versions      | Mongo 4.4.2                      | Mongopy 0.0.9                    |
-| :-------------       | :----------                      | :----------:                     |
-| 5.2.x.x              | ![Screenshot](image/check.svg)   | ![Screenshot](image/error.svg)   |
-| 5.3.5.x              | ![Screenshot](image/check.svg)   | ![Screenshot](image/error.svg)   |
-| 6.0.2.x              | ![Screenshot](image/error.svg)   | ![Screenshot](image/check.svg)   |
-| >6.0.3.x - 6.0.10.0  | ![Screenshot](image/error.svg)   | ![Screenshot](image/check.svg)   |
+| Engine Versions      | Mongo 4.0.x                      | Mongo 4.2.x                      | Mongo 4.4.x                      | Mongo 4.4.2                      |
+| :-------------       | :----------                      | :----------                      | :----------                      | :----------:                     |
+| 5.2.x.x              | ![Screenshot](image/check.svg)   | ![Screenshot](image/check.svg)   | ![Screenshot](image/check.svg)   | ![Screenshot](image/check.svg)   |
+| 5.3.5.x              | ![Screenshot](image/check.svg)   | ![Screenshot](image/check.svg)   | ![Screenshot](image/check.svg)   | ![Screenshot](image/check.svg)   |
+| 6.0.2.x              | ![Screenshot](image/check.svg)   | ![Screenshot](image/check.svg)   | ![Screenshot](image/check.svg)   | ![Screenshot](image/check.svg)   |
+| >6.0.3.x - 6.0.10.0  | ![Screenshot](image/check.svg)   | ![Screenshot](image/check.svg)   | ![Screenshot](image/check.svg)   | ![Screenshot](image/check.svg)   |
+
+- Engine 5.2.x.x - 5.3.4.0 supported with legacy plugin ( mongo 4.4.2 )  
+- Engine 5.3.5.0 - 6.0.10.0 supported with current plugin ( mongopy 0.0.9 )  
+
+
+### <a id="mongo_version_environment_compatibility_matrix"></a>Mongo Version compatability across delphix environments
+- Mongo binaries in all environments ( staging and target ) should be of same version for dSource Type: Seed
+- Mongo binaries in all environments ( source, staging and target ) should be of same version for dSource Type: extendedcluster, nonshardedmongo, shardedmongo and stagingpush
+- Mongo binaries can be of same or higher version than source in staging environment for offlinemongodump, onlinemongodump 
 
 Prerequisites
 -------------

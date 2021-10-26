@@ -433,36 +433,44 @@
 <li>Select dSource.</li>
 <li>Click the TimeFlow tab.</li>
 </ol>
-<p>The TimeFlow appears as a list of dates, each of which expands to show snapshots from that date. Times, when the VDB has been refreshed, are marked by a blue line between dates.</p>
-<p>On the TimeFlow, you can also filter by type of snapshot. To do so, click the filter button, which is shaped like an eye.</p>
-<p>You can scroll through these lists to select the one you want, or you can enter a date and time to search for a specific snapshot.</p>
-<p>Once you have provisioned a VDB, you can also take snapshots of it. As with the dSource snapshots, you can find these when you select the VDB in the Datasets panel. You can then provision additional VDBs from these VDB snapshots.</p>
-<p>Dependencies</p>
-<p>If there are dependencies on the snapshot, you will not be able to delete the snapshot free space; the dependencies rely on the data associated with the snapshot.</p>
+<p><img alt="Screenshot" src="image/dsource_snapshots.png" /></p>
+<p>The TimeFlow appears as a list of dates, each of which expands to show snapshots from that date. Bring the cursor on desired snapshot of dSource, provision icon appears, click on provision icon.<br />
+Provide parameters to provision VDB, Follow the wizard and submit to provision VDB. Once you provisioned a VDB, you can also take snapshots of it. As with the dSource snapshots, you can find these when you select the VDB in the Datasets panel. You can then provision additional VDBs from these VDB snapshots.</p>
 <h2 id="provisioning-vdb">Provisioning VDB<a class="headerlink" href="#provisioning-vdb" title="Permanent link">&para;</a></h2>
 <p>This topic describes how to provision a virtual database (VDB) from a mongo dSource.</p>
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Install delphix engine 5.3.x and above  </li>
-<li>Install mongo binaries on staging host  </li>
-<li>Execute Discovery on staging host  </li>
-<li>Create dSource on staging host </li>
-<li>Add target environment to delphix  </li>
+<li>Install mongo binaries on Staging host </li>
+<li>Add Staging Environment</li>
+<li>Create dSource</li>
+<li>Install mongo binaries on Target host  </li>
+<li>Add Target environment  </li>
 </ul>
 <h2 id="create-vdb">Create VDB<a class="headerlink" href="#create-vdb" title="Permanent link">&para;</a></h2>
 <p>Procedure:</p>
 <ol>
-<li>Login to the Delphix Management application.  </li>
+<li>Login to the Delphix Management GUI.  </li>
 <li>Click Manage.  </li>
 <li>Select Datasets.  </li>
 <li>Select a dSource.  </li>
 <li>Select a snapshot from which you want to provision.  </li>
-<li>Click Provision VDB icon to open Provision VDB wizard.  </li>
-<li>Select a target environment from the left pane.  </li>
+<li>
+<p>Click Provision VDB icon to open Provision VDB wizard. </p>
+<p><img alt="Screenshot" src="image/vdb_provision_icon.png" /> </p>
+</li>
+<li>
+<p>Select a target environment from the left pane.  </p>
+</li>
 <li>Select an Installation to use from the dropdown list of available mongo binaries on that environment.  </li>
 <li>Select the Environment User.  </li>
-<li>Enter VDB parameters.  </li>
-<li>Select a Target Group for the VDB.  </li>
+<li>
+<p>Enter VDB parameters.  </p>
+<p><img alt="Screenshot" src="image/provision_screen1.png" /> </p>
+</li>
+<li>
+<p>Select a Target Group for the VDB.  </p>
+</li>
 <li>Click the green Plus icon to add a new group, if necessary.  </li>
 <li>Select a Snapshot Policy for the VDB.  </li>
 <li>Click Next.  </li>

@@ -304,6 +304,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#create-sourceconfig" title="Create Sourceconfig" class="md-nav__link">
+    Create Sourceconfig
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#create-dsource" title="Create dSource" class="md-nav__link">
     Create dSource
   </a>
@@ -314,68 +321,6 @@
   <a href="#dsource-parameters" title="dSource Parameters" class="md-nav__link">
     dSource Parameters
   </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#create-sourceconfig" title="Create Sourceconfig" class="md-nav__link">
-    Create Sourceconfig
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#create-dsource_1" title="Create dSource" class="md-nav__link">
-    Create dSource
-  </a>
-  
-    <nav class="md-nav">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#seed" title="Seed" class="md-nav__link">
-    Seed
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#mongodump-offline" title="Mongodump (offline)" class="md-nav__link">
-    Mongodump (offline)
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#mongodump-online" title="Mongodump (online)" class="md-nav__link">
-    Mongodump (online)
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#online-replicaset" title="Online replicaset" class="md-nav__link">
-    Online replicaset
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#mongo-ops-manager-backups-sharded-cluster" title="Mongo OPS Manager backups (sharded cluster)" class="md-nav__link">
-    Mongo OPS Manager backups (sharded cluster)
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#mongo-ops-manager-backups-non-sharded-cluster" title="Mongo OPS Manager backups (non-sharded cluster)" class="md-nav__link">
-    Mongo OPS Manager backups (non-sharded cluster)
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -454,6 +399,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#create-sourceconfig" title="Create Sourceconfig" class="md-nav__link">
+    Create Sourceconfig
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#create-dsource" title="Create dSource" class="md-nav__link">
     Create dSource
   </a>
@@ -464,68 +416,6 @@
   <a href="#dsource-parameters" title="dSource Parameters" class="md-nav__link">
     dSource Parameters
   </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#create-sourceconfig" title="Create Sourceconfig" class="md-nav__link">
-    Create Sourceconfig
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#create-dsource_1" title="Create dSource" class="md-nav__link">
-    Create dSource
-  </a>
-  
-    <nav class="md-nav">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#seed" title="Seed" class="md-nav__link">
-    Seed
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#mongodump-offline" title="Mongodump (offline)" class="md-nav__link">
-    Mongodump (offline)
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#mongodump-online" title="Mongodump (online)" class="md-nav__link">
-    Mongodump (online)
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#online-replicaset" title="Online replicaset" class="md-nav__link">
-    Online replicaset
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#mongo-ops-manager-backups-sharded-cluster" title="Mongo OPS Manager backups (sharded cluster)" class="md-nav__link">
-    Mongo OPS Manager backups (sharded cluster)
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#mongo-ops-manager-backups-non-sharded-cluster" title="Mongo OPS Manager backups (non-sharded cluster)" class="md-nav__link">
-    Mongo OPS Manager backups (non-sharded cluster)
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -555,31 +445,41 @@
 <li>Install delphix engine 5.3.x and above  </li>
 <li>Install mongo binaries on staging host  </li>
 <li>Execute Discovery on staging host  </li>
-<li>Create sourceConfig on staging host </li>
 </ul>
+<h2 id="create-sourceconfig">Create Sourceconfig<a class="headerlink" href="#create-sourceconfig" title="Permanent link">&para;</a></h2>
+<p>Every environment contains <code>repositories</code> and each environment may have any number of repositories associated with it. <code>Repository</code> represents the binaries for mongo instance. Each repository can have many <code>SourceConfig</code> which represent mongo instance. There is no sourceconfig generated automatically in mongo-plugin. We need to configure <code>SourceConfig</code> objects through which we can create a dSource. </p>
+<ol>
+<li>Login to the Delphix Management application.</li>
+<li>Click Manage.</li>
+<li>Select Environments.</li>
+<li>Select the repository</li>
+<li>
+<p>Click on <code>+</code> icon ( Shown in next image )</p>
+<p><img alt="Screenshot" src="image/image10.png" /></p>
+</li>
+<li>
+<p>Add required details in <code>Add database</code> section.  </p>
+</li>
+<li><code>identity field</code>: Proivide unique name for staging database</li>
+<li><code>discoveryType</code>: Keep it as manual</li>
+<li>
+<p>Click <code>Add</code> button</p>
+<p><img alt="Screenshot" src="image/image11.png" /></p>
+</li>
+</ol>
 <h2 id="create-dsource">Create dSource<a class="headerlink" href="#create-dsource" title="Permanent link">&para;</a></h2>
-<p>Steps:</p>
+<p>dSource is delphix representation of source database copy. Following are the steps to create dSource.</p>
 <ol>
 <li>Login to Delphix Management application.</li>
 <li>Click Manage &gt;  Datasets</li>
-<li>Select Add dSource.</li>
+<li>Click on <code>Add dSource</code>.
+    <img alt="Screenshot" src="image/image11b.png" /></li>
 <li>In the Add dSource wizard, select the mongo source config you just created on the staging host.</li>
-<li>
-<p>Select the dSource type from the drop-down available on dSource wizard.
-    dSource is delphix representation of source database copy. It can be created in different ways</p>
-<ol>
-<li>Seed</li>
-<li>Mongodump (offline)</li>
-<li>Mongodump (online)</li>
-<li>Online replicaset</li>
-<li>Mongo OPS Manager backups (sharded cluster)</li>
-<li>Mongo OPS Manager backups (non-sharded cluster)</li>
+<li>Select the dSource type from the drop-down available on dSource wizard. Refer different <a href="https://delphix.github.io/mongo-plugin/index.html#ingestion-types">dSource Types</a>  </li>
+<li>Enter the mongo-specific parameters for your dSource configuration.  </li>
+<li>Proceed with wizard and submit to create dSource.  </li>
 </ol>
-</li>
-<li>
-<p>Enter the mongo-specific parameters for your dSource configuration.</p>
-</li>
-</ol>
+<p><strong>Note:</strong> For stagingpush dSource Type, Please ignore 1st snapshot. Once the staging instance is created by user, take a new snapshot and delete previous snapshot to avoid empty datafile/file provisioning.</p>
 <h2 id="dsource-parameters">dSource Parameters<a class="headerlink" href="#dsource-parameters" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -712,53 +612,7 @@
 </tr>
 </tbody>
 </table>
-<h2 id="create-sourceconfig">Create Sourceconfig<a class="headerlink" href="#create-sourceconfig" title="Permanent link">&para;</a></h2>
-<p>Every environment contains <code>repositories</code> and each environment may have any number of repositories associated with it. <code>Repository</code> represents the binaries for mongo instance. Each repository can have many <code>SourceConfig</code> which represent mongo instance. There is no sourceconfig generated automatically in mongo-plugin. We need to configure <code>SourceConfig</code> objects through which we can create a dSource. </p>
-<ol>
-<li>Login to the Delphix Management application.</li>
-<li>Click Manage.</li>
-<li>Select Environments.</li>
-<li>Select the repository</li>
-<li>
-<p>Click on <code>+</code> icon ( Shown in next image )</p>
-<p><img alt="Screenshot" src="image/image10.png" /></p>
-</li>
-<li>
-<p>Add required details in <code>Add database</code> section.  </p>
-</li>
-<li><code>identity field</code>: Proivide unique name for staging database</li>
-<li><code>discoveryType</code>: Keep it as manual</li>
-<li>
-<p>Click <code>Add</code> button</p>
-<p><img alt="Screenshot" src="image/image11.png" /></p>
-</li>
-</ol>
-<h2 id="create-dsource_1">Create dSource<a class="headerlink" href="#create-dsource_1" title="Permanent link">&para;</a></h2>
-<p>dSource is delphix representation of source database copy. It can be of several different types.  </p>
-<ol>
-<li>Create sourceConfig under repository of staging environment  </li>
-<li>
-<p>Click on <code>Add dSource</code> link.  </p>
-<p><img alt="Screenshot" src="image/image11b.png" /></p>
-</li>
-<li>
-<p>Select appropriate dSource Type</p>
-</li>
-<li>Enter mongo-specific parameters for your dSource configuration.</li>
-<li>Proceed with wizard and submit to create dSource.</li>
-</ol>
-<h3 id="seed"><a id="Seed"></a>Seed<a class="headerlink" href="#seed" title="Permanent link">&para;</a></h3>
-<p>This type of dSource is generally used for pure development purpose. There is no source instance associated with it. It creates a empty instance which is managed by delphix and helps to create virtual mongo instance to avail benefits of all delphix features.</p>
-<h3 id="mongodump-offline"><a id="Mongodump_offline"></a>Mongodump (offline)<a class="headerlink" href="#mongodump-offline" title="Permanent link">&para;</a></h3>
-<p>This type of dsource is created using mongodump backup file of source mongo instance. It helps to create dsource using zero touch production. Periodic backups can be loaded to create timeline of dsource.</p>
-<h3 id="mongodump-online"><a id="Mongodump_online"></a>Mongodump (online)<a class="headerlink" href="#mongodump-online" title="Permanent link">&para;</a></h3>
-<p>This type of dsource is created using mongodump backup file of source mongo instance. It helps to create dsource using online backup. It can run in regular mode or logsync mode. logsync mode helps to capture oplogs for incremental snapsyncs and reduce backup time and size. Periodic backups can be loaded to create timeline of dsource.</p>
-<h3 id="online-replicaset"><a id="online_replicaset"></a>Online replicaset<a class="headerlink" href="#online-replicaset" title="Permanent link">&para;</a></h3>
-<p>This type of dsource is created by adding secondary member to existing source cluster. This member does not participate in voting and never becomes primary nor serves any read operations. Its the fastest way of capturing incremental and multiple snapshots can be taken to get desired timeline.</p>
-<h3 id="mongo-ops-manager-backups-sharded-cluster"><a id="opsmgr_sharded"></a>Mongo OPS Manager backups (sharded cluster)<a class="headerlink" href="#mongo-ops-manager-backups-sharded-cluster" title="Permanent link">&para;</a></h3>
-<p>This type of dsource is created using backup file of source mongo instance created by mongo ops manager. It helps to create dsource of sharded source cluster. It helps to create dsource using zero touch production. Periodic backups can be loaded to create timeline of dsource.</p>
-<h3 id="mongo-ops-manager-backups-non-sharded-cluster"><a id="opsmgr_nonsharded"></a>Mongo OPS Manager backups (non-sharded cluster)<a class="headerlink" href="#mongo-ops-manager-backups-non-sharded-cluster" title="Permanent link">&para;</a></h3>
-<p>This type of dsource is created using backup file of source mongo instance created by mongo ops manager. It helps to create dsource of non-sharded source cluster. It helps to create dsource using zero touch production. Periodic backups can be loaded to create timeline of dsource.</p>
+<p><strong>Note:</strong> For offlinemongodump, nonsharded and sharded Ingestion types, Backup Metadata File content need to be updated manually OR as a part of backup script. Content of file is just 1 line date in format MMDDYYYY_HH24MISS which indicates date last backup was taken and presented to staging host. Delphix checks this file based on snapsync policy to find if new backup is available for ingestion. No other checks on backups are done. If date is updated, delphix runs snapsync to ingest new backup.</p>
                 
                   
                 

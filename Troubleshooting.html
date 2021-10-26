@@ -410,7 +410,7 @@
 <p>Download the Plugin logs using the following methods:  </p>
 <ul>
 <li>
-<p>Using dvp<br />
+<p>Using dvp  ( from Plugin development environment )
 dvp download-logs -c plugin_config.yml -e <Delphix_Engine_Name> -u admin --password <password>  </p>
 </li>
 <li>
@@ -419,7 +419,12 @@ Help --&gt; Supports Logs --&gt; Plugin Logs --&gt; Download  </p>
 </li>
 </ul>
 <h2 id="instance-logs">Instance Logs<a class="headerlink" href="#instance-logs" title="Permanent link">&para;</a></h2>
-<p>please verify logs at &lt; mount_point &gt;/logs/dlpx.s?m?.&lt; port &gt;.mongod.log</p>
+<p>Mongo Instance logs are located at &lt; delphix_mount_point &gt;/logs<br />
+Delphix logs names are in format dlpx.sNmM.port.mongod.log
+where<br />
+    N = 0,1,2,3,... [ Shard Number ]  [ Always 0 for any non-sharded implementation ]<br />
+    M = 0,1 OR 2 [ Member Number ]<br />
+    port = port number of mongo instance.</p>
                 
                   
                 

@@ -2,6 +2,7 @@ arrange:
   - 'index.md'
   - 'Installation.md'
   - 'Discovery.md'
-  - 'Linking.md'-
+  - 'Linking.md'
   - 'Provisioning.md'
-  - 'PluginDevelopment.md'
+  - 'Release Notes.md'
+  - 'Troubleshooting.md'

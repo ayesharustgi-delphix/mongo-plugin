@@ -219,7 +219,7 @@
               "type": "string",
               "prettyName": "Parameter Name [ Enter command line parameter ]",
               "default": "",
-              "maxLength": 35,
+              "maxLength": 40,
               "description": "e.g. tlsMode, tlsCAFile, tlsPEMKeyFile, sslAllowConnectionsWithoutCertificates"
             },
             "value": {
@@ -461,6 +461,7 @@
       "backup_metadata_file",
       "mongo_db_user",
       "mongo_db_password",
+      "make_shards_replicaset",
       "source_sharded",
       "config_backupfile",
       "shard_backupfiles",
@@ -952,7 +953,8 @@
         "type": "string"
       },
       "mongo_db_password": {
-        "type": "string"
+        "type": "string",
+        "format": "password"
       },
       "source_sharded": {
         "type": "boolean"

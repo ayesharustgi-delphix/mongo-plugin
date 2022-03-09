@@ -452,8 +452,8 @@ def execute_bash_cmd(connection, cmd, env):
     res = libs.run_bash(connection, cmd, env)
 
     # strip the each part of result to remove spaces from beginning and last of output
-    outputmsg = res.stdout.replace("\n", "").strip()
-    errmsg = res.stderr.replace("\n", "").strip()
+    outputmsg = res.stdout.replace("\n", "").strip().encode("ascii", "ignore")
+    errmsg = res.stderr.replace("\n", "").strip().encode("ascii", "ignore")
     exit_code = res.exit_code
 
     # Verify the exit code of each executed command. 0 means command ran successfully and for other code it is failed.
@@ -478,8 +478,8 @@ def execute_bash_cmd_nofail(connection, cmd, env):
     res = libs.run_bash(connection, cmd, env)
 
     # strip the each part of result to remove spaces from beginning and last of output
-    outputmsg = res.stdout.replace("\n", "").strip()
-    errmsg = res.stderr.replace("\n", "").strip()
+    outputmsg = res.stdout.replace("\n", "").strip().encode("ascii", "ignore")
+    errmsg = res.stderr.replace("\n", "").strip().encode("ascii", "ignore")
     exit_code = res.exit_code
 
     return exit_code
@@ -500,8 +500,8 @@ def execute_bash_cmd_silent(connection, cmd, env):
     res = libs.run_bash(connection, cmd, env)
 
     # strip the each part of result to remove spaces from beginning and last of output
-    outputmsg = res.stdout.replace("\n", "").strip()
-    errmsg = res.stderr.replace("\n", "").strip()
+    outputmsg = res.stdout.replace("\n", "").strip().encode("ascii", "ignore")
+    errmsg = res.stderr.replace("\n", "").strip().encode("ascii", "ignore")
     exit_code = res.exit_code
 
     # Verify the exit code of each executed command. 0 means command ran successfully and for other code it is failed.
@@ -518,8 +518,8 @@ def execute_bash_cmd_silent_status(connection, cmd, env):
     res = libs.run_bash(connection, cmd, env)
 
     # strip the each part of result to remove spaces from beginning and last of output
-    outputmsg = res.stdout.replace("\n", "").strip()
-    errmsg = res.stderr.replace("\n", "").strip()
+    outputmsg = res.stdout.replace("\n", "").strip().encode("ascii", "ignore")
+    errmsg = res.stderr.replace("\n", "").strip().encode("ascii", "ignore")
     exit_code = res.exit_code
 
     # Verify the exit code of each executed command. 0 means command ran successfully and for other code it is failed.
@@ -544,7 +544,7 @@ def execute_bash_cmd_nocmdlog(connection, cmd, env):
             return 1
 
         logger.debug("Response : {}".format(res.exit_code))
-        outputmsg = res.stdout.replace("\n", "").strip()
+        outputmsg = res.stdout.replace("\n", "").strip().encode("ascii", "ignore")
         logger.debug("Success outputmsg : {}".format(outputmsg))
         return outputmsg
 
@@ -677,6 +677,7 @@ def gen_mongo_conf_files(dataset_type, sourceobj, shard_config_list, snapshot):
         mongo_host_name = execute_bash_cmd(mongod_conn, "hostname", {})
 
         bind_ip = sourceobj.parameters.bind_ip
+        enable_user_auth = sourceobj.parameters.enable_authentication
         enable_ssl_tls = sourceobj.parameters.enable_ssl_tls
         ssl_tls_params = sourceobj.parameters.ssl_tls_params
 
@@ -742,7 +743,7 @@ def gen_mongo_conf_files(dataset_type, sourceobj, shard_config_list, snapshot):
             else:
                 logger.info("After add_keyfile_auth - mongo_cmd = {}".format(mongo_cmd))
         else:
-            mongo_cmd = add_keyfile_auth(mongo_cmd, user_auth_mode, keyfile_path)
+            mongo_cmd = add_keyfile_auth(mongo_cmd, enable_user_auth, user_auth_mode, keyfile_path)
             logger.info("After add_keyfile_auth - mongo_cmd = {}".format(mongo_cmd))
             add_debug_space()
 
@@ -930,35 +931,36 @@ def stop_sharded_mongo(dataset_type, sourceobj):
         except Exception as e:
             pass
 
-    # Stop mongod instances of shards
-    cmd = "cat {}".format(cfgfile)
-    res = execute_bash_cmd(connection, cmd, {})
+    if d_source_type != "stagingpush":
+        # Stop mongod instances of shards
+        cmd = "cat {}".format(cfgfile)
+        res = execute_bash_cmd(connection, cmd, {})
 
-    json_result = res
-    json_result = json_result.replace("[", "")
-    json_result = json_result.replace("]", "")
-    record_length = len(json_result.split("},"))
-    i = 1
-    for rec in json_result.split("},"):
-        if i != record_length:
-            rec = rec + "}"
-        rec = rec.replace("'", '"')
-        jsonobj = json.loads(rec)
-        logger.debug("Record = {}".format(rec))
-        mongod_port = jsonobj['port']
-        mongod_conn = get_node_conn(sourceobj, jsonobj['node'], dataset_type)
-        mongod_dirname = jsonobj['dirname']
+        json_result = res
+        json_result = json_result.replace("[", "")
+        json_result = json_result.replace("]", "")
+        record_length = len(json_result.split("},"))
+        i = 1
+        for rec in json_result.split("},"):
+            if i != record_length:
+                rec = rec + "}"
+            rec = rec.replace("'", '"')
+            jsonobj = json.loads(rec)
+            logger.debug("Record = {}".format(rec))
+            mongod_port = jsonobj['port']
+            mongod_conn = get_node_conn(sourceobj, jsonobj['node'], dataset_type)
+            mongod_dirname = jsonobj['dirname']
 
-        cmd = "ps -ef|grep mongo|grep {}|grep {}|grep {}|grep dlpx|grep -v grep|wc -l".format(
-            mount_path, mongod_dirname, mongod_port)
-        res = execute_bash_cmd(mongod_conn, cmd, {})
-        if int(res) == 1:
-            cmd = "ps -ef|grep mongo|grep {}|grep {}|grep {}|grep -v grep|awk '{{ print \"kill \"$2 }}'|sh".format(
+            cmd = "ps -ef|grep mongo|grep {}|grep {}|grep {}|grep dlpx|grep -v grep|wc -l".format(
                 mount_path, mongod_dirname, mongod_port)
             res = execute_bash_cmd(mongod_conn, cmd, {})
-        i += 1
-    # Sleep for 10 sec to cleanly get out of all killed processes.
-    time.sleep(7)
+            if int(res) == 1:
+                cmd = "ps -ef|grep mongo|grep {}|grep {}|grep {}|grep -v grep|awk '{{ print \"kill \"$2 }}'|sh".format(
+                    mount_path, mongod_dirname, mongod_port)
+                res = execute_bash_cmd(mongod_conn, cmd, {})
+            i += 1
+        # Sleep for 10 sec to cleanly get out of all killed processes.
+        time.sleep(7)
 
 
 def get_status_sharded_mongo(dataset_type, sourceobj):
@@ -1104,7 +1106,7 @@ def gen_mongo_cmd(dataset_type, sourceobj, hostname):
         mongo_db_password = sourceobj.parameters.mongo_db_password
     elif dataset_type == "Virtual":
         rx_connection = sourceobj.connection
-        cmd = "cat {}/.delphix/.stg_config.txt|grep 'MONGO_DB_USER:'".format(mount_path)
+        cmd = "cat {}/.delphix/.stg_config.txt|grep 'MONGO_DB_USER:'|cut -d':' -f2".format(mount_path)
         mongo_db_user = execute_bash_cmd(rx_connection, cmd, {})
         mongo_db_password = sourceobj.parameters.mongo_db_password
 
@@ -1417,19 +1419,19 @@ def setup_config_member(sourceobj, rx_connection, mount_path, confignum, membern
     return restart_mongod_cmd
 
 
-def setup_config_replset_members(sourceobj, shard_config_list, virtual_source, mount_path, encryption_method,
+def setup_config_replset_members(shard_config_list, sourceobj, mount_path, encryption_method,
                                  enc_params_list_string):
     confignum = 0
     c0m0_port = get_shard_port(shard_config_list, 'c0m0')
     c0m0_host = get_shard_host(shard_config_list, 'c0m0')
-    c0m0_conn = get_node_conn(virtual_source, c0m0_host)
+    c0m0_conn = get_node_conn(sourceobj, c0m0_host)
 
     for i in range(1, 3):
         membernum = i
         add_debug_heading_block("Member: c{}m{}".format(confignum, membernum))
         cnmn_port = get_shard_port(shard_config_list, 'c{}m{}'.format(confignum, membernum))
         cnmn_host = get_shard_host(shard_config_list, 'c{}m{}'.format(confignum, membernum))
-        cnmn_conn = get_node_conn(virtual_source, cnmn_host)
+        cnmn_conn = get_node_conn(sourceobj, cnmn_host)
         cnmn_host_name = execute_bash_cmd(cnmn_conn, "hostname", {})
 
         dbpath = "{}/c{}m{}".format(mount_path, confignum, membernum)
@@ -1867,18 +1869,20 @@ def add_net(mongo_cmd, bind_ip, mongod_port, enable_ssl_tls, ssl_tls_params):
     return mongo_cmd
 
 
-def add_keyfile_auth(mongo_cmd, user_auth_mode, keyfile_path):
+def add_keyfile_auth(mongo_cmd, enable_user_auth, user_auth_mode, keyfile_path):
     # user_auth_mode = None,SCRAM,x509,ldap
     if user_auth_mode == "None":
         # mongo_cmd = "{} --noauth".format(mongo_cmd)
         mongo_cmd = mongo_cmd
-    elif user_auth_mode == "SCRAM":
+    elif user_auth_mode == "SCRAM" or user_auth_mode == "x509" or user_auth_mode == "ldap":
         if mongo_cmd.split(" ")[0] != "mongos":
-            mongo_cmd = "{} --auth".format(mongo_cmd)
+            if enable_user_auth:
+                mongo_cmd = "{} --auth".format(mongo_cmd)
+
+    if keyfile_path is not None and keyfile_path != "":
         mongo_cmd = "{} --keyFile {}".format(mongo_cmd, keyfile_path)
-    elif user_auth_mode == "x509" or user_auth_mode == "ldap":
-        if mongo_cmd.split(" ")[0] != "mongos":
-            mongo_cmd = "{} --auth".format(mongo_cmd)
+    else:
+        logger.info("Keyfile is empty")
 
     return mongo_cmd
 
@@ -1913,7 +1917,7 @@ def add_set_parameters(mongo_cmd, enable_setparams, setparam_params):
             if set_params_rec['value'].upper() == "TRUE":
                 set_params_list_string = set_params_list_string + " --{}".format(set_params_rec['property_name'])
             else:
-                set_params_list_string = set_params_list_string + " --{} {}".format(set_params_rec['property_name'],
+                set_params_list_string = set_params_list_string + " --setParameter {}={}".format(set_params_rec['property_name'],
                                                                                     set_params_rec['value'])
         mongo_cmd = "{} {}".format(mongo_cmd, set_params_list_string)
     return mongo_cmd
@@ -1957,8 +1961,13 @@ def add_auditlog(mongo_cmd, enable_auditlog, auditlog_params):
 def gen_config_files(dataset_type, sourceobj, shard_config_list, snapshot=None):
     if dataset_type == "Virtual":
         connection = sourceobj.connection
+        cmd = "cat {}/.delphix/.tgt_config.txt|grep DSOURCE_TYPE".format(sourceobj.parameters.mount_path)
+        res = execute_bash_cmd(connection, cmd, {})
+        d_source_type = res.split(':')[1].strip()
     elif dataset_type == "Staging":
         connection = sourceobj.staged_connection
+        cfgfile = "{}/.delphix/.stg_dsourcecfg.txt".format(sourceobj.parameters.mount_path)
+        d_source_type = sourceobj.parameters.d_source_type
 
     add_debug_space()
     # logger.info("Generating Config Files")
@@ -1970,13 +1979,14 @@ def gen_config_files(dataset_type, sourceobj, shard_config_list, snapshot=None):
     logger.info("Completed generating Config Files")
     add_debug_space()
 
-    logger.info("++++++++++ stop_sharded_mongo ++++++++++")
-    stop_sharded_mongo(dataset_type, sourceobj)
-    logger.info("Sleeping for 60 seconds.......")
-    time.sleep(60)
-    add_debug_space()
-    logger.info("++++++++++ start_sharded_mongo +++++++++")
-    start_sharded_mongo(dataset_type, sourceobj)
+    if d_source_type != "stagingpush":
+        logger.info("++++++++++ Stop Mongo ++++++++++")
+        stop_sharded_mongo(dataset_type, sourceobj)
+        logger.info("Sleeping for 60 seconds.......")
+        time.sleep(60)
+        add_debug_space()
+        logger.info("++++++++++ Start Mongo +++++++++")
+        start_sharded_mongo(dataset_type, sourceobj)
 
 
 def create_node_array(dataset_type, sourceobj):
@@ -2081,7 +2091,7 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
             nodes, start_portpool, cmax, smax, mmax, mount_path, mongos_port, replicaset)
         for shard_config in shard_config_list:
             logger.info("shard config :{}".format(shard_config))
-    elif dsource_type == "nonshardedsource" or dsource_type == "offlinemongodump" or dsource_type == "onlinemongodump" or dsource_type == "extendedcluster" or dsource_type == "stagingpush":
+    elif dsource_type in [ "nonshardedsource", "offlinemongodump", "onlinemongodump", "extendedcluster", "stagingpush", "seed" ]:
         # Generate replicaset mappings
         add_debug_heading_block("Generate replicaset mappings")
         replicaset_config_list = []
@@ -2098,7 +2108,7 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
         elif dataset_type == 'Virtual':
             cmd = "echo \"{}\" > {}/.delphix/.tgt_vdbcfg.txt".format(shard_config_list, mount_path)
         res = execute_bash_cmd(rx_connection, cmd, {})
-    elif dsource_type == "nonshardedsource" or dsource_type == "offlinemongodump" or dsource_type == "onlinemongodump" or dsource_type == "extendedcluster" or dsource_type == "stagingpush":
+    elif dsource_type in [ "nonshardedsource", "offlinemongodump", "onlinemongodump", "extendedcluster", "stagingpush", "seed" ]:
         if dataset_type == 'Staging':
             cmd = "echo \"{}\" > {}/.delphix/.stg_dsourcecfg.txt".format(replicaset_config_list, mount_path)
         elif dataset_type == 'Virtual':
@@ -2185,15 +2195,14 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
         if dsource_type == "shardedsource":
             cmd = "echo \"SHARD_COUNT:{}\" > {}/.delphix/{}".format(smax, mount_path, dataset_cfgfile)
             res = execute_bash_cmd(rx_connection, cmd, {})
-        elif dsource_type == "nonshardedsource" or dsource_type == "offlinemongodump" or dsource_type == "onlinemongodump" or dsource_type == "extendedcluster" or dsource_type == "stagingpush":
+        elif dsource_type in [ "nonshardedsource", "offlinemongodump", "onlinemongodump", "extendedcluster", "stagingpush", "seed" ]:
             cmd = "cat /dev/null > {}/.delphix/{}".format(mount_path, dataset_cfgfile)
             res = execute_bash_cmd(rx_connection, cmd, {})
         cmd = "echo \"DSOURCE_TYPE:{}\" >> {}/.delphix/{}".format(snapshot.d_source_type, mount_path, dataset_cfgfile)
         res = execute_bash_cmd(rx_connection, cmd, {})
-        if snapshot.d_source_type == "extendedcluster":
-            cmd = "echo \"MONGO_DB_USER:{}\" >> {}/.delphix/{}".format(snapshot.mongo_db_user, mount_path,
+        cmd = "echo \"MONGO_DB_USER:{}\" >> {}/.delphix/{}".format(snapshot.mongo_db_user, mount_path,
                                                                       dataset_cfgfile)
-            res = execute_bash_cmd(rx_connection, cmd, {})
+        res = execute_bash_cmd(rx_connection, cmd, {})
 
     if source_encrypted:
         cmd = "echo \"SOURCE_ENCRYPTED:{}\" >> {}/.delphix/{}".format("True", mount_path, dataset_cfgfile)
@@ -2235,6 +2244,9 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
             cmd = "cp -p {} {}/.delphix/.dlpx_enckeyfile".format(sourceobj.parameters.encryption_keyfile,
                                                                  mount_path)
             res = execute_bash_cmd(rx_connection, cmd, {})
+    else:
+        enc_params_list_string = None
+        encryption_method = None
 
     if dsource_type == "shardedsource":
         # setup configserver
@@ -2250,9 +2262,9 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
         else:
             add_debug_heading_block("Unencrypted - setup_config_member")
             res = setup_config_member(sourceobj, rx_connection, mount_path, confignum, membernum, start_portpool, smax,
-                                      shard_config_list, None, None)
+                                      shard_config_list, None, None, shardserver_setting_list)
 
-    elif dsource_type == "nonshardedsource" or dsource_type == "offlinemongodump" or dsource_type == "onlinemongodump" or dsource_type == "extendedcluster" or dsource_type == "stagingpush":
+    elif dsource_type in [ "nonshardedsource", "offlinemongodump", "onlinemongodump", "extendedcluster", "stagingpush", "seed" ]:
 
         # setup Replicaset
         if source_encrypted:
@@ -2282,9 +2294,10 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
             add_debug_heading_block("Replicaset - setup_config_replset_members")
             setup_config_replset_members(shard_config_list, sourceobj, mount_path, encryption_method,
                                          enc_params_list_string)
+
             add_debug_space()
 
-    elif dsource_type == "nonshardedsource" or dsource_type == "offlinemongodump" or dsource_type == "onlinemongodump" or dsource_type == "extendedcluster" or dsource_type == "stagingpush":
+    elif dsource_type in [ "nonshardedsource", "offlinemongodump", "onlinemongodump", "extendedcluster", "stagingpush", "seed" ]:
 
         if replicaset:
             add_debug_heading_block("Replicaset - setup_replset_members")
@@ -2363,21 +2376,21 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
         elif dataset_type == 'Virtual':
             # Update mongo admin password
             update_mongoadmin_pwd(sourceobj, rx_connection, smax, shard_config_list, snapshot.mongo_db_user,
-                                  snapshot.mongo_db_password, mongos_port)
+                                  sourceobj.parameters.mongo_db_password, mongos_port)
 
         # Generate Config files
         add_debug_heading_block("Generate Config files")
         gen_config_files(dataset_type, sourceobj, shard_config_list, snapshot)
 
-    elif dsource_type == "nonshardedsource" or dsource_type == "offlinemongodump" or dsource_type == "onlinemongodump" or dsource_type == "extendedcluster" or dsource_type == "stagingpush":
+    elif dsource_type in [ "nonshardedsource", "offlinemongodump", "onlinemongodump", "extendedcluster", "stagingpush", "seed" ]:
         if dataset_type == 'Staging':
             if dsource_type != "extendedcluster":
                 # Create mongo admin user
                 create_mongoadmin_user(sourceobj, rx_connection, 0, replicaset_config_list)
         elif dataset_type == 'Virtual':
             # Update mongo admin password
-            update_mongoadmin_pwd(sourceobj, rx_connection, 0, replicaset_config_list, snapshot.mongo_db_user,
-                                  snapshot.mongo_db_password, mongos_port)
+            update_mongoadmin_pwd(sourceobj, rx_connection, 0, replicaset_config_list, snapshot.mongo_db_user, sourceobj.parameters.mongo_db_password,
+                                  mongos_port)
 
         # Generate Config files
         add_debug_heading_block("Generate Config files")
@@ -2588,7 +2601,7 @@ def setup_sharded_mongo_dataset(sourceobj, dataset_type, snapshot):
     else:
         add_debug_heading_block("Unencrypted - setup_config_member")
         res = setup_config_member(rx_connection, mount_path, confignum, membernum, start_portpool, smax,
-                                  shard_config_list, None, None)
+                                  shard_config_list, None, None, shardserver_setting_list)
 
     cmd = "{} --port {} --quiet --eval 'rs.initiate()'".format(sourceobj.mongo_shell_path, start_portpool)
     res = execute_bash_cmd(rx_connection, cmd, {})

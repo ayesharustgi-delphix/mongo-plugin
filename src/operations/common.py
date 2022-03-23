@@ -1420,18 +1420,18 @@ def setup_config_member(sourceobj, rx_connection, mount_path, confignum, membern
 
 
 def setup_config_replset_members(shard_config_list, sourceobj, mount_path, encryption_method,
-                                 enc_params_list_string):
+                                 enc_params_list_string, dataset_type):
     confignum = 0
     c0m0_port = get_shard_port(shard_config_list, 'c0m0')
     c0m0_host = get_shard_host(shard_config_list, 'c0m0')
-    c0m0_conn = get_node_conn(sourceobj, c0m0_host)
+    c0m0_conn = get_node_conn(sourceobj, c0m0_host, dataset_type)
 
     for i in range(1, 3):
         membernum = i
         add_debug_heading_block("Member: c{}m{}".format(confignum, membernum))
         cnmn_port = get_shard_port(shard_config_list, 'c{}m{}'.format(confignum, membernum))
         cnmn_host = get_shard_host(shard_config_list, 'c{}m{}'.format(confignum, membernum))
-        cnmn_conn = get_node_conn(sourceobj, cnmn_host)
+        cnmn_conn = get_node_conn(sourceobj, cnmn_host, dataset_type)
         cnmn_host_name = execute_bash_cmd(cnmn_conn, "hostname", {})
 
         dbpath = "{}/c{}m{}".format(mount_path, confignum, membernum)
@@ -1491,24 +1491,27 @@ def setup_config_replset_members(shard_config_list, sourceobj, mount_path, encry
 
 
 def setup_shard_replset_members(shard_config_list, virtual_source, mount_path, encryption_method,
-                                base_enc_params_list_string, shard_count):
+                                base_enc_params_list_string, shard_count, dataset_type):
     logger.debug("shard_count :{}".format(shard_count))
     logger.debug("mount_path  :{}".format(mount_path))
     for shardnum in range(shard_count):
         snm0_port = get_shard_port(shard_config_list, 's{}m0'.format(shardnum))
         snm0_host = get_shard_host(shard_config_list, 's{}m0'.format(shardnum))
-        snm0_conn = get_node_conn(virtual_source, snm0_host)
+        snm0_conn = get_node_conn(virtual_source, snm0_host, dataset_type)
 
-        kmip_key_id = get_kmip_key_id("{}/s{}m0".format(mount_path, shardnum), snm0_conn)
-        enc_params_list_string = base_enc_params_list_string
-        enc_params_list_string = enc_params_list_string + " --kmipKeyIdentifier {}".format(kmip_key_id)
+        if encryption_method == "KMIP":
+            kmip_key_id = get_kmip_key_id("{}/s{}m0".format(mount_path, shardnum), snm0_conn)
+            enc_params_list_string = base_enc_params_list_string
+            enc_params_list_string = enc_params_list_string + " --kmipKeyIdentifier {}".format(kmip_key_id)
+        else:
+            kmip_key_id = None
 
         for i in range(1, 3):
             membernum = i
             add_debug_heading_block("Member: s{}m{}".format(shardnum, membernum))
             snmn_port = get_shard_port(shard_config_list, 's{}m{}'.format(shardnum, membernum))
             snmn_host = get_shard_host(shard_config_list, 's{}m{}'.format(shardnum, membernum))
-            snmn_conn = get_node_conn(virtual_source, snmn_host)
+            snmn_conn = get_node_conn(virtual_source, snmn_host, dataset_type)
             snmn_host_name = execute_bash_cmd(snmn_conn, "hostname", {})
 
             dbpath = "{}/s{}m{}".format(mount_path, shardnum, membernum)
@@ -1571,7 +1574,7 @@ def setup_shard_replset_members(shard_config_list, virtual_source, mount_path, e
 
             # Add Member to replicaset
             logger.info("Add replicaset Member s{}m{} to replicaset {}".format(shardnum, membernum, shard_repset_name))
-            cmd = '{} --port {} --eval \'rs.add("{}:{}")\''.format(virtual_source.mongo_install_path, snm0_port,
+            cmd = '{} --port {} --eval \'rs.add("{}:{}")\''.format(virtual_source.mongo_shell_path, snm0_port,
                                                                    snmn_host_name, snmn_port)
             cmd_response = execute_bash_cmd(snm0_conn, cmd, {})
             logger.info(
@@ -2246,6 +2249,7 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
             res = execute_bash_cmd(rx_connection, cmd, {})
     else:
         enc_params_list_string = None
+        base_enc_params_list_string = enc_params_list_string
         encryption_method = None
 
     if dsource_type == "shardedsource":
@@ -2293,7 +2297,7 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
         if replicaset:
             add_debug_heading_block("Replicaset - setup_config_replset_members")
             setup_config_replset_members(shard_config_list, sourceobj, mount_path, encryption_method,
-                                         enc_params_list_string)
+                                         enc_params_list_string, dataset_type)
 
             add_debug_space()
 
@@ -2361,7 +2365,7 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
             add_debug_heading_block("Replicaset - setup_shard_replset_members")
             logger.debug("setup_shard_replset_members() - Start")
             setup_shard_replset_members(shard_config_list, sourceobj, mount_path, encryption_method,
-                                        base_enc_params_list_string, smax)
+                                        base_enc_params_list_string, smax, dataset_type)
             logger.debug("setup_shard_replset_members() - End")
             add_debug_space()
 
@@ -2614,7 +2618,7 @@ def setup_sharded_mongo_dataset(sourceobj, dataset_type, snapshot):
     if replicaset:
         add_debug_heading_block("Replicaset - setup_config_replset_members")
         setup_config_replset_members(shard_config_list, sourceobj, mount_path, encryption_method,
-                                     enc_params_list_string)
+                                     enc_params_list_string, dataset_type)
 
     add_debug_space()
 
@@ -2671,7 +2675,7 @@ def setup_sharded_mongo_dataset(sourceobj, dataset_type, snapshot):
         add_debug_heading_block("Replicaset - setup_shard_replset_members")
         logger.debug("setup_shard_replset_members() - Start")
         setup_shard_replset_members(shard_config_list, sourceobj, mount_path, encryption_method,
-                                    base_enc_params_list_string, smax)
+                                    base_enc_params_list_string, smax, dataset_type)
         logger.debug("setup_shard_replset_members() - End")
         add_debug_space()
 

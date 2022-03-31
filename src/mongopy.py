@@ -284,7 +284,13 @@ def staged_post_snapshot(repository, source_config, staged_source, optional_snap
     output = res.strip().split(":")
     logger.debug("output = {}".format(output))
 
-    dateTimeObj = datetime.now()
+    if staged_source.parameters.d_source_type in ["shardedsource", "offlinemongodump", "nonshardedsource"]:
+        cmd = "cat {}".format(staged_source.parameters.backup_metadata_file)
+        lastbackup_datetime = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
+        dateTimeObj = datetime.strptime(lastbackup_datetime,"%m%d%Y_%H%M%S")
+    else:
+        dateTimeObj = datetime.now()
+
     timestampStr = dateTimeObj.strftime("%m%d%Y-%H%M%S.%f")
     snapshot = SnapshotDefinition(validate=False)
 
@@ -579,12 +585,9 @@ def post_snapshot(repository, source_config, virtual_source):
     snapshot.d_source_type = d_source_type
 
     snapshot.append_db_path = "N/A"
-    if d_source_type == "extendedcluster":
-        cmd = "cat {}|grep MONGO_DB_USER|awk -F: '{{ print $2 }}'".format(cfgfile)
-        mongo_db_user = common.execute_bash_cmd(virtual_source.connection, cmd, {})
-        snapshot.mongo_db_user = mongo_db_user
-    else:
-        snapshot.mongo_db_user = "delphixadmin"
+    cmd = "cat {}|grep MONGO_DB_USER|awk -F: '{{ print $2 }}'".format(cfgfile)
+    mongo_db_user = common.execute_bash_cmd(virtual_source.connection, cmd, {})
+    snapshot.mongo_db_user = mongo_db_user
     snapshot.mongo_db_password = virtual_source.parameters.mongo_db_password
 
     logger.debug("source_sharded = {}".format(source_sharded))

@@ -15,7 +15,7 @@ class RepositoryDiscoveryError(PluginException):
     def __init__(self, message=""):
         message = "Not able to search repository information, " + message
         super(RepositoryDiscoveryError, self).__init__(message,
-                                                       "Check the COUCHBASE_PATH & couchbase installation",
+                                                       "Check the MONGO_PATH & mongo installation",
                                                        "Failed to search repository information")
 
 
@@ -24,7 +24,7 @@ class SourceConfigDiscoveryError(PluginException):
     def __init__(self, message=""):
         message = "Failed to find source config, " + message
         super(SourceConfigDiscoveryError, self).__init__(message,
-                                                         "Stop the couchbase service if it is running",
+                                                         "Stop the mongo service if it is running",
                                                          "Not able to find source")
 
 
@@ -33,7 +33,7 @@ class MultipleSyncError(PluginException):
         message = "Resynchronization is in progress for other dSource, " + message
         super(MultipleSyncError, self).__init__(message,
                                                 "Please wait while the other resync operation completes and try again ",
-                                                "Staging host already in use. Only Serial operations supported for couchbase")
+                                                "Staging host already in use. Only Serial operations supported for mongo")
 
 
 class MultipleXDCRSyncError(PluginException):
@@ -49,7 +49,7 @@ class MultipleSnapSyncError(PluginException):
         message = "SnapSync is running for any other dSource " + message
         super(MultipleSnapSyncError, self).__init__(message,
                                                     "Please wait while the other operation completes and try again ",
-                                                    "Staging host already in use for SNAP-SYNC. Only Serial operations supported for couchbase")
+                                                    "Staging host already in use for SNAP-SYNC. Only Serial operations supported for mongo")
 
 
 class FileIOError(PluginException):

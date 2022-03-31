@@ -1092,11 +1092,12 @@ def initiate_emptyfs_for_dsource(sourceobj, dataset_type, dsource_type):
     hostname = common.execute_bash_cmd(rx_connection, cmd, {})
     logger.debug("{},{},{},{}".format(dbpath, mongod_port, cfgfile, hostname))
 
-    cmd = "{} --host {} --username {} --password {} --authenticationDatabase admin --quiet --eval \"db.isMaster().setName\"".format(
-        sourceobj.mongo_shell_path, src_mongo_host_conn, src_db_user, src_db_password)
-    res = common.execute_bash_cmd(rx_connection, cmd, {})
-    repset_name = res.strip()
-    logger.debug("repset_name = {}".format(repset_name))
+    # cmd = "{} --host {} --username {} --password {} --authenticationDatabase admin --quiet --eval \"db.isMaster().setName\"".format(
+    #     sourceobj.mongo_shell_path, src_mongo_host_conn, src_db_user, src_db_password)
+    # res = common.execute_bash_cmd(rx_connection, cmd, {})
+    # repset_name = res.strip()
+    repset_name = sourceobj.parameters.src_replicaset_name
+    # logger.debug("repset_name = {}".format(repset_name))
 
     # Generate replicaset mappings
     common.add_debug_heading_block("Generate replicaset mappings")

@@ -447,6 +447,7 @@
     "ordering": [
       "d_source_type",
       "src_mongo_host_conn",
+      "src_replicaset_name",
       "src_db_user",
       "src_db_password",
       "enable_logsync",
@@ -589,7 +590,7 @@
         "default": ""
       },
       "source_sharded": {
-        "default": true,
+        "default": false,
         "type": "boolean",
         "prettyName": "Source Sharded Cluster",
         "description": ""

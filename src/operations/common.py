@@ -931,7 +931,9 @@ def stop_sharded_mongo(dataset_type, sourceobj):
         except Exception as e:
             pass
 
-    if d_source_type != "stagingpush":
+    if d_source_type == "stagingpush" and dataset_type == "Staging":
+        logger.debug("Not Applicable for Staging-Stagingpush")
+    else:
         # Stop mongod instances of shards
         cmd = "cat {}".format(cfgfile)
         res = execute_bash_cmd(connection, cmd, {})
@@ -1499,9 +1501,10 @@ def setup_shard_replset_members(shard_config_list, virtual_source, mount_path, e
         snm0_host = get_shard_host(shard_config_list, 's{}m0'.format(shardnum))
         snm0_conn = get_node_conn(virtual_source, snm0_host)
 
-        kmip_key_id = get_kmip_key_id("{}/s{}m0".format(mount_path, shardnum), snm0_conn)
-        enc_params_list_string = base_enc_params_list_string
-        enc_params_list_string = enc_params_list_string + " --kmipKeyIdentifier {}".format(kmip_key_id)
+        if encryption_method:
+            kmip_key_id = get_kmip_key_id("{}/s{}m0".format(mount_path, shardnum), snm0_conn)
+            enc_params_list_string = base_enc_params_list_string
+            enc_params_list_string = enc_params_list_string + " --kmipKeyIdentifier {}".format(kmip_key_id)
 
         for i in range(1, 3):
             membernum = i
@@ -1526,9 +1529,10 @@ def setup_shard_replset_members(shard_config_list, virtual_source, mount_path, e
             res = execute_bash_cmd(snmn_conn, cmd, {})
             cmd = "sed -i '/Master Key UUID/d' {}/s{}m{}/restoreInfo.txt".format(mount_path, shardnum, membernum)
             res = execute_bash_cmd(snmn_conn, cmd, {})
-            cmd = "echo 'Master Key UUID: {}' >> {}/s{}m{}/restoreInfo.txt".format(kmip_key_id, mount_path, shardnum,
+            if encryption_method:
+                cmd = "echo 'Master Key UUID: {}' >> {}/s{}m{}/restoreInfo.txt".format(kmip_key_id, mount_path, shardnum,
                                                                                    membernum)
-            res = execute_bash_cmd(snmn_conn, cmd, {})
+                res = execute_bash_cmd(snmn_conn, cmd, {})
             logger.info("Copied and Adjusted restoreInfo.txt")
 
             cmd = "cat {}/s{}m{}/restoreInfo.txt|grep 'Replica Set:'".format(mount_path, shardnum, "0")
@@ -1571,7 +1575,7 @@ def setup_shard_replset_members(shard_config_list, virtual_source, mount_path, e
 
             # Add Member to replicaset
             logger.info("Add replicaset Member s{}m{} to replicaset {}".format(shardnum, membernum, shard_repset_name))
-            cmd = '{} --port {} --eval \'rs.add("{}:{}")\''.format(virtual_source.mongo_install_path, snm0_port,
+            cmd = '{} --port {} --eval \'rs.add("{}:{}")\''.format(virtual_source.mongo_shell_path, snm0_port,
                                                                    snmn_host_name, snmn_port)
             cmd_response = execute_bash_cmd(snm0_conn, cmd, {})
             logger.info(
@@ -1979,7 +1983,9 @@ def gen_config_files(dataset_type, sourceobj, shard_config_list, snapshot=None):
     logger.info("Completed generating Config Files")
     add_debug_space()
 
-    if d_source_type != "stagingpush":
+    if d_source_type == "stagingpush" and dataset_type == "Staging":
+        logger.info("++++++++++ Not Applicable for Staging-Stagingpush ++++++++++")
+    else:
         logger.info("++++++++++ Stop Mongo ++++++++++")
         stop_sharded_mongo(dataset_type, sourceobj)
         logger.info("Sleeping for 60 seconds.......")
@@ -2341,6 +2347,7 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
                 cmd = "{} --port {} --quiet --eval 'rs.status()'".format(sourceobj.mongo_shell_path, snm0_port)
                 res = execute_bash_cmd(rx_connection, cmd, {})
         else:
+            base_enc_params_list_string = None
             for i in range(smax):
                 shardnum = i
                 membernum = 0
@@ -2362,7 +2369,7 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
             add_debug_heading_block("Replicaset - setup_shard_replset_members")
             logger.debug("setup_shard_replset_members() - Start")
             setup_shard_replset_members(shard_config_list, sourceobj, mount_path, encryption_method,
-                                        base_enc_params_list_string, smax)
+                                        enc_params_list_string, smax)
             logger.debug("setup_shard_replset_members() - End")
             add_debug_space()
 

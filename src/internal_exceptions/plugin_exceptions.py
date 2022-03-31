@@ -36,14 +36,6 @@ class MultipleSyncError(PluginException):
                                                 "Staging host already in use. Only Serial operations supported for MongoDB")
 
 
-class MultipleXDCRSyncError(PluginException):
-    def __init__(self, message=""):
-        message = "XDCR setup found on staging host " + message
-        super(MultipleXDCRSyncError, self).__init__(message,
-                                                    "Please use different staging host",
-                                                    "Multiple XDCR is not supported on single staging host")
-
-
 class MultipleSnapSyncError(PluginException):
     def __init__(self, message=""):
         message = "SnapSync is running for any other dSource " + message
@@ -74,94 +66,3 @@ class UnmountFileSystemError(PluginException):
         super(UnmountFileSystemError, self).__init__(message,
                                                      "Please try again",
                                                      "Please check the logs for more details")
-
-
-ERR_RESPONSE_DATA = {
-    'ERR_INSUFFICIENT_RAMQUOTA': {
-        'MESSAGE': "Provided bucket size is not suffice to proceed",
-        'ACTION': "Please change the bucket size and try again",
-        'ERR_STRING': "RAM quota cannot be less than 100 MB"
-    },
-    'ERR_CBBKP_MGR1': {
-        'MESSAGE': "Internal server error",
-        'ACTION': "Please try again to run the previous operation",
-        'ERR_STRING': "Internal server error while executing"
-    },
-
-    'ERR_RESTORE_CLUSTER': {
-        'MESSAGE': "Internal server error",
-        'ACTION': "Please try again to run the previous operation",
-        'ERR_STRING': "Error restoring cluster"
-    },
-    'ERR_BUCKET_LIST_EMPTY': {
-        'MESSAGE': "Please check configurations and try again",
-        'ACTION': "Bucket list is empty. Please verify if the bucket exist at source",
-        'ERR_STRING': "bucket list empty",
-    },
-    'ERR_UNABLE_TO_CONNECT': {
-        'MESSAGE': "Internal server error, unable to connect",
-        'ACTION': "Please verify the defined configurations and try again",
-        'ERR_STRING': "Unable to connect to host",
-    },
-    'ERR_UNRECOGNIZED_ARGS': {
-        'MESSAGE': "Argument(s) mismatch. Please check logs for more details",
-        'ACTION': "Please provide correct configuration details and try again",
-        'ERR_STRING': "unrecognized arguments",
-    },
-    'ERR_INCORRECT_CREDENTIAL': {
-        'MESSAGE': "Invalid credentials",
-        'ACTION': "Try again with correct credentials",
-        'ERR_STRING': "please check your username",
-    },
-    'ERR_REPLICATION_ALREADY_PRESENT': {
-        'MESSAGE': "Duplicate cluster name found",
-        'ACTION': "Delete existing staging cluster configuration on source or use different staging cluster name",
-        'ERR_STRING': "Replication to the same remote cluster and bucket already exists",
-    },
-    'ERR_DUPLICATE_CLUSTER_NAME': {
-        'MESSAGE': "Duplicate cluster name found",
-        'ACTION': "Delete existing staging cluster configuration on source or use different staging cluster name ",
-        'ERR_STRING': "Duplicate cluster names are not allowed",
-    },
-    'ERR_INTERNAL_SERVER_ERROR': {
-        'MESSAGE': "Internal server error, unable to connect",
-        'ACTION': "Please verify the defined configurations and try again",
-        'ERR_STRING': "Internal server error, please retry your request",
-    },
-    'ERR_INTERNAL_SERVER_ERROR1': {
-        'MESSAGE': "Internal server error, unable to connect",
-        'ACTION': "Please verify the defined configurations and try again",
-        'ERR_STRING': "Unable to connect to host",
-    },
-    'ERR_XDCR_OPERATION_ERROR': {
-        'MESSAGE': "Unable to set up XDCR",
-        'ACTION': "Please correct parameters and try again",
-        'ERR_STRING': "Replication Error",
-    },
-
-    'ERR_CB_BACKUP_MANGER_FAILED': {
-        'MESSAGE': "Unable to restore backup",
-        'ACTION': "Please verify the provided archive path and try again",
-        'ERR_STRING': "Error restoring cluster: Bucket Backup",
-    },
-    'ERR_SERVICE_UNAVAILABLE_ERROR': {
-        'MESSAGE': "Unable to restore backup",
-        'ACTION': "Please try again ",
-        'ERR_STRING': "is not available on target",
-    },
-    'ERR_UNEXPECTED_ERROR1': {
-        'MESSAGE': "Unable to restore backup",
-        'ACTION': "Please try again ",
-        'ERR_STRING': "Running this command will totally PURGE database data from disk. Do you really want to do",
-    },
-    'ERR_INVALID_BACKUP_DIR': {
-        'MESSAGE': "Unable to restore backup",
-        'ACTION': "Try again with correct archive location. ",
-        'ERR_STRING': "Archive directory .* doesn't exist",
-    },
-    'DEFAULT_ERR': {
-        'MESSAGE': "Internal error occurred, retry again",
-        'ACTION': "Please check logs for more details",
-        'ERR_STRING': "Default error string",
-    },
-}

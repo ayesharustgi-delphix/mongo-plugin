@@ -1910,11 +1910,19 @@ def add_ldap(mongo_cmd, enable_ldap, ldap_params):
             if ldap_params_rec['value'].upper() == "TRUE":
                 ldap_params_list_string = ldap_params_list_string + " --{}".format(ldap_params_rec['property_name'])
             else:
-                ldap_params_list_string = ldap_params_list_string + " --{} {}".format(ldap_params_rec['property_name'],
+                if ldap_params_rec['property_name'] == "ldapAuthzQueryTemplate":
+                    # Find if the start of command mongo_cmd is mongod or mongos
+                    utilitynamefullpath = mongo_cmd.split(" ")[0]
+                    utilityname = utilitynamefullpath.split("/")[-1]
+                    if utilityname == "mongos":
+                        print("Skip ldapAuthzQueryTemplate")
+                    else:
+                        ldap_params_list_string = ldap_params_list_string + " --{} {}".format(ldap_params_rec['property_name'], ldap_params_rec['value'])
+                else:
+                    ldap_params_list_string = ldap_params_list_string + " --{} {}".format(ldap_params_rec['property_name'],
                                                                                       ldap_params_rec['value'])
         mongo_cmd = "{} {}".format(mongo_cmd, ldap_params_list_string)
     return mongo_cmd
-
 
 def add_set_parameters(mongo_cmd, enable_setparams, setparam_params):
     if enable_setparams:

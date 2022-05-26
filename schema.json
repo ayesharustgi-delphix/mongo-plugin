@@ -338,7 +338,7 @@
               "type": "string",
               "prettyName": "Parameter Value",
               "default": "",
-              "maxLength": 100
+              "maxLength": 1000
             }
           }
         }
@@ -783,7 +783,7 @@
               "type": "string",
               "prettyName": "Parameter Value",
               "default": "",
-              "maxLength": 100
+              "maxLength": 1000
             }
           }
         }

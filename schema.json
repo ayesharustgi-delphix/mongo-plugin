@@ -529,7 +529,7 @@
       "enable_logsync": {
         "default": false,
         "type": "boolean",
-        "prettyName": "Enable logsync for mongodumponline of replicaset",
+        "prettyName": "Capture oplogs of replicaset (ONLY for onlinemongodump)",
         "description": ""
       },
       "src_replicaset_name": {

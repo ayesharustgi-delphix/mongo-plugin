@@ -1115,7 +1115,7 @@ def gen_mongo_cmd(dataset_type, sourceobj, hostname):
     # mongo_shell_cmd = "mongo"
     mongo_shell_cmd = "{}".format(sourceobj.mongo_shell_path)
 
-    logger.debug("sourceobj.parameters.enable_ssl_tls:{}".format(sourceobj.parameters.enable_ssl_tls))
+    logger.debug("enable_ssl_tls: {}".format(sourceobj.parameters.enable_ssl_tls))
     if sourceobj.parameters.enable_ssl_tls:
         mongo_shell_cmd = "{} --tls --host {} --tlsCertificateKeyFile {} --tlsCAFile {}".format(mongo_shell_cmd,
                                                                                                 hostname,

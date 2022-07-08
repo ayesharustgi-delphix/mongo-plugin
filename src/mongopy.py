@@ -199,6 +199,9 @@ def staged_pre_snapshot(repository, source_config, staged_source, optional_snaps
         cmd = "echo \"DO NOT DELETE THIS FILE. It is used to check if its resync or new dsource\" >> {}/.delphix/DSOURCE_RESYNC.cfg".format(staged_source.parameters.mount_path)
         res = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
 
+        cmd = "echo \"DO NOT DELETE THIS FILE. It is used to check if its new dsource for snapsyncs\" >> {}/.delphix/NEWDSOURCEFILE.cfg".format(staged_source.parameters.mount_path)
+        res = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
+
         common.add_debug_heading_block("End Staged Pre Snapshot Resync")
     # Pre-Snapshot
     common.add_debug_space()
@@ -223,8 +226,20 @@ def staged_pre_snapshot(repository, source_config, staged_source, optional_snaps
             staged_source.parameters.mongos_port = staged_source.parameters.start_portpool
             linked.setup_dataset_mongodump_offline(staged_source, 'Staging', None, "offlinemongodump")
         elif staged_source.parameters.d_source_type == "onlinemongodump":
-            staged_source.parameters.mongos_port = staged_source.parameters.start_portpool
-            linked.presync_mongodump_online(staged_source, 'Staging', None, "onlinemongodump")
+            cmd = "(ls {}/.delphix/NEWDSOURCEFILE.cfg >> /dev/null 2>&1 && echo yes) || echo no".format(
+                staged_source.parameters.mount_path)
+            res = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
+
+            if res == "yes":
+                logger.info("Its a new dSource as File {}/.delphix/NEWDSOURCEFILE.cfg exists.".format(
+                    staged_source.parameters.mount_path))
+                logger.info("Skipping pre-snapsync workflow")
+            else:
+                logger.info("File {}/.delphix/NEWDSOURCEFILE.cfg does not exists.".format(
+                    staged_source.parameters.mount_path))
+
+                staged_source.parameters.mongos_port = staged_source.parameters.start_portpool
+                linked.presync_mongodump_online(staged_source, 'Staging', None, "onlinemongodump")
         elif staged_source.parameters.d_source_type in ["seed","stagingpush"]:
             staged_source.parameters.mongos_port = staged_source.parameters.start_portpool
 
@@ -326,6 +341,17 @@ def staged_post_snapshot(repository, source_config, staged_source, optional_snap
     mask_snap = copy.deepcopy(snapshot)
     mask_snap.mongo_db_password = 'xxxxxxxxxx'
     logger.debug("snapshot schema: {}".format(mask_snap))
+
+
+    cmd = "(ls {}/.delphix/NEWDSOURCEFILE.cfg >> /dev/null 2>&1 && echo yes) || echo no".format(
+        staged_source.parameters.mount_path)
+    res = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
+
+    if res == "yes":
+        cmd = "(rm -f {}/.delphix/NEWDSOURCEFILE.cfg >> /dev/null 2>&1 && echo yes) || echo no".format(
+            staged_source.parameters.mount_path)
+        res = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
+
     common.add_debug_heading_block("End Staged Post Snapshot")
     # ADD start Balancer
     return snapshot

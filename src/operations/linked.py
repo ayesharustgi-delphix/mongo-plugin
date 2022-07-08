@@ -108,6 +108,48 @@ def stg_cleanup_pre_snapsync(staged_source, repository=None, source_config=None)
         res = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
 
 
+def restore_mongodump_online(sourceobj, dataset_type, mongo_backup_dir):
+    if dataset_type == "Staging":
+        rx_connection = sourceobj.staged_connection
+
+    start_portpool = sourceobj.parameters.start_portpool
+    # -u {} -p {} --host {} --authenticationDatabase=admin
+    cmd = "{}/mongorestore --port {} --drop --quiet --gzip --dir={}".format(
+        os.path.dirname(sourceobj.mongo_install_path), start_portpool, mongo_backup_dir)
+    res = common.execute_bash_cmd(rx_connection, cmd, {})
+
+    common.add_debug_space()
+
+def restore_mongodump_online_presync(sourceobj, dataset_type, mongo_backup_dir):
+    if dataset_type == "Staging":
+        rx_connection = sourceobj.staged_connection
+
+    cmd = "hostname"
+    hostname = common.execute_bash_cmd(rx_connection, cmd, {})
+    mongo_shell_cmd = common.gen_mongo_cmd(dataset_type, sourceobj, hostname)
+
+    cmd = "echo \"{}\"|cut -f2- -d' '".format(mongo_shell_cmd)
+    mongorestore_connparams = common.execute_bash_cmd_silent_status(rx_connection, cmd, {})
+    resarr = mongorestore_connparams.split()
+    if sourceobj.parameters.mongo_db_password:
+        if sourceobj.parameters.mongo_db_password in resarr:
+            i_pwd = resarr.index(sourceobj.parameters.mongo_db_password)
+            resarr[i_pwd] =  'xxxxxxxxx'
+    logger.info("mongorestore_connparams: {}".format(' '.join(resarr)))
+
+    mongorestore_part1 = mongo_shell_cmd.split(" ")[0]
+    logger.info("mongorestore_part1:{}".format(mongorestore_part1))
+
+    mongorestore_cmd = "{}restore {}".format(mongorestore_part1, mongorestore_connparams)
+
+    start_portpool = sourceobj.parameters.start_portpool
+    cmd = "{} --port {} --drop --quiet --gzip --dir={}".format(
+        mongorestore_cmd, start_portpool, mongo_backup_dir)
+    res = common.execute_bash_cmd(rx_connection, cmd, {})
+
+    common.add_debug_space()
+
+
 def create_seed_database(sourceobj, dataset_type):
     if dataset_type == "Staging":
         rx_connection = sourceobj.staged_connection
@@ -176,19 +218,6 @@ def restore_mongodump(sourceobj, dataset_type):
 
     cmd = "{}/mongorestore --port {} --drop --quiet --gzip --dir={}".format(
         os.path.dirname(sourceobj.mongo_install_path), start_portpool, config_backupfile)
-    res = common.execute_bash_cmd(rx_connection, cmd, {})
-
-    common.add_debug_space()
-
-
-def restore_mongodump_online(sourceobj, dataset_type, mongo_backup_dir):
-    if dataset_type == "Staging":
-        rx_connection = sourceobj.staged_connection
-
-    start_portpool = sourceobj.parameters.start_portpool
-
-    cmd = "{}/mongorestore --port {} --drop --quiet --gzip --dir={}".format(
-        os.path.dirname(sourceobj.mongo_install_path), start_portpool, mongo_backup_dir)
     res = common.execute_bash_cmd(rx_connection, cmd, {})
 
     common.add_debug_space()
@@ -371,7 +400,8 @@ def setup_dataset_mongodump_online(sourceobj, dataset_type, snapshot, dsource_ty
     start_portpool = sourceobj.parameters.start_portpool
     mongos_port = sourceobj.parameters.mongos_port
     replicaset = sourceobj.parameters.make_shards_replicaset
-    logsync = True
+    # logsync = True
+    logsync = sourceobj.parameters.enable_logsync
 
     rx_connection = sourceobj.staged_connection
     source_encrypted = sourceobj.parameters.source_encrypted
@@ -415,20 +445,23 @@ def setup_dataset_mongodump_online(sourceobj, dataset_type, snapshot, dsource_ty
     cmd = "mkdir -p {}".format(mongo_backup_dir)
     res = common.execute_bash_cmd(rx_connection, cmd, {})
 
+    # logsync is not reliable. Cannot guarantee presence of oplogs as it is circular and may get overwritten
+    # So disabling/removing this functionality
+    # Modified to use same variable to capture or not capture oplogs. TRue = capture oplogs
     if logsync:
-        common.add_debug_heading_block("Get oplog position")
-        cmd = "mkdir -p {}/s0m0/oplogs/local".format(mount_path)
-        res = common.execute_bash_cmd(rx_connection, cmd, {})
-
-        # common.fsync_lock_mongo(sourceobj, dataset_type)
-
-        curroplogpos = get_current_oplog_position(sourceobj, dataset_type)
-        logger.info("Write oplog position to file")
-        cmd = "echo \"{}\" > {}/.delphix/oplog.pos".format(curroplogpos, mount_path)
-        res = common.execute_bash_cmd(rx_connection, cmd, {})
-        cmd = "echo \"{}\" > {}/.delphix/oplog.pos.incr".format(curroplogpos, mount_path)
-        res = common.execute_bash_cmd(rx_connection, cmd, {})
-        logger.info("Write oplog position to file done.")
+        # common.add_debug_heading_block("Get oplog position")
+        # cmd = "mkdir -p {}/s0m0/oplogs/local".format(mount_path)
+        # res = common.execute_bash_cmd(rx_connection, cmd, {})
+        #
+        # # common.fsync_lock_mongo(sourceobj, dataset_type)
+        #
+        # curroplogpos = get_current_oplog_position(sourceobj, dataset_type)
+        # logger.info("Write oplog position to file")
+        # cmd = "echo \"{}\" > {}/.delphix/oplog.pos".format(curroplogpos, mount_path)
+        # res = common.execute_bash_cmd(rx_connection, cmd, {})
+        # cmd = "echo \"{}\" > {}/.delphix/oplog.pos.incr".format(curroplogpos, mount_path)
+        # res = common.execute_bash_cmd(rx_connection, cmd, {})
+        # logger.info("Write oplog position to file done.")
 
         # generate mongodump backup
         common.add_debug_heading_block("Generate mongodump backup")
@@ -561,121 +594,204 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
     common.add_debug_heading_block("Generate Config files")
     common.gen_config_files(dataset_type, sourceobj, replicaset_config_list, snapshot)
 
+    cmd = "echo \"IGNORE dsPreSnapshot scripts\" > {}/.delphix/NEWDSOURCEFILE.cfg".format(mount_path)
+    res = common.execute_bash_cmd(rx_connection, cmd, {})
+    common.add_debug_space()
+
+
+# def presync_mongodump_online(sourceobj, dataset_type, snapshot, dsource_type):
+#     dataset_cfgfile = ".stg_config.txt"
+#
+#     # Generate and write config file
+#     nodes = common.create_node_array(dataset_type, sourceobj)
+#     common.add_debug_space()
+#
+#     # Define variables
+#     mount_path = sourceobj.parameters.mount_path
+#     start_portpool = sourceobj.parameters.start_portpool
+#     mongos_port = sourceobj.parameters.mongos_port
+#     replicaset = sourceobj.parameters.make_shards_replicaset
+#     logsync = True
+#
+#     rx_connection = sourceobj.staged_connection
+#     source_encrypted = sourceobj.parameters.source_encrypted
+#     encryption_method = sourceobj.parameters.encryption_method
+#
+#     logger.info("nodes          = {}".format(nodes))
+#     logger.info("start_portpool = {}".format(start_portpool))
+#     logger.info("mount_path     = {}".format(mount_path))
+#     logger.info("replicaset     = {}".format(replicaset))
+#
+#     mongo_db_user = sourceobj.parameters.mongo_db_user
+#     mongo_db_password = sourceobj.parameters.mongo_db_password
+#     src_mongo_host_conn = sourceobj.parameters.src_mongo_host_conn
+#     src_db_user = sourceobj.parameters.src_db_user
+#     src_db_password = sourceobj.parameters.src_db_password
+#
+#     # Generate replicaset mappings
+#     common.add_debug_heading_block("Generate replicaset mappings")
+#     replicaset_config_list = common.gen_replicaset_config_list(nodes, start_portpool, mount_path, replicaset)
+#
+#     for replicaset_config in replicaset_config_list:
+#         logger.info("replicaset_config :{}".format(replicaset_config))
+#     common.add_debug_space()
+#
+#     # Cleanup last run oplogs from staging
+#     logger.info("Cleanup last run oplogs from staging ...")
+#     cmd = "rm -f {}/s0m0/oplogs/local/*.bson".format(mount_path)
+#     res = common.execute_bash_cmd_nofail(rx_connection, cmd, {})
+#
+#     # create oplog backup dir
+#     x = datetime.datetime.now()
+#     x_dateformat = x.strftime("%m%d%Y_%H%M%S")
+#     mongo_backup_dir = "{}/mongo_bkps/{}".format(mount_path, x_dateformat)
+#
+#     cmd = "mkdir -p {}".format(mongo_backup_dir)
+#     res = common.execute_bash_cmd(rx_connection, cmd, {})
+#
+#     if logsync:
+#         cmd = "mkdir -p {}/s0m0/oplogs/local".format(mount_path)
+#         res = common.execute_bash_cmd(rx_connection, cmd, {})
+#
+#         # common.fsync_lock_mongo(sourceobj, dataset_type)
+#
+#         curroplogpos = get_current_oplog_position(sourceobj, dataset_type)
+#
+#         cmd = "cat {}/.delphix/oplog.pos.incr".format(mount_path)
+#         lastoplogpos = common.execute_bash_cmd(rx_connection, cmd, {})
+#         lastoplogposarr = re.findall(r'\d+', lastoplogpos)
+#         timestampval = int(lastoplogposarr[0])
+#         incrval = int(lastoplogposarr[1])
+#         logger.info("timestampval:{}, incrval:{}".format(timestampval, incrval))
+#
+#         cmd = "{}/mongodump -u {} -p {} --host {} --authenticationDatabase=admin --quiet -d local -c oplog.rs -o {}/s0m0/oplogs --query \"{{ \\\"ts\\\" : {{ \\\"\\$gt\\\" : {{ \\\"\$timestamp\\\": {{ \\\"t\\\": {} ,\\\"i\\\": {} }}}}}}}}\"".format(
+#             os.path.dirname(sourceobj.mongo_install_path), src_db_user, src_db_password, src_mongo_host_conn,
+#             mount_path, timestampval, incrval)
+#         res = common.execute_bash_cmd(rx_connection, cmd, {})
+#
+#         logger.info("Write current oplog position to file")
+#         cmd = "echo \"{}\" > {}/.delphix/oplog.pos.incr".format(curroplogpos, mount_path)
+#         res = common.execute_bash_cmd(rx_connection, cmd, {})
+#         logger.info("Write current oplog position to file done.")
+#
+#         cmd = "du -sh {}/s0m0/oplogs".format(mount_path)
+#         res = common.execute_bash_cmd(rx_connection, cmd, {})
+#
+#         common.fsync_unlock_mongo(sourceobj, dataset_type)
+#
+#         logger.info("Cleanup and prepare for oplog restore on staging")
+#         cmd = "rm -f {}/s0m0/oplogs/local/*.json".format(mount_path)
+#         res = common.execute_bash_cmd(rx_connection, cmd, {})
+#
+#         cmd = "mv {}/s0m0/oplogs/local/oplog.rs.bson {}/s0m0/oplogs/local/oplog.bson".format(mount_path, mount_path)
+#         res = common.execute_bash_cmd(rx_connection, cmd, {})
+#
+#         cmd = "{}/mongorestore -u {} -p {} --host 127.0.0.1:{} --authenticationDatabase=admin --oplogReplay {}/s0m0/oplogs/local".format(
+#             os.path.dirname(sourceobj.mongo_install_path), mongo_db_user, mongo_db_password, mongos_port, mount_path)
+#         res = common.execute_bash_cmd(rx_connection, cmd, {})
+#
+#         cmd = "echo \"DSOURCE_TYPE:{}\" > {}/.delphix/{}".format(dsource_type, mount_path, dataset_cfgfile)
+#         res = common.execute_bash_cmd(rx_connection, cmd, {})
+#
+#         cmd = "echo \"MONGO_DB_USER:{}\" >> {}/.delphix/{}".format(sourceobj.parameters.mongo_db_user, mount_path,
+#                                                                    dataset_cfgfile)
+#         res = common.execute_bash_cmd(rx_connection, cmd, {})
+#
+#         if source_encrypted:
+#             cmd = "echo \"SOURCE_ENCRYPTED:{}\" >> {}/.delphix/{}".format("True", mount_path, dataset_cfgfile)
+#             res = common.execute_bash_cmd(rx_connection, cmd, {})
+#
+#             cmd = "echo \"ENCRYPTION_METHOD:{}\" >> {}/.delphix/{}".format(encryption_method, mount_path,
+#                                                                            dataset_cfgfile)
+#             res = common.execute_bash_cmd(rx_connection, cmd, {})
+#         else:
+#             cmd = "echo \"SOURCE_ENCRYPTED:{}\" >> {}/.delphix/{}".format("False", mount_path, dataset_cfgfile)
+#             res = common.execute_bash_cmd(rx_connection, cmd, {})
+#
+#         cmd = "echo \"LAST_DUMP_DIR:{}\" >> {}/.delphix/{}".format(x_dateformat, mount_path, dataset_cfgfile)
+#         res = common.execute_bash_cmd(rx_connection, cmd, {})
+#
+#         common.add_debug_space()
 
 def presync_mongodump_online(sourceobj, dataset_type, snapshot, dsource_type):
     dataset_cfgfile = ".stg_config.txt"
-
-    # Generate and write config file
-    nodes = common.create_node_array(dataset_type, sourceobj)
-    common.add_debug_space()
 
     # Define variables
     mount_path = sourceobj.parameters.mount_path
     start_portpool = sourceobj.parameters.start_portpool
     mongos_port = sourceobj.parameters.mongos_port
-    replicaset = sourceobj.parameters.make_shards_replicaset
-    logsync = True
+    logsync = sourceobj.parameters.enable_logsync
 
-    rx_connection = sourceobj.staged_connection
     source_encrypted = sourceobj.parameters.source_encrypted
     encryption_method = sourceobj.parameters.encryption_method
 
-    logger.info("nodes          = {}".format(nodes))
-    logger.info("start_portpool = {}".format(start_portpool))
-    logger.info("mount_path     = {}".format(mount_path))
-    logger.info("replicaset     = {}".format(replicaset))
+    rx_connection = sourceobj.staged_connection
 
-    mongo_db_user = sourceobj.parameters.mongo_db_user
-    mongo_db_password = sourceobj.parameters.mongo_db_password
+    cmd = "cat {}/.delphix/.stg_dsourcecfg.txt".format(mount_path)
+    res = common.execute_bash_cmd(rx_connection, cmd, {})
+    replicaset_config_list = res
+
+    logger.info("start_portpool         = {}".format(start_portpool))
+    logger.info("mount_path             = {}".format(mount_path))
+    logger.info("replicaset_config_list = {}".format(replicaset_config_list))
+
     src_mongo_host_conn = sourceobj.parameters.src_mongo_host_conn
     src_db_user = sourceobj.parameters.src_db_user
     src_db_password = sourceobj.parameters.src_db_password
 
-    # Generate replicaset mappings
-    common.add_debug_heading_block("Generate replicaset mappings")
-    replicaset_config_list = common.gen_replicaset_config_list(nodes, start_portpool, mount_path, replicaset)
-
-    for replicaset_config in replicaset_config_list:
-        logger.info("replicaset_config :{}".format(replicaset_config))
-    common.add_debug_space()
-
-    # Cleanup last run oplogs from staging
-    logger.info("Cleanup last run oplogs from staging ...")
-    cmd = "rm -f {}/s0m0/oplogs/local/*.bson".format(mount_path)
-    res = common.execute_bash_cmd_nofail(rx_connection, cmd, {})
-
-    # create oplog backup dir
+    # create backup dir
     x = datetime.datetime.now()
     x_dateformat = x.strftime("%m%d%Y_%H%M%S")
     mongo_backup_dir = "{}/mongo_bkps/{}".format(mount_path, x_dateformat)
-
     cmd = "mkdir -p {}".format(mongo_backup_dir)
     res = common.execute_bash_cmd(rx_connection, cmd, {})
 
     if logsync:
-        cmd = "mkdir -p {}/s0m0/oplogs/local".format(mount_path)
-        res = common.execute_bash_cmd(rx_connection, cmd, {})
-
-        # common.fsync_lock_mongo(sourceobj, dataset_type)
-
-        curroplogpos = get_current_oplog_position(sourceobj, dataset_type)
-
-        cmd = "cat {}/.delphix/oplog.pos.incr".format(mount_path)
-        lastoplogpos = common.execute_bash_cmd(rx_connection, cmd, {})
-        lastoplogposarr = re.findall(r'\d+', lastoplogpos)
-        timestampval = int(lastoplogposarr[0])
-        incrval = int(lastoplogposarr[1])
-        logger.info("timestampval:{}, incrval:{}".format(timestampval, incrval))
-
-        cmd = "{}/mongodump -u {} -p {} --host {} --authenticationDatabase=admin --quiet -d local -c oplog.rs -o {}/s0m0/oplogs --query \"{{ \\\"ts\\\" : {{ \\\"\\$gt\\\" : {{ \\\"\$timestamp\\\": {{ \\\"t\\\": {} ,\\\"i\\\": {} }}}}}}}}\"".format(
+        # generate mongodump backup
+        common.add_debug_heading_block("Generate mongodump backup")
+        cmd = "{}/mongodump -u {} -p {} --host {} --authenticationDatabase=admin --oplog --gzip -o {}".format(
             os.path.dirname(sourceobj.mongo_install_path), src_db_user, src_db_password, src_mongo_host_conn,
-            mount_path, timestampval, incrval)
+            mongo_backup_dir)
         res = common.execute_bash_cmd(rx_connection, cmd, {})
 
-        logger.info("Write current oplog position to file")
-        cmd = "echo \"{}\" > {}/.delphix/oplog.pos.incr".format(curroplogpos, mount_path)
-        res = common.execute_bash_cmd(rx_connection, cmd, {})
-        logger.info("Write current oplog position to file done.")
-
-        cmd = "du -sh {}/s0m0/oplogs".format(mount_path)
-        res = common.execute_bash_cmd(rx_connection, cmd, {})
-
-        common.fsync_unlock_mongo(sourceobj, dataset_type)
-
-        logger.info("Cleanup and prepare for oplog restore on staging")
-        cmd = "rm -f {}/s0m0/oplogs/local/*.json".format(mount_path)
+    else:
+        # generate mongodump backup
+        common.add_debug_heading_block("Generate mongodump backup")
+        cmd = "{}/mongodump -u {} -p {} --host {} --authenticationDatabase=admin --gzip -o {}".format(
+            os.path.dirname(sourceobj.mongo_install_path), src_db_user, src_db_password, src_mongo_host_conn,
+            mongo_backup_dir)
         res = common.execute_bash_cmd(rx_connection, cmd, {})
 
-        cmd = "mv {}/s0m0/oplogs/local/oplog.rs.bson {}/s0m0/oplogs/local/oplog.bson".format(mount_path, mount_path)
+    cmd = "du -sh {}".format(mongo_backup_dir)
+    res = common.execute_bash_cmd(rx_connection, cmd, {})
+
+    restore_mongodump_online_presync(sourceobj, dataset_type, mongo_backup_dir)
+
+    cmd = "echo \"DSOURCE_TYPE:{}\" > {}/.delphix/{}".format(dsource_type, mount_path,
+                                                             dataset_cfgfile)
+    res = common.execute_bash_cmd(rx_connection, cmd, {})
+
+    cmd = "echo \"MONGO_DB_USER:{}\" >> {}/.delphix/{}".format(sourceobj.parameters.mongo_db_user, mount_path,
+                                                               dataset_cfgfile)
+    res = common.execute_bash_cmd(rx_connection, cmd, {})
+
+    if source_encrypted:
+        cmd = "echo \"SOURCE_ENCRYPTED:{}\" >> {}/.delphix/{}".format("True", mount_path, dataset_cfgfile)
         res = common.execute_bash_cmd(rx_connection, cmd, {})
 
-        cmd = "{}/mongorestore -u {} -p {} --host 127.0.0.1:{} --authenticationDatabase=admin --oplogReplay {}/s0m0/oplogs/local".format(
-            os.path.dirname(sourceobj.mongo_install_path), mongo_db_user, mongo_db_password, mongos_port, mount_path)
+        cmd = "echo \"ENCRYPTION_METHOD:{}\" >> {}/.delphix/{}".format(encryption_method, mount_path, dataset_cfgfile)
+        res = common.execute_bash_cmd(rx_connection, cmd, {})
+    else:
+        cmd = "echo \"SOURCE_ENCRYPTED:{}\" >> {}/.delphix/{}".format("False", mount_path, dataset_cfgfile)
         res = common.execute_bash_cmd(rx_connection, cmd, {})
 
-        cmd = "echo \"DSOURCE_TYPE:{}\" > {}/.delphix/{}".format(dsource_type, mount_path, dataset_cfgfile)
-        res = common.execute_bash_cmd(rx_connection, cmd, {})
+    cmd = "echo \"LAST_DUMP_DIR:{}\" >> {}/.delphix/{}".format(x_dateformat, mount_path, dataset_cfgfile)
+    res = common.execute_bash_cmd(rx_connection, cmd, {})
 
-        cmd = "echo \"MONGO_DB_USER:{}\" >> {}/.delphix/{}".format(sourceobj.parameters.mongo_db_user, mount_path,
-                                                                   dataset_cfgfile)
-        res = common.execute_bash_cmd(rx_connection, cmd, {})
+    common.add_debug_space()
 
-        if source_encrypted:
-            cmd = "echo \"SOURCE_ENCRYPTED:{}\" >> {}/.delphix/{}".format("True", mount_path, dataset_cfgfile)
-            res = common.execute_bash_cmd(rx_connection, cmd, {})
-
-            cmd = "echo \"ENCRYPTION_METHOD:{}\" >> {}/.delphix/{}".format(encryption_method, mount_path,
-                                                                           dataset_cfgfile)
-            res = common.execute_bash_cmd(rx_connection, cmd, {})
-        else:
-            cmd = "echo \"SOURCE_ENCRYPTED:{}\" >> {}/.delphix/{}".format("False", mount_path, dataset_cfgfile)
-            res = common.execute_bash_cmd(rx_connection, cmd, {})
-
-        cmd = "echo \"LAST_DUMP_DIR:{}\" >> {}/.delphix/{}".format(x_dateformat, mount_path, dataset_cfgfile)
-        res = common.execute_bash_cmd(rx_connection, cmd, {})
-
-        common.add_debug_space()
-
+    # Create mongo admin user
+    # common.create_mongoadmin_user(sourceobj, rx_connection, 0, replicaset_config_list)
 
 def get_current_oplog_position(sourceobj, dataset_type):
     rx_connection = sourceobj.staged_connection
@@ -1134,6 +1250,6 @@ def initiate_emptyfs_for_dsource(sourceobj, dataset_type, dsource_type):
     cmd = "echo \"Replica Set: {}\" > {}/s0m0/restoreInfo.txt".format(repset_name, mount_path)
     res = common.execute_bash_cmd(rx_connection, cmd, {})
 
-    cmd = "echo \"IGNORE dsPreSnapshot scripts\" >> {}/.delphix/NEWDSOURCEFILE.cfg".format(mount_path)
+    cmd = "echo \"IGNORE dsPreSnapshot scripts\" > {}/.delphix/NEWDSOURCEFILE.cfg".format(mount_path)
     res = common.execute_bash_cmd(rx_connection, cmd, {})
     common.add_debug_space()

@@ -11,4 +11,4 @@ entryPoint: mongopy:plugin
 srcDir: src/
 schemaFile: ./schema.json
 pluginType: STAGED
-language: PYTHON27
+language: PYTHON38

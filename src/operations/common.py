@@ -16,8 +16,7 @@ import time
 import re
 import os
 
-import linked
-
+from operations import linked
 
 def adjust_mount_env(imounts, inodes, itotalnodes):
     i = 0
@@ -452,8 +451,8 @@ def execute_bash_cmd(connection, cmd, env):
     res = libs.run_bash(connection, cmd, env)
 
     # strip the each part of result to remove spaces from beginning and last of output
-    outputmsg = res.stdout.replace("\n", "").strip().encode("ascii", "ignore")
-    errmsg = res.stderr.replace("\n", "").strip().encode("ascii", "ignore")
+    outputmsg = res.stdout.replace("\n", "").strip()
+    errmsg = res.stderr.replace("\n", "").strip()
     exit_code = res.exit_code
 
     # Verify the exit code of each executed command. 0 means command ran successfully and for other code it is failed.
@@ -478,8 +477,8 @@ def execute_bash_cmd_nofail(connection, cmd, env):
     res = libs.run_bash(connection, cmd, env)
 
     # strip the each part of result to remove spaces from beginning and last of output
-    outputmsg = res.stdout.replace("\n", "").strip().encode("ascii", "ignore")
-    errmsg = res.stderr.replace("\n", "").strip().encode("ascii", "ignore")
+    outputmsg = res.stdout.replace("\n", "").strip()
+    errmsg = res.stderr.replace("\n", "").strip()
     exit_code = res.exit_code
 
     return exit_code
@@ -500,8 +499,8 @@ def execute_bash_cmd_silent(connection, cmd, env):
     res = libs.run_bash(connection, cmd, env)
 
     # strip the each part of result to remove spaces from beginning and last of output
-    outputmsg = res.stdout.replace("\n", "").strip().encode("ascii", "ignore")
-    errmsg = res.stderr.replace("\n", "").strip().encode("ascii", "ignore")
+    outputmsg = res.stdout.replace("\n", "").strip()
+    errmsg = res.stderr.replace("\n", "").strip()
     exit_code = res.exit_code
 
     # Verify the exit code of each executed command. 0 means command ran successfully and for other code it is failed.
@@ -518,9 +517,11 @@ def execute_bash_cmd_silent_status(connection, cmd, env):
     res = libs.run_bash(connection, cmd, env)
 
     # strip the each part of result to remove spaces from beginning and last of output
-    outputmsg = res.stdout.replace("\n", "").strip().encode("ascii", "ignore")
-    errmsg = res.stderr.replace("\n", "").strip().encode("ascii", "ignore")
+    outputmsg = res.stdout.replace("\n", "").strip()
+    errmsg = res.stderr.replace("\n", "").strip()
     exit_code = res.exit_code
+    logger.debug("Value for result: cmd: {} ---- outputmsg: {} ---- errmsg: {} ---- exit_code: {} ".format(cmd, outputmsg,
+                                                               errmsg, exit_code ))
 
     # Verify the exit code of each executed command. 0 means command ran successfully and for other code it is failed.
     # For failed cases we need to find the scenario in which programs will die and otherwise execution will continue.
@@ -544,7 +545,7 @@ def execute_bash_cmd_nocmdlog(connection, cmd, env):
             return 1
 
         logger.debug("Response : {}".format(res.exit_code))
-        outputmsg = res.stdout.replace("\n", "").strip().encode("ascii", "ignore")
+        outputmsg = res.stdout.replace("\n", "").strip()
         logger.debug("Success outputmsg : {}".format(outputmsg))
         return outputmsg
 
@@ -979,6 +980,8 @@ def get_status_sharded_mongo(dataset_type, sourceobj):
 
         cmd = "cat {}/.delphix/.stg_config.txt | grep DSOURCE_TYPE".format(mount_path)
         res = execute_bash_cmd_silent_status(connection, cmd, {})
+        if str(res) == "1":
+            return active_status_flag
         dsource_type = res.split(':')[1]
     # logger.debug("cfgfile : {}".format(cfgfile))
 

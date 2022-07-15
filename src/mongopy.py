@@ -11,7 +11,9 @@ from dlpx.virtualization.platform import (
     Status
 )
 
-from operations import discovery, linked, virtual, constants, common
+from operations import linked
+from operations import common
+
 import _version
 
 from utils import setup_logger

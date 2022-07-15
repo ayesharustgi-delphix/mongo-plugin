@@ -1,9 +1,7 @@
 from dlpx.virtualization.platform.exceptions import UserError
-import common
 import logging
-import discovery, virtual, constants, common
+from operations import common
 import datetime
-import re
 import os
 import json
 import time

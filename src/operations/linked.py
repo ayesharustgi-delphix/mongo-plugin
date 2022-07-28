@@ -113,7 +113,7 @@ def restore_mongodump_online(sourceobj, dataset_type, mongo_backup_dir):
     start_portpool = sourceobj.parameters.start_portpool
     # -u {} -p {} --host {} --authenticationDatabase=admin
     cmd = "{}/mongorestore --port {} --drop --quiet --gzip --dir={}".format(
-        os.path.dirname(sourceobj.mongo_install_path), start_portpool, mongo_backup_dir)
+        os.path.dirname(sourceobj.mongo_restore_path), start_portpool, mongo_backup_dir)
     res = common.execute_bash_cmd(rx_connection, cmd, {})
 
     common.add_debug_space()
@@ -135,10 +135,7 @@ def restore_mongodump_online_presync(sourceobj, dataset_type, mongo_backup_dir):
             resarr[i_pwd] =  'xxxxxxxxx'
     logger.info("mongorestore_connparams: {}".format(' '.join(resarr)))
 
-    mongorestore_part1 = mongo_shell_cmd.split(" ")[0]
-    logger.info("mongorestore_part1:{}".format(mongorestore_part1))
-
-    mongorestore_cmd = "{}restore {}".format(mongorestore_part1, mongorestore_connparams)
+    mongorestore_cmd = "{} {}".format(sourceobj.mongo_restore_path, mongorestore_connparams)
 
     start_portpool = sourceobj.parameters.start_portpool
     cmd = "{} --port {} --drop --quiet --gzip --dir={}".format(
@@ -215,7 +212,7 @@ def restore_mongodump(sourceobj, dataset_type):
     config_backupfile = sourceobj.parameters.config_backupfile
 
     cmd = "{}/mongorestore --port {} --drop --quiet --gzip --dir={}".format(
-        os.path.dirname(sourceobj.mongo_install_path), start_portpool, config_backupfile)
+        os.path.dirname(sourceobj.mongo_restore_path), start_portpool, config_backupfile)
     res = common.execute_bash_cmd(rx_connection, cmd, {})
 
     common.add_debug_space()
@@ -464,7 +461,7 @@ def setup_dataset_mongodump_online(sourceobj, dataset_type, snapshot, dsource_ty
         # generate mongodump backup
         common.add_debug_heading_block("Generate mongodump backup")
         cmd = "{}/mongodump -u {} -p {} --host {} --authenticationDatabase=admin --oplog --gzip -o {}".format(
-            os.path.dirname(sourceobj.mongo_install_path), src_db_user, src_db_password, src_mongo_host_conn,
+            os.path.dirname(sourceobj.mongo_dump_path), src_db_user, src_db_password, src_mongo_host_conn,
             mongo_backup_dir)
         res = common.execute_bash_cmd(rx_connection, cmd, {})
 
@@ -472,7 +469,7 @@ def setup_dataset_mongodump_online(sourceobj, dataset_type, snapshot, dsource_ty
         # generate mongodump backup
         common.add_debug_heading_block("Generate mongodump backup")
         cmd = "{}/mongodump -u {} -p {} --host {} --authenticationDatabase=admin --gzip -o {}".format(
-            os.path.dirname(sourceobj.mongo_install_path), src_db_user, src_db_password, src_mongo_host_conn,
+            os.path.dirname(sourceobj.mongo_dump_path), src_db_user, src_db_password, src_mongo_host_conn,
             mongo_backup_dir)
         res = common.execute_bash_cmd(rx_connection, cmd, {})
 
@@ -748,7 +745,7 @@ def presync_mongodump_online(sourceobj, dataset_type, snapshot, dsource_type):
         # generate mongodump backup
         common.add_debug_heading_block("Generate mongodump backup")
         cmd = "{}/mongodump -u {} -p {} --host {} --authenticationDatabase=admin --oplog --gzip -o {}".format(
-            os.path.dirname(sourceobj.mongo_install_path), src_db_user, src_db_password, src_mongo_host_conn,
+            os.path.dirname(sourceobj.mongo_dump_path), src_db_user, src_db_password, src_mongo_host_conn,
             mongo_backup_dir)
         res = common.execute_bash_cmd(rx_connection, cmd, {})
 
@@ -756,7 +753,7 @@ def presync_mongodump_online(sourceobj, dataset_type, snapshot, dsource_type):
         # generate mongodump backup
         common.add_debug_heading_block("Generate mongodump backup")
         cmd = "{}/mongodump -u {} -p {} --host {} --authenticationDatabase=admin --gzip -o {}".format(
-            os.path.dirname(sourceobj.mongo_install_path), src_db_user, src_db_password, src_mongo_host_conn,
+            os.path.dirname(sourceobj.mongo_dump_path), src_db_user, src_db_password, src_mongo_host_conn,
             mongo_backup_dir)
         res = common.execute_bash_cmd(rx_connection, cmd, {})
 

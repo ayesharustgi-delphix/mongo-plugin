@@ -21,6 +21,16 @@
         "type": "string",
         "prettyName": "Pretty Name",
         "description": "Pretty name of this repository"
+      },
+      "mongo_dump_path": {
+        "type": "string",
+        "prettyName": "Mongo Dump Path",
+        "description": "Path to Mongo Dump folder"
+      },
+      "mongo_restore_path": {
+        "type": "string",
+        "prettyName": "Mongo Restore Path",
+        "description": "Path to Mongo restore folder"
       }
     },
     "nameField": "pretty_name",

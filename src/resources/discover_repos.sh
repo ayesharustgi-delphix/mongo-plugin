@@ -205,6 +205,8 @@ assembleJson()
 	CURRENT_REPO='{}'
 	PRETTYNAME="PY EDSI MongoDB (${VERSION})"
 	CURRENT_REPO=$(jq ".mongo_install_path = $(jqQuote "$INSTALLPATH")" <<< "$CURRENT_REPO")
+	CURRENT_REPO=$(jq ".mongo_dump_path = $(jqQuote "$MONGO_DUMP_PATH")" <<< "$CURRENT_REPO")
+	CURRENT_REPO=$(jq ".mongo_restore_path = $(jqQuote "$MONGO_RESTORE_PATH")" <<< "$CURRENT_REPO")
 	CURRENT_REPO=$(jq ".mongo_shell_path = $(jqQuote "$SHELLPATH")" <<< "$CURRENT_REPO")
 	CURRENT_REPO=$(jq ".version = $(jqQuote "$VERSION")" <<< "$CURRENT_REPO")
 	CURRENT_REPO=$(jq ".pretty_name = $(jqQuote "$PRETTYNAME")" <<< "$CURRENT_REPO")
@@ -269,10 +271,13 @@ if [ $MANUAL_MONGO_FIND -eq 1 ]; then
 	while read line
 	do
 		if [[ ${line} = *"MONGO_PATH"* ]]; then
-			FIND_BIN_PATH=`echo $line|awk -F"=" '{ print $2}'`
+			FIND_BIN_PATH=`echo $line|awk -F"=" '{ print $2}' | awk -F ":" '{ print $1}'`
 			log "Manual Discovery Path Provided : $FIND_BIN_PATH"
 			FIND_BIN_PATH=$(dirname $FIND_BIN_PATH)
 			log "FIND_BIN_PATH : $FIND_BIN_PATH"
+			FIND_MONGO_TOOL_PATH=`echo $line|awk -F"=" '{ print $2}' |awk -F ":" '{ print $2}'`
+			FIND_MONGO_TOOL_PATH=$(dirname $FIND_MONGO_TOOL_PATH)
+			log "FIND_MONGO_TOOL_PATH : $FIND_MONGO_TOOL_PATH"
 			if [ -d $FIND_BIN_PATH ]; then
 				INSTALLPATH=$(find $FIND_BIN_PATH -name mongod 2>&1 | head -1)
 				if [[ ${INSTALLPATH} = *"Permission denied"* ]]; then
@@ -287,12 +292,47 @@ if [ $MANUAL_MONGO_FIND -eq 1 ]; then
 					log "INSTALLPATH=$INSTALLPATH"
 				fi
 
+        if [[ "$FIND_MONGO_TOOL_PATH" = '' ]]; then
+          MONGO_TOOL_PATH=$FIND_BIN_PATH
+        else
+          MONGO_TOOL_PATH=$FIND_MONGO_TOOL_PATH
+        fi
+
+        if [[ -d $MONGO_TOOL_PATH ]]; then
+          MONGO_DUMP_PATH=$(find $MONGO_TOOL_PATH -name mongodump | head -1)
+          if [[ "$MONGO_DUMP_PATH" = '' ]]; then
+            e3=1
+            # Mongo Dump path not found - return empty repo config
+            log "Mongo Dump path $FIND_MONGO_TOOL_PATH/*..*/mongodump not found"
+            printf "Mongo Dump path $FIND_MONGO_TOOL_PATH/*..*/mongodump not found"
+            exit 1
+          else
+            log "MONGO_DUMP_PATH=$MONGO_DUMP_PATH"
+          fi
+
+          MONGO_RESTORE_PATH=$(find $FIND_MONGO_TOOL_PATH -name mongorestore | head -1)
+          if [[ "$MONGO_RESTORE_PATH" = '' ]]; then
+            e4=1
+            # Mongo Restore path not found - return empty repo config
+            log "Mongo Restore path $MONGO_RESTORE_PATH/*..*/mongorestore not found"
+            printf "Mongo Restore path $MONGO_RESTORE_PATH/*..*/mongorestore not found"
+            exit 1
+          else
+            log "MONGO_RESTORE_PATH=$MONGO_RESTORE_PATH"
+          fi
+        else
+          log "Mongo Tools Path path $MONGO_TOOL_PATH not found"
+          printf "Mongo Tools Path path $MONGO_TOOL_PATH not found"
+          exit 1
+        fi
 				# See if mongo shell exist
 				SHELLPATH=$(find $FIND_BIN_PATH -name mongo | head -1)
 				if [[ "$SHELLPATH" = '' ]]; then
-					e3=1
+					e5=1
 					# Shell path not found - return empty repo config
 					log "Shell path $FIND_BIN_PATH/*..*/mongo not found"
+					printf "Shell path $FIND_BIN_PATH/*..*/mongo not found"
+					exit 1
 				else
 					shellPathFound=1
 					log "SHELLPATH=$SHELLPATH"

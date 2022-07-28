@@ -84,6 +84,10 @@ def repository_discovery(source_connection):
     script_content = pkgutil.get_data('resources', 'discover_repos.sh')
     #logger.debug("discover_repos_repository_script: {}".format(script_content))
     res = libs.run_bash(source_connection, script_content, env)
+
+    if res.exit_code != 0:
+        raise RuntimeError(('Could not execute {} script on the remote host.\n{} {}').format('discover_repos.sh', res.stdout, res.stderr))
+
     logger.debug("res = {}".format(res))
     logger.debug("res.stdout = {}".format(res.stdout))
     repodiscovery = json.loads(res.stdout)
@@ -91,7 +95,7 @@ def repository_discovery(source_connection):
     for item in repodiscovery:
         logger.debug("item:{}".format(item))
         repository = RepositoryDefinition(version=item['version'], mongo_install_path=item['mongo_install_path'],
-                                          mongo_shell_path=item['mongo_shell_path'], pretty_name=item['pretty_name'])
+                                          mongo_dump_path=item['mongo_dump_path'],mongo_restore_path=item['mongo_restore_path'],mongo_shell_path=item['mongo_shell_path'], pretty_name=item['pretty_name'])
         repositories.append(repository)
 
     # # Write library file for future use
@@ -136,7 +140,28 @@ def staged_pre_snapshot(repository, source_config, staged_source, optional_snaps
                          staged_source.staged_connection)
     staged_source.mongo_install_path = repository.mongo_install_path
     staged_source.mongo_shell_path = repository.mongo_shell_path
+    staged_source.mongo_dump_path = repository.mongo_dump_path
+    staged_source.mongo_restore_path = repository.mongo_restore_path
     logger.info("optional_snapshot_parameters={}".format(optional_snapshot_parameters))
+
+    if staged_source.parameters.d_source_type not in ["onlinemongodump",
+                                                      "extendedcluster",
+                                                      "stagingpush", "seed"]:
+        # Write backup information
+        cmd = "cat {}".format(staged_source.parameters.backup_metadata_file)
+        date_validate = common.execute_bash_cmd(
+            staged_source.staged_connection, cmd, {})
+        date_format = "%m%d%Y_%H%I%M%S"
+        try:
+            datetime.strptime(date_validate, date_format)
+            logger.debug("The date string format: {} provided in backup_metadata_file: {} is correct."
+                         .format(date_validate, staged_source.parameters.backup_metadata_file))
+        except Exception:
+            error_msg = "The date string format is incorrect in backup_metadata_file: {}. " \
+                        "It should be MMDDYYYY_HH24MISS".format(staged_source.parameters.backup_metadata_file)
+            logger.exception(error_msg)
+            raise UserError(error_msg)
+
     if optional_snapshot_parameters is not None and optional_snapshot_parameters.resync:
         common.add_debug_heading_block("Start Staged Pre Snapshot Resync")
 
@@ -444,9 +469,9 @@ def staged_status(staged_source, repository, source_config):
         return Status.INACTIVE
 
 
-@plugin.linked.worker()
-def staged_worker(repository, source_config, staged_source):
-    helpers._record_hook("staging worker", staged_source.staged_connection)
+# @plugin.linked.worker()
+# def staged_worker(repository, source_config, staged_source):
+#     helpers._record_hook("staging worker", staged_source.staged_connection)
 
 
 @plugin.virtual.mount_specification()

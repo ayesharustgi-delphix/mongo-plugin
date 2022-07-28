@@ -151,7 +151,7 @@ def staged_pre_snapshot(repository, source_config, staged_source, optional_snaps
         cmd = "cat {}".format(staged_source.parameters.backup_metadata_file)
         date_validate = common.execute_bash_cmd(
             staged_source.staged_connection, cmd, {})
-        date_format = "%m%d%Y_%H%I%M%S"
+        date_format = "%m%d%Y_%H%M%S"
         try:
             datetime.strptime(date_validate, date_format)
             logger.debug("The date string format: {} provided in backup_metadata_file: {} is correct."

@@ -255,8 +255,7 @@
         "enum": [
           "None",
           "SCRAM",
-          "x509",
-          "ldap"
+          "x509"
         ],
         "default": "None"
       },
@@ -684,8 +683,7 @@
         "enum": [
           "None",
           "SCRAM",
-          "x509",
-          "ldap"
+          "x509"
         ],
         "default": "SCRAM"
       },

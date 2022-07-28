@@ -77,17 +77,26 @@ def cr_dir_structure_replicaset(mount_path, replicaset, rx_connection):
 
 
 def extract_shard_config_backup(backupfile, mount_path, confignum, connection):
-    cmd = "tar -zxvf {} -C {}/c{}m0 --strip-components 1".format(backupfile, mount_path, confignum)
+    cmd = "tar -{}xvf {} -C {}/c{}m0 --strip-components 1".format(
+        "z" if backupfile.endswith(".tar.gz") else "",
+        backupfile,
+        mount_path, confignum)
     res = execute_bash_cmd_silent(connection, cmd, {})
 
 
 def extract_shard_backup(backupfile, mount_path, shardnum, connection):
-    cmd = "tar -zxvf {} -C {}/s{}m0 --strip-components 1".format(backupfile, mount_path, shardnum)
+    cmd = "tar -{}xvf {} -C {}/s{}m0 --strip-components 1".format(
+        "z" if backupfile.endswith(".tar.gz") else "",
+        backupfile,
+        mount_path, shardnum)
     res = execute_bash_cmd_silent(connection, cmd, {})
 
 
 def extract_replicaset_backup(backupfile, mount_path, connection):
-    cmd = "tar -zxvf {} -C {}/s0m0 --strip-components 1".format(backupfile, mount_path)
+    cmd = "tar -{}xvf {} -C {}/s0m0 --strip-components 1".format(
+        "z" if backupfile.endswith(".tar.gz") else "",
+        backupfile,
+        mount_path)
     res = execute_bash_cmd_silent(connection, cmd, {})
 
 

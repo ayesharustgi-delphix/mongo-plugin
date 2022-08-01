@@ -8,19 +8,19 @@
       
       
       
-      <link rel="icon" href="/image/logo.png">
+      <link rel="icon" href="../image/logo.png">
       <meta name="generator" content="mkdocs-1.3.0, mkdocs-material-8.2.15">
     
     
       
-        <title>Plugin - Mongo</title>
+        <title>Architecture - Plugin - Mongo</title>
       
     
     
-      <link rel="stylesheet" href="/assets/stylesheets/main.c382b1dc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.c382b1dc.min.css">
       
         
-        <link rel="stylesheet" href="/assets/stylesheets/palette.cc9b2e1e.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.cc9b2e1e.min.css">
         
           
           
@@ -39,9 +39,9 @@
       
     
     
-      <link rel="stylesheet" href="/stylesheets/extra.css">
+      <link rel="stylesheet" href="../stylesheets/extra.css">
     
-    <script>__md_scope=new URL("/",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -64,6 +64,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#architecture" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -74,9 +79,9 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="/." title="Plugin - Mongo" class="md-header__button md-logo" aria-label="Plugin - Mongo" data-md-component="logo">
+    <a href=".." title="Plugin - Mongo" class="md-header__button md-logo" aria-label="Plugin - Mongo" data-md-component="logo">
       
-  <img src="/image/delphix-logo-black1x.svg" alt="logo">
+  <img src="../image/delphix-logo-black1x.svg" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -92,7 +97,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              
+              Architecture
             
           </span>
         </div>
@@ -159,9 +164,9 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="/." title="Plugin - Mongo" class="md-nav__button md-logo" aria-label="Plugin - Mongo" data-md-component="logo">
+    <a href=".." title="Plugin - Mongo" class="md-nav__button md-logo" aria-label="Plugin - Mongo" data-md-component="logo">
       
-  <img src="/image/delphix-logo-black1x.svg" alt="logo">
+  <img src="../image/delphix-logo-black1x.svg" alt="logo">
 
     </a>
     Plugin - Mongo
@@ -177,7 +182,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/." class="md-nav__link">
+      <a href=".." class="md-nav__link">
         Overview
       </a>
     </li>
@@ -190,11 +195,79 @@
 
   
   
+    
   
-    <li class="md-nav__item">
-      <a href="/Architecture/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Architecture
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         Architecture
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    Overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#environment-linking-and-provisioning-architecture" class="md-nav__link">
+    Environment Linking and Provisioning Architecture
+  </a>
+  
+    <nav class="md-nav" aria-label="Environment Linking and Provisioning Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#consolidated-seed-extended-cluster-offlineonline-mongodump-mongo-atlas-non-sharded-ingestion-types" class="md-nav__link">
+    Consolidated Seed, Extended Cluster, Offline/Online mongodump, Mongo Atlas, Non-Sharded Ingestion Types
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sharded-mongo-ingestion-type" class="md-nav__link">
+    Sharded Mongo Ingestion Type
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -207,7 +280,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/InstallPlugin/" class="md-nav__link">
+      <a href="../InstallPlugin/" class="md-nav__link">
         Install Plugin
       </a>
     </li>
@@ -248,7 +321,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/Requirements/SupportMatrix/" class="md-nav__link">
+      <a href="../Requirements/SupportMatrix/" class="md-nav__link">
         Support Matrix
       </a>
     </li>
@@ -262,7 +335,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/Requirements/Source/" class="md-nav__link">
+      <a href="../Requirements/Source/" class="md-nav__link">
         Source Requirements
       </a>
     </li>
@@ -276,7 +349,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/Requirements/Staging/" class="md-nav__link">
+      <a href="../Requirements/Staging/" class="md-nav__link">
         Staging Requirements
       </a>
     </li>
@@ -290,7 +363,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/Requirements/Target/" class="md-nav__link">
+      <a href="../Requirements/Target/" class="md-nav__link">
         Target Requirements
       </a>
     </li>
@@ -304,7 +377,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/Requirements/NetworkPorts/" class="md-nav__link">
+      <a href="../Requirements/NetworkPorts/" class="md-nav__link">
         Network Port Requirements
       </a>
     </li>
@@ -326,7 +399,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/Discovery/" class="md-nav__link">
+      <a href="../Discovery/" class="md-nav__link">
         Discovery
       </a>
     </li>
@@ -341,7 +414,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/Linking/" class="md-nav__link">
+      <a href="../Linking/" class="md-nav__link">
         Linking
       </a>
     </li>
@@ -356,7 +429,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/Provisioning/" class="md-nav__link">
+      <a href="../Provisioning/" class="md-nav__link">
         Provisioning
       </a>
     </li>
@@ -371,7 +444,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/Operations/" class="md-nav__link">
+      <a href="../Operations/" class="md-nav__link">
         Operations
       </a>
     </li>
@@ -412,7 +485,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/Upgrades/UpgradePlugin/" class="md-nav__link">
+      <a href="../Upgrades/UpgradePlugin/" class="md-nav__link">
         Upgrade Plugin
       </a>
     </li>
@@ -426,7 +499,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/Upgrades/UpgradeDsource/" class="md-nav__link">
+      <a href="../Upgrades/UpgradeDsource/" class="md-nav__link">
         Upgrade dSource
       </a>
     </li>
@@ -440,7 +513,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/Upgrades/UpgradeVDB/" class="md-nav__link">
+      <a href="../Upgrades/UpgradeVDB/" class="md-nav__link">
         Upgrade VDB
       </a>
     </li>
@@ -462,7 +535,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/Limitations/" class="md-nav__link">
+      <a href="../Limitations/" class="md-nav__link">
         Limitations
       </a>
     </li>
@@ -529,7 +602,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/Release_Notes/1.0.2/Release-v1.0.2/" class="md-nav__link">
+      <a href="../Release_Notes/1.0.2/Release-v1.0.2/" class="md-nav__link">
         Release-v1.0.2
       </a>
     </li>
@@ -576,7 +649,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/Release_Notes/1.0.1/Release-v1.0.1/" class="md-nav__link">
+      <a href="../Release_Notes/1.0.1/Release-v1.0.1/" class="md-nav__link">
         Release-v1.0.1
       </a>
     </li>
@@ -623,7 +696,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/Release_Notes/1.0.0/Release-v1.0.0/" class="md-nav__link">
+      <a href="../Release_Notes/1.0.0/Release-v1.0.0/" class="md-nav__link">
         Release-v1.0.0
       </a>
     </li>
@@ -652,7 +725,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/Troubleshooting/" class="md-nav__link">
+      <a href="../Troubleshooting/" class="md-nav__link">
         Troubleshooting
       </a>
     </li>
@@ -667,7 +740,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/PluginDevelopment/" class="md-nav__link">
+      <a href="../PluginDevelopment/" class="md-nav__link">
         PluginDevelopment
       </a>
     </li>
@@ -691,6 +764,50 @@
   
   
   
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    Overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#environment-linking-and-provisioning-architecture" class="md-nav__link">
+    Environment Linking and Provisioning Architecture
+  </a>
+  
+    <nav class="md-nav" aria-label="Environment Linking and Provisioning Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#consolidated-seed-extended-cluster-offlineonline-mongodump-mongo-atlas-non-sharded-ingestion-types" class="md-nav__link">
+    Consolidated Seed, Extended Cluster, Offline/Online mongodump, Mongo Atlas, Non-Sharded Ingestion Types
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sharded-mongo-ingestion-type" class="md-nav__link">
+    Sharded Mongo Ingestion Type
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -701,8 +818,29 @@
           <div class="md-content" data-md-component="content">
             <article class="md-content__inner md-typeset">
               
-  <h1>404 - Not found</h1>
+                
 
+
+<h1 id="architecture">Architecture</h1>
+<h2 id="overview">Overview</h2>
+<p>Various Mongo configurations ranging from Standalone to multi-node replicaset can be used with Delphix. This article contains an overview of how Delphix works with Mongo.</p>
+<p>There are three key concepts when using Delphix with any data platform:</p>
+<ol>
+<li><strong>Environments</strong>: The server and software required to run a data set. For Mongo, this will be an operating system host with Mongo instances running on it.<br />
+    a. Staging Environment: Source data is ingested into Delphix using Staging Host. These will be used to create dSources.<br />
+    b. Target Environment: Target hosts to provision VDBs. These need Mongo installations that correspond to the versions of the Source environments, per our Mongo Support Matrix.</li>
+<li><strong>dSource</strong>: A database that the Delphix Virtualization Engine uses to create and update virtual copies of your database</li>
+<li><strong>VDB</strong>: A database provisioned from either a dSource or another VDB which is a copy of the source data. A VDB is created and managed by the Delphix Virtualization Engine.<br />
+Explore how Delphix connects to Mongo environments and creates Mongo dSources and VDBs, with these concepts in mind.  </li>
+</ol>
+<h2 id="environment-linking-and-provisioning-architecture">Environment Linking and Provisioning Architecture</h2>
+<p>As shown in the diagram below Delphix begins by ingesting data from your source database / backups to create dSources. Data is ingested using existing backups on Disk or by connecting to Source. Once you have added an environment, Delphix will <code>discover</code> required Mongo binaries on it.  </p>
+<h4 id="consolidated-seed-extended-cluster-offlineonline-mongodump-mongo-atlas-non-sharded-ingestion-types">Consolidated Seed, Extended Cluster, Offline/Online mongodump, Mongo Atlas, Non-Sharded Ingestion Types</h4>
+<p><img alt="Screenshot" src="../image/consolidated_architectures.png" /></p>
+<h4 id="sharded-mongo-ingestion-type">Sharded Mongo Ingestion Type</h4>
+<p><img alt="Screenshot" src="../image/sharded_architecture.png" /></p>
+
+              
             </article>
           </div>
         </div>
@@ -710,6 +848,41 @@
       </main>
       
         <footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href=".." class="md-footer__link md-footer__link--prev" aria-label="Previous: Overview" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Overview
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../InstallPlugin/" class="md-footer__link md-footer__link--next" aria-label="Next: Install Plugin" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Install Plugin
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
@@ -731,10 +904,10 @@
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": "/", "features": [], "search": "/assets/javascripts/workers/search.2a1c317c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.2a1c317c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
     
     
-      <script src="/assets/javascripts/bundle.a6c66575.min.js"></script>
+      <script src="../assets/javascripts/bundle.a6c66575.min.js"></script>
       
     
   </body>

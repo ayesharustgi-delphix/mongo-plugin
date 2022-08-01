@@ -1,0 +1,1088 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      <link rel="icon" href="../image/logo.png">
+      <meta name="generator" content="mkdocs-1.3.0, mkdocs-material-8.2.15">
+    
+    
+      
+        <title>Provisioning - Plugin - Mongo</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.c382b1dc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.cc9b2e1e.min.css">
+        
+          
+          
+          <meta name="theme-color" content="#02a6f2">
+        
+      
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="light-blue" data-md-color-accent="">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#provisioning" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Plugin - Mongo" class="md-header__button md-logo" aria-label="Plugin - Mongo" data-md-component="logo">
+      
+  <img src="../image/delphix-logo-black1x.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Plugin - Mongo
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Provisioning
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Plugin - Mongo" class="md-nav__button md-logo" aria-label="Plugin - Mongo" data-md-component="logo">
+      
+  <img src="../image/delphix-logo-black1x.svg" alt="logo">
+
+    </a>
+    Plugin - Mongo
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Architecture/" class="md-nav__link">
+        Architecture
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../InstallPlugin/" class="md-nav__link">
+        Install Plugin
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          Requirements
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Requirements" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Requirements
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Requirements/SupportMatrix/" class="md-nav__link">
+        Support Matrix
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Requirements/Source/" class="md-nav__link">
+        Source Requirements
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Requirements/Staging/" class="md-nav__link">
+        Staging Requirements
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Requirements/Target/" class="md-nav__link">
+        Target Requirements
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Requirements/NetworkPorts/" class="md-nav__link">
+        Network Port Requirements
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Discovery/" class="md-nav__link">
+        Discovery
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Linking/" class="md-nav__link">
+        Linking
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Provisioning
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Provisioning
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#provisioning-vdb" class="md-nav__link">
+    Provisioning VDB
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    Prerequisites
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#create-vdb" class="md-nav__link">
+    Create VDB
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vdb-parameters" class="md-nav__link">
+    VDB Parameters
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Operations/" class="md-nav__link">
+        Operations
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_9" type="checkbox" id="__nav_9" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_9">
+          Upgrades
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Upgrades" data-md-level="1">
+        <label class="md-nav__title" for="__nav_9">
+          <span class="md-nav__icon md-icon"></span>
+          Upgrades
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Upgrades/UpgradePlugin/" class="md-nav__link">
+        Upgrade Plugin
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Upgrades/UpgradeDsource/" class="md-nav__link">
+        Upgrade dSource
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Upgrades/UpgradeVDB/" class="md-nav__link">
+        Upgrade VDB
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Limitations/" class="md-nav__link">
+        Limitations
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_11" type="checkbox" id="__nav_11" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_11">
+          Release Notes
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Release Notes" data-md-level="1">
+        <label class="md-nav__title" for="__nav_11">
+          <span class="md-nav__icon md-icon"></span>
+          Release Notes
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_11_1" type="checkbox" id="__nav_11_1" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_11_1">
+          1.0.2
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="1.0.2" data-md-level="2">
+        <label class="md-nav__title" for="__nav_11_1">
+          <span class="md-nav__icon md-icon"></span>
+          1.0.2
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Release_Notes/1.0.2/Release-v1.0.2/" class="md-nav__link">
+        Release-v1.0.2
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_11_2" type="checkbox" id="__nav_11_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_11_2">
+          1.0.1
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="1.0.1" data-md-level="2">
+        <label class="md-nav__title" for="__nav_11_2">
+          <span class="md-nav__icon md-icon"></span>
+          1.0.1
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Release_Notes/1.0.1/Release-v1.0.1/" class="md-nav__link">
+        Release-v1.0.1
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_11_3" type="checkbox" id="__nav_11_3" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_11_3">
+          1.0.0
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="1.0.0" data-md-level="2">
+        <label class="md-nav__title" for="__nav_11_3">
+          <span class="md-nav__icon md-icon"></span>
+          1.0.0
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Release_Notes/1.0.0/Release-v1.0.0/" class="md-nav__link">
+        Release-v1.0.0
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Troubleshooting/" class="md-nav__link">
+        Troubleshooting
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PluginDevelopment/" class="md-nav__link">
+        PluginDevelopment
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#provisioning-vdb" class="md-nav__link">
+    Provisioning VDB
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    Prerequisites
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#create-vdb" class="md-nav__link">
+    Create VDB
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vdb-parameters" class="md-nav__link">
+    VDB Parameters
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+
+
+<h1 id="provisioning">Provisioning</h1>
+<p>This topic describes the basic concepts involved with provisioning VDBs for Mongo.</p>
+<p>A dSource is a virtualized representation of a physical or logical source database. You can create a virtual database (VDB) from a dSource snapshot. A VDB is an independent, writable copy of a dSource snapshot. You can also create VDBs from other VDB. Once you have provisioned a VDB to a target environment, you can also implement snapshot and retention policies for the VDB, which will determine how frequently Delphix Engine will take a database snapshot and how long the snapshots will be retained for recovery and provisioning purposes.</p>
+<p>Snapshots accumulate over time. To view a snapshot:</p>
+<ol>
+<li>From the Datasets panel, click the group containing the dSource.</li>
+<li>Select dSource.</li>
+<li>Click the TimeFlow tab.</li>
+</ol>
+<p><img alt="Screenshot" src="../image/dsource_snapshots.png" /></p>
+<p>The TimeFlow appears as a list of dates, each of which expands to show snapshots from that date. Bring the cursor on desired snapshot of dSource, provision icon appears, click on provision icon.<br />
+Provide parameters to provision VDB, Follow the wizard and submit to provision VDB. Once you provisioned a VDB, you can also take snapshots of it. As with the dSource snapshots, you can find these when you select the VDB in the Datasets panel. You can then provision additional VDBs from these VDB snapshots.</p>
+<h2 id="provisioning-vdb">Provisioning VDB</h2>
+<p>This topic describes how to provision a virtual database (VDB) from a mongo dSource.</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li>Install delphix engine 6.0.7.x and above  </li>
+<li>Install mongo binaries on Staging host </li>
+<li>Add Staging Environment</li>
+<li>Create dSource</li>
+<li>Install mongo binaries on Target host  </li>
+<li>Add Target environment  </li>
+</ul>
+<h2 id="create-vdb">Create VDB</h2>
+<p>Procedure:</p>
+<ol>
+<li>Login to the Delphix Management GUI.  </li>
+<li>Click Manage.  </li>
+<li>Select Datasets.  </li>
+<li>Select a dSource.  </li>
+<li>Select a snapshot from which you want to provision.  </li>
+<li>
+<p>Click Provision VDB icon to open Provision VDB wizard. </p>
+<p><img alt="Screenshot" src="../image/vdb_provision_icon.png" /> </p>
+</li>
+<li>
+<p>Select a target environment from the left pane.  </p>
+<p><img alt="Screenshot" src="../image/provision_screen0.png" /> </p>
+</li>
+<li>
+<p>Select an Installation to use from the dropdown list of available mongo binaries on that environment.  </p>
+</li>
+<li>Select the Environment User.  </li>
+<li>
+<p>Enter VDB parameters.  </p>
+<p><img alt="Screenshot" src="../image/provision_screen1.png" /> </p>
+<h2 id="vdb-parameters">VDB Parameters</h2>
+<table>
+<thead>
+<tr>
+<th align="left">Parameter</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">Mount Path</td>
+<td align="left">Mount Path for VDB mongo instance datafiles</td>
+</tr>
+<tr>
+<td align="left">bindIP String</td>
+<td align="left">IP Binding - default 0.0.0.0</td>
+</tr>
+<tr>
+<td align="left">Target Port / Target Port Pool for Mongo Instance(s). Specify only first port for sharded mongo</td>
+<td align="left">For non-sharded VDB&rsquo;s, this is the port that will be used for mongo instances. For sharded VDB&rsquo;s, this is the starting port. Delphix will keep incrementing port by 1 and use as many as needed based on configuration selected.</td>
+</tr>
+<tr>
+<td align="left">Oplog Size</td>
+<td align="left">Size of oplogs</td>
+</tr>
+<tr>
+<td align="left">Journal commit Interval</td>
+<td align="left">Journal commit Internal in ms</td>
+</tr>
+<tr>
+<td align="left">MongoDB Admin/Clusteradmin User Password</td>
+<td align="left">Update password of delphix user created during dSource creation</td>
+</tr>
+<tr>
+<td align="left">Convert each shards to replicaset</td>
+<td align="left">Select this to create VDB as replicaset</td>
+</tr>
+<tr>
+<td align="left">Additional Nodes</td>
+<td align="left">Click on Add button to select aditional nodes for creating replicaset VDB or distributing Shards on different hosts</td>
+</tr>
+<tr>
+<td align="left">Mongos Port</td>
+<td align="left">Port to be used for mongos router instance</td>
+</tr>
+<tr>
+<td align="left">Enable SSL/TLS</td>
+<td align="left">Enable SSL/ TLS</td>
+</tr>
+<tr>
+<td align="left">SSL/TLS Parameters</td>
+<td align="left">SSL/TLS Parameters (e.g. tlsMode, tlsCAFile, tlsPEMKeyFile, sslAllowConnectionsWithoutCertificates etc)</td>
+</tr>
+<tr>
+<td align="left">Enable Authentication</td>
+<td align="left">Enable Authentication</td>
+</tr>
+<tr>
+<td align="left">User Auth Mode</td>
+<td align="left">None, SCRAM, x509</td>
+</tr>
+<tr>
+<td align="left">keyfile_path</td>
+<td align="left">KeyAuth keyfile name (Full Path)</td>
+</tr>
+<tr>
+<td align="left">Cluster Auth Mode</td>
+<td align="left">None, keyFile, x509, sendKeyFile, sendX509</td>
+</tr>
+<tr>
+<td align="left">Source is Encrypted</td>
+<td align="left">Does source mongo instance use encryption ?</td>
+</tr>
+<tr>
+<td align="left">Source Encryption Method</td>
+<td align="left">KeyFile, KMIP</td>
+</tr>
+<tr>
+<td align="left">Local Encryption Keyfile</td>
+<td align="left">Full path of KeyFile if used for encryption</td>
+</tr>
+<tr>
+<td align="left">KMIP Parameters</td>
+<td align="left">KMIP Parameter details ( e.g. kmipClientCertificateFile, kmipPort, kmipServerCAFile, kmipServerName )</td>
+</tr>
+<tr>
+<td align="left">Enable LDAP</td>
+<td align="left">Enable LDAP Authentication / Authorization</td>
+</tr>
+<tr>
+<td align="left">LDAP Parameters</td>
+<td align="left">LDAP Parameter details ( e.g. ldapBindMethod, ldapQueryPassword, ldapServers, ldapTimeoutMS )</td>
+</tr>
+<tr>
+<td align="left">Enable Auditlog</td>
+<td align="left">Enable Auditlog Parameters</td>
+</tr>
+<tr>
+<td align="left">Auditlog Parameters</td>
+<td align="left">Auditlog Parameter details ( e.g. auditDestination, auditFilter )</td>
+</tr>
+<tr>
+<td align="left">Enable SetParams</td>
+<td align="left">Enable SetParams</td>
+</tr>
+<tr>
+<td align="left">SetParams Parameters</td>
+<td align="left">SetParams Parameter details ( e.g. authenticationMechanisms, opensslCipherConfig )</td>
+</tr>
+<tr>
+<td align="left">Client Certificate for Mongos / Mongo Session on Primary Node</td>
+<td align="left">Client Certificate for Mongos / Mongo Session on Primary Node</td>
+</tr>
+<tr>
+<td align="left">Client CA Certificate for Mongos / Mongo Session on Primary Node</td>
+<td align="left">Client CA Certificate for Mongos / Mongo Session on Primary Node</td>
+</tr>
+</tbody>
+</table>
+<p>Following Sections are in form of <code>Parameter Name</code> and <code>Value</code> format. Add as many parameters needed by clicking on <code>+Add</code> button.  </p>
+<pre><code>-   SSL/TLS Parameters  
+-   KMIP Parameters  
+-   LDAP Parameters  
+-   Auditlog Parameters  
+-   SetParams Parameters
+</code></pre>
+<p><strong>Note:</strong>  </p>
+<ul>
+<li>Any parameters specified for above section need to be compatible with <code>mongod</code> / <code>mongos</code> command line parameters.  </li>
+<li>Please refer <a href="https://www.mongodb.com/docs/v5.0/reference/configuration-file-settings-command-line-options-mapping/#std-label-conf-file-command-line-mapping">Mongo Documentation</a> for appropriate names of parameters.  </li>
+<li>Please do not specify &ldquo;&ndash;&rdquo; when adding any parameters.  </li>
+<li>Sample Parameters are as below for SSL/TLS Parameters section<ul>
+<li>tlsMode  </li>
+<li>tlsCAFile  </li>
+<li>tlsPEMKeyFile  </li>
+<li>sslAllowConnectionsWithoutCertificates  </li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>Select a Target Group for the VDB.  </p>
+</li>
+<li>Add a new group, if required.  </li>
+<li>Select a Snapshot Policy for the VDB.  </li>
+<li>Click Next.  </li>
+<li>Specify any desired hook operations.  </li>
+<li>Click Next.  </li>
+<li>Review the Provisioning Configuration and Data Management information.  </li>
+<li>Click Submit.  </li>
+</ol>
+<p>When provisioning starts, you can review the progress of the job in the Databases panel, or in the Job History panel of the Dashboard. When provisioning is complete, the VDB will be included in the group you designated and listed in the Databases panel. If you select the VDB in the Databases panel and click the Open icon, you can view its card, which contains information about the database and its Data Management settings.</p>
+<p>Additional node is required only if you plan to use more than 1 host for VDB provisioning. This is applicable while creating VDB as replicaset OR while distributing Shards across multiple hosts. By default VDB&rsquo;s are always created as single node replicaset which is completely virtual. </p>
+<p>If <code>Convert each shards to replicaset</code> parameter is selected  </p>
+<ul>
+<li>Delphix will convert non-sharded VDB to 3 node replicaset. Each additional instance ( 2 instances ) will incur storage as size of 1st instance. Mongo will initiate complete sync from existing member. This will impact storage as each new member will receive full copy of data from existing host. 2 Members will use twice the amount of storage. It is recommended to use single node replicaset ( if possible ) to save storage.</li>
+<li>Delphix will convert sharded VDB to 3 node replicaset for config server as well as each Shard. Each additional instance will incur storage as size of 1st instance. Mongo will initiate complete sync from existing member. This will impact storage as each new member will receive full copy of data from existing host. Storage usage will multiply based on number of shards. It is recommended to use single node replicaset ( if possible ) to save storage.</li>
+</ul>
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="../Linking/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Linking" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Linking
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../Operations/" class="md-footer__link md-footer__link--next" aria-label="Next: Operations" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Operations
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.2a1c317c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.a6c66575.min.js"></script>
+      
+    
+  </body>
+</html>

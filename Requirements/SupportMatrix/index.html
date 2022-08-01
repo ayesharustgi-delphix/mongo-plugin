@@ -1,0 +1,1067 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      <link rel="icon" href="../../image/logo.png">
+      <meta name="generator" content="mkdocs-1.3.0, mkdocs-material-8.2.15">
+    
+    
+      
+        <title>Support Matrix - Plugin - Mongo</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.c382b1dc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.cc9b2e1e.min.css">
+        
+          
+          
+          <meta name="theme-color" content="#02a6f2">
+        
+      
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="light-blue" data-md-color-accent="">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#support-matrix" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Plugin - Mongo" class="md-header__button md-logo" aria-label="Plugin - Mongo" data-md-component="logo">
+      
+  <img src="../../image/delphix-logo-black1x.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Plugin - Mongo
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Support Matrix
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Plugin - Mongo" class="md-nav__button md-logo" aria-label="Plugin - Mongo" data-md-component="logo">
+      
+  <img src="../../image/delphix-logo-black1x.svg" alt="logo">
+
+    </a>
+    Plugin - Mongo
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Architecture/" class="md-nav__link">
+        Architecture
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../InstallPlugin/" class="md-nav__link">
+        Install Plugin
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          Requirements
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Requirements" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Requirements
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Support Matrix
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Support Matrix
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#database-os-support-matrix" class="md-nav__link">
+    Database / OS Support Matrix
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture-options-matrix" class="md-nav__link">
+    Architecture Options Matrix
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#engine-compatibility-matrix" class="md-nav__link">
+    Engine Compatibility Matrix
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mongo-version-compatability-across-delphix-environments" class="md-nav__link">
+    Mongo Version compatability across delphix environments
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Source/" class="md-nav__link">
+        Source Requirements
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Staging/" class="md-nav__link">
+        Staging Requirements
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Target/" class="md-nav__link">
+        Target Requirements
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NetworkPorts/" class="md-nav__link">
+        Network Port Requirements
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Discovery/" class="md-nav__link">
+        Discovery
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Linking/" class="md-nav__link">
+        Linking
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Provisioning/" class="md-nav__link">
+        Provisioning
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Operations/" class="md-nav__link">
+        Operations
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_9" type="checkbox" id="__nav_9" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_9">
+          Upgrades
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Upgrades" data-md-level="1">
+        <label class="md-nav__title" for="__nav_9">
+          <span class="md-nav__icon md-icon"></span>
+          Upgrades
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Upgrades/UpgradePlugin/" class="md-nav__link">
+        Upgrade Plugin
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Upgrades/UpgradeDsource/" class="md-nav__link">
+        Upgrade dSource
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Upgrades/UpgradeVDB/" class="md-nav__link">
+        Upgrade VDB
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Limitations/" class="md-nav__link">
+        Limitations
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_11" type="checkbox" id="__nav_11" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_11">
+          Release Notes
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Release Notes" data-md-level="1">
+        <label class="md-nav__title" for="__nav_11">
+          <span class="md-nav__icon md-icon"></span>
+          Release Notes
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_11_1" type="checkbox" id="__nav_11_1" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_11_1">
+          1.0.2
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="1.0.2" data-md-level="2">
+        <label class="md-nav__title" for="__nav_11_1">
+          <span class="md-nav__icon md-icon"></span>
+          1.0.2
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Release_Notes/1.0.2/Release-v1.0.2/" class="md-nav__link">
+        Release-v1.0.2
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_11_2" type="checkbox" id="__nav_11_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_11_2">
+          1.0.1
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="1.0.1" data-md-level="2">
+        <label class="md-nav__title" for="__nav_11_2">
+          <span class="md-nav__icon md-icon"></span>
+          1.0.1
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Release_Notes/1.0.1/Release-v1.0.1/" class="md-nav__link">
+        Release-v1.0.1
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_11_3" type="checkbox" id="__nav_11_3" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_11_3">
+          1.0.0
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="1.0.0" data-md-level="2">
+        <label class="md-nav__title" for="__nav_11_3">
+          <span class="md-nav__icon md-icon"></span>
+          1.0.0
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Release_Notes/1.0.0/Release-v1.0.0/" class="md-nav__link">
+        Release-v1.0.0
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Troubleshooting/" class="md-nav__link">
+        Troubleshooting
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../PluginDevelopment/" class="md-nav__link">
+        PluginDevelopment
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#database-os-support-matrix" class="md-nav__link">
+    Database / OS Support Matrix
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture-options-matrix" class="md-nav__link">
+    Architecture Options Matrix
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#engine-compatibility-matrix" class="md-nav__link">
+    Engine Compatibility Matrix
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mongo-version-compatability-across-delphix-environments" class="md-nav__link">
+    Mongo Version compatability across delphix environments
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+
+
+<h1 id="support-matrix">Support Matrix</h1>
+<h3 id="database-os-support-matrix"><a id="support matrix"></a>Database / OS Support Matrix</h3>
+<table>
+<thead>
+<tr>
+<th align="left">Supported Mongo Version</th>
+<th align="center">mongoDB 4.2.x</th>
+<th align="left">mongoDB 4.4.x</th>
+<th align="left">mongoDB 5.0.x</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">RHEL 6.x</td>
+<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="left"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="left"><img alt="Screenshot" src="../../image/check.svg" /></td>
+</tr>
+<tr>
+<td align="left">RHEL 7.x</td>
+<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="left"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="left"><img alt="Screenshot" src="../../image/check.svg" /></td>
+</tr>
+<tr>
+<td align="left">RHEL 8.x</td>
+<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="left"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="left"><img alt="Screenshot" src="../../image/check.svg" /></td>
+</tr>
+<tr>
+<td align="left">CentOS 6.x</td>
+<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="left"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="left"><img alt="Screenshot" src="../../image/check.svg" /></td>
+</tr>
+<tr>
+<td align="left">CentOS 7.x</td>
+<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="left"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="left"><img alt="Screenshot" src="../../image/check.svg" /></td>
+</tr>
+<tr>
+<td align="left">CentOS 8.x</td>
+<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="left"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="left"><img alt="Screenshot" src="../../image/check.svg" /></td>
+</tr>
+<tr>
+<td align="left">Oracle Linux 6.x</td>
+<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="left"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="left"><img alt="Screenshot" src="../../image/check.svg" /></td>
+</tr>
+<tr>
+<td align="left">Oracle Linux 7.x</td>
+<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="left"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="left"><img alt="Screenshot" src="../../image/check.svg" /></td>
+</tr>
+<tr>
+<td align="left">Oracle Linux 8.x</td>
+<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="left"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="left"><img alt="Screenshot" src="../../image/check.svg" /></td>
+</tr>
+<tr>
+<td align="left">Windows</td>
+<td align="center"><img alt="Screenshot" src="../../image/error.svg" /></td>
+<td align="left"><img alt="Screenshot" src="../../image/error.svg" /></td>
+<td align="left"><img alt="Screenshot" src="../../image/error.svg" /></td>
+</tr>
+</tbody>
+</table>
+<h3 id="architecture-options-matrix"><a id="architecture options"></a>Architecture Options Matrix</h3>
+<table>
+<thead>
+<tr>
+<th align="left">Architecture</th>
+<th align="center">Non-Sharded Source</th>
+<th align="center">Non-Sharded Target</th>
+<th align="center">Sharded Source</th>
+<th align="center">Sharded Target</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">Seed</td>
+<td align="center">N/A</td>
+<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="center">N/A</td>
+<td align="center"><img alt="Screenshot" src="../../image/error.svg" /></td>
+</tr>
+<tr>
+<td align="left">extendedcluster</td>
+<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="center"><img alt="Screenshot" src="../../image/error.svg" /></td>
+<td align="center"><img alt="Screenshot" src="../../image/error.svg" /></td>
+</tr>
+<tr>
+<td align="left">onlinemongodump</td>
+<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="center"><img alt="Screenshot" src="../../image/error.svg" /></td>
+</tr>
+<tr>
+<td align="left">offlinemongodump</td>
+<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="center"><img alt="Screenshot" src="../../image/error.svg" /></td>
+</tr>
+<tr>
+<td align="left">shardedsource</td>
+<td align="center"><img alt="Screenshot" src="../../image/error.svg" /></td>
+<td align="center"><img alt="Screenshot" src="../../image/error.svg" /></td>
+<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
+</tr>
+<tr>
+<td align="left">nonshardedsource</td>
+<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="center"><img alt="Screenshot" src="../../image/error.svg" /></td>
+<td align="center"><img alt="Screenshot" src="../../image/error.svg" /></td>
+</tr>
+<tr>
+<td align="left">stagingpush</td>
+<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="center"><img alt="Screenshot" src="../../image/error.svg" /></td>
+<td align="center"><img alt="Screenshot" src="../../image/error.svg" /></td>
+</tr>
+</tbody>
+</table>
+<h3 id="engine-compatibility-matrix"><a id="engine compatibility"></a>Engine Compatibility Matrix</h3>
+<table>
+<thead>
+<tr>
+<th align="left">Engine Version</th>
+<th align="center">Mongopy 1.0.0</th>
+<th align="center">Mongopy 1.0.1</th>
+<th align="center">Mongopy 1.0.2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">6.0.2.x</td>
+<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
+</tr>
+<tr>
+<td align="left">6.0.3.x  - 6.0.6.x</td>
+<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
+</tr>
+<tr>
+<td align="left">6.0.7.x  - 6.0.13.x</td>
+<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
+</tr>
+<tr>
+<td align="left">6.0.14.x - 6.0.15.x</td>
+<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
+</tr>
+</tbody>
+</table>
+<h3 id="mongo-version-compatability-across-delphix-environments"><a id="mongo_version_environment_compatibility_matrix"></a>Mongo Version compatability across delphix environments</h3>
+<ul>
+<li>Mongo binaries in all environments ( staging and target ) should be of same version for dSource Type: Seed</li>
+<li>Mongo binaries in all environments ( source, staging and target ) should be of same version for dSource Type: extendedcluster, nonshardedmongo, shardedmongo and stagingpush</li>
+<li>Mongo binaries can be of same or higher version than source in staging environment for offlinemongodump, onlinemongodump </li>
+<li>Mongo binaries in staging and target should be of some version for offlinemongodump, onlinemongodump</li>
+</ul>
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="../../InstallPlugin/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Install Plugin" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Install Plugin
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../Source/" class="md-footer__link md-footer__link--next" aria-label="Next: Source Requirements" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Source Requirements
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.2a1c317c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.a6c66575.min.js"></script>
+      
+    
+  </body>
+</html>

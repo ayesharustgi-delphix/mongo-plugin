@@ -1,7 +1,14 @@
 arrange:
-  - 'index.md'
-  - 'Installation.md'
-  - 'Discovery.md'
-  - 'Linking.md'-
-  - 'Provisioning.md'
-  - 'Release Notes.md'
+  - index.md
+  - Architecture.md
+  - InstallPlugin.md
+  - Requirements
+  - Discovery.md
+  - Linking.md
+  - Provisioning.md
+  - Operations.md
+  - Upgrades
+  - Limitations.md
+  - Release_Notes
+  - Troubleshooting.md
+  - PluginDevelopment.md

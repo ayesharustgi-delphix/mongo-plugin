@@ -1,0 +1,7 @@
+arrange:
+  - 'index.md'
+  - 'Installation.md'
+  - 'Discovery.md'
+  - 'Linking.md'-
+  - 'Provisioning.md'
+  - 'Release Notes.md'

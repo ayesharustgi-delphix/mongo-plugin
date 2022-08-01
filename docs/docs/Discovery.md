@@ -5,10 +5,10 @@ Environment discovery is a process that enables the mongoDB Plugin to determine 
 Prerequisites
 -------------
 
-- Install delphix engine 5.3.x and above  
+- Install delphix engine 6.0.7.x and above  
 - Install mongo binaries on staging and target servers  
 - Installation of the mongoDB Plugin is required before the discovery  
-- Environment variable `$MONGO_PATH ` should be set on staging/target host, which contains binary path of mongo
+- Environment variable `$MONGO_PATH ` should be set on staging/target host using `$HOME/.setDelphixMongoEnv` and `MONGO_REPO_CFGFILE `, which contains binary path of mongo using below procedure.
 
 Mongo Binaries Discovery  
 ------------------------  
@@ -61,7 +61,7 @@ Steps:
 9. Select the Refresh icon.
 10. In the Refresh confirmation dialog select Refresh.
 
-    ![Screenshot](image/image9.png)
+    ![Screenshot](../image/image9.png)
 
 Sourceconfig
 ------------

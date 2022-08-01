@@ -28,3 +28,5 @@ commit;
 
 - Step 7: Enable dSource [ Manage Datasets → Select dSource → enable ]  
 - Step 8: Take a new snapshot to validate that snapsync works as expected.
+
+**Note**: You may need to resync dSource depending on mongo version compatability.

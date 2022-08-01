@@ -21,6 +21,13 @@ Supported Mongo Technologies for Ingestion (create dSource) :
 | nonshardedsource     | Mongo OPS Manager Backups        | Y | Delphix leverages existing mongo ops manager backup of non sharded source. Backup file need to be available on staging host file system. | N |
 | stagingpush          | User created mongo instance      | Y/N | Delphix provides filesystem on Staging host that can be used for deploying mongo instance by User. User responsible to create working mongo instance on staging host either manually or using any tools like mongo ops manager after the filesystem creation.| Y/N |
 
+<small>
+
+-  Zero Touch Prod (Y) = Interaction with Source Server is not required by Delphix.  
+-  Zero Touch Prod (N) = Interaction with Source Server is needed by Delphix. Delphix expects connection to source using credentials etc.  
+
+</small>
+
 ### <a id="Seed"></a>Seed
 This type of dSource is generally used for pure development purpose. There is no source instance associated with it. It creates a empty instance which is managed by delphix and helps to create virtual mongo instance to avail benefits of all delphix features.
 
@@ -43,56 +50,61 @@ This type of dsource is created using backup file of source mongo instance creat
 ### <a id="stagingpush"></a>Staging Push (stagingpush)
 This type of dsource can be created in multiple ways. It varies based on use case. It can be created manually, copy of files at o/s level or using tools like Mongo OPS Manager. Below are some of the methods that can be used to create mongo instance on stagingpush delphix filesystem.  
 **Note:** Delphix only exhibits the operations needed to capture data. Creation and Deletion of Mongo Instance on staging host will be responsibility of user.  
-##### **New Empty Mongo Database**  
+#### **New Mongo Database**  
 1. Create new dSource of type stagingpush and Capture name of mountpoint filesystem provided to delphix while creating dsource.
-2. Create new empty single member mongo replicaset cluster using Mongo OPS Manager. Make sure to use same delphix mountpoint path used in dsource creation, appended with `s0m0` as location for datafiles. Also use same port that was provided while creating dSource.   
-2. Update permissions on mongo files if different user is used to create mongo instance than configured environment user in delphix.
-for e.g.
-logged in as root
+2. Create new empty single member mongo replicaset cluster using Mongo OPS Manager or by any other tool/mechanism. Make sure to use same delphix mountpoint path used in dsource creation, appended with `/s0m0`, as location for datafiles. Also use same port that was provided while creating dSource.   
+3. You can optionally restore any required data on this instance using mongorestore or scripts.
+4. Update permissions of mongo files if any other user is used to create mongo instance than configured environment user in delphix. e.g.  
+
+login as root
 ```
   su -m mongod -c 'chmod -R 775 /mnt/provision/stagingpush/s0m0'
 ```
 OR  
-logged in as mongod
+login as mongod
 ```
   chmod -R 775 /mnt/provision/stagingpush/s0m0
 ```
-**Note**: Delphix always appends `s0m0` as subfolder to the filesystem provuded while creating stagingpush dSource. If `/mnt/provision/stagingpush` was provided as mountpoint while creating dsource, provide `/mnt/provision/stagingpush/s0m0` as datafile location while creating mongo Instance manually or via tools.
+_Note_: Delphix always appends `/s0m0` as subfolder to the filesystem provuded while creating stagingpush dSource. If `/mnt/provision/stagingpush` was provided as mountpoint while creating dsource, provide `/mnt/provision/stagingpush/s0m0` as datafile location while creating mongo Instance manually or via tools.
 
-##### **Restore Mongo Database backup using Mongo OPS Manager  [ Non-Sharded ONLY ]**
+#### **Restore Mongo Database backup using Mongo OPS Manager  [ Non-Sharded ONLY ]**
 1. Create new dSource of type stagingpush and Capture name of mountpoint filesystem, replicaset name provided to delphix while creating dsource. 
 2. Create new empty single member mongo replicaset cluster using Mongo OPS Manager. Make sure to use same delphix mountpoint path used in dsource creation, appended with `s0m0` as location for datafiles. Also use same port and replicaset name that was provided while creating dSource.  
 3. Select desired backup to restore from Mongo OPS Manager.
 4. Restore backup to existing cluster and select the name of cluster that was created for dSource.
 5. Mongo OPS Manager will restore backup replacing existing data (empty instance) and keep same port and datafile location.
 6. Once the restoration is complete, Take snapshot from delphix and discard/delete any snapshots that was created before restoring database.
-7. Update permissions on mongo files if different user is used to create mongo instance than configured environment user in delphix.
-for e.g.
-logged in as root
+7. Update permissions of mongo files if any other user is used to create mongo instance than configured environment user in delphix. e.g.   
+
+login as root
 ```
   su -m mongod -c 'chmod -R 775 /mnt/provision/stagingpush/s0m0'
 ```
 OR  
-logged in as mongod
+login as mongod
 ```
   chmod -R 775 /mnt/provision/stagingpush/s0m0
 ```
 
-##### **Create Mongo Secondary Instance using Mongo OPS Manager  [ Non-Sharded ONLY ]**  
+_Note_: Delphix always appends `/s0m0` as subfolder to the filesystem provuded while creating stagingpush dSource. If `/mnt/provision/stagingpush` was provided as mountpoint while creating dsource, provide `/mnt/provision/stagingpush/s0m0` as datafile location while creating mongo Instance manually or via tools.
+
+#### **Create Mongo Secondary Instance  [ Non-Sharded ONLY ]**  
 1. Create new dSource of type stagingpush and Capture name of mountpoint filesystem provided to delphix while creating dsource. Provide correct primary source hostname, port and replicaset name during dSource creation. 
-2. Modify existing replicaset Cluster using OPS Manager. 
+2. Modify existing replicaset Cluster using OPS Manager or Manually.   
     - Add new `hidden` member to existing replicaset. Make sure to use same delphix mountpoint path used in dsource creation, appended with `s0m0` as location for datafiles. Also use same port that was provided while creating dSource.  
     - Set Votes = 0, Priority = 0. This will ensure this member never contributes in election and never becomes primary.
 3. Mongo will start replicating data from existing node to newly created instance.
 4. Once the initial sync is complete, Take snapshot of dsource from delphix and discard/delete any snapshots that were created before initial sync was completed.
-5. Update permissions on mongo files if different user is used to create mongo instance than configured environment user in delphix.
-for e.g.
-logged in as root
+5. Update permissions of mongo files if any other user is used to create mongo instance than configured environment user in delphix. e.g.   
+
+login as root
 ```
   su -m mongod -c 'chmod -R 775 /mnt/provision/stagingpush/s0m0'
 ```
 OR  
-logged in as mongod
+login as mongod
 ```
   chmod -R 775 /mnt/provision/stagingpush/s0m0
 ```
+
+_Note_: Delphix always appends `/s0m0` as subfolder to the filesystem provuded while creating stagingpush dSource. If `/mnt/provision/stagingpush` was provided as mountpoint while creating dsource, provide `/mnt/provision/stagingpush/s0m0` as datafile location while creating mongo Instance manually or via tools.

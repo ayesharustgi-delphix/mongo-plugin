@@ -4,4 +4,4 @@ To deploy and configure Mongo plugin,
 refer to [Overview](/).
 
 ## Bug Fixes
-* Sharded dSource creation workflow fixex.
+* Sharded dSource creation workflow fixed.

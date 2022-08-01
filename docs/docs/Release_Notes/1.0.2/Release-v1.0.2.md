@@ -4,7 +4,7 @@ To deploy and configure Mongo plugin,
 refer to [Overview](/).
 
 ## New & Improved
-* DXE-936 Added SDD supported.  
+<!-- * DXE-936 Added SDD supported. --> 
 * DXE-950 Allow user to specify location of mongodump and mongorestore.  
 * DXE-992 Added support to accept `.tar` extension of Mongo OPS Manager Backup file in addition to `.tar.gz`.  
 * DXE-982 Mongo: Certified support for MongoDB 5.0.9.  
@@ -26,7 +26,7 @@ refer to [Overview](/).
 | <span class="table-header">Platform \ Mongo Plugin Version </span><br/> <span class="table-header"></span>|<span class="table-header"> v1.0.2</span> |
 | ------------------                                                                                        | -------------------------                |   
 | Delphix Engine                                                                                            | 6.0.15.0                                 |
-| Staging / Target Host                                                                                     | RHEL/CentOS 7.x, 8.0                     |
+| Staging / Target Host                                                                                     | RHEL/CentOS 7.x.                         |
 
 
 Future releases may add support for additional OS platforms and Delphix Engine versions.  

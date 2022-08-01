@@ -37,7 +37,7 @@ Steps:
     ```
 
     ```
-    echo "MONGO_PATH=/u01/mongodb366/bin/mongod" > $MONGO_REPO_CFGFILE  
+    echo "MONGO_PATH=/u01/mongodb428/bin/mongod" > $MONGO_REPO_CFGFILE  
     ```
 
     If there are multiple version binaries, specify each on seperate line as below  
@@ -47,11 +47,11 @@ Steps:
     ```
 
     ```
-    echo "MONGO_PATH=/u01/mongodb366/bin/mongod" > $MONGO_REPO_CFGFILE  
+    echo "MONGO_PATH=/u01/mongodb428/bin/mongod" > $MONGO_REPO_CFGFILE  
     ```
 
     ```
-    echo "MONGO_PATH=/u01/mongodb404/bin/mongod" >> $MONGO_REPO_CFGFILE  
+    echo "MONGO_PATH=/u01/mongodb509/bin/mongod" >> $MONGO_REPO_CFGFILE  
     ```
 
 5. Login to the Delphix Management application.

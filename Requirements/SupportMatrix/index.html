@@ -836,12 +836,6 @@
 <td align="left"><img alt="Screenshot" src="../../image/check.svg" /></td>
 </tr>
 <tr>
-<td align="left">RHEL 8.x</td>
-<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
-<td align="left"><img alt="Screenshot" src="../../image/check.svg" /></td>
-<td align="left"><img alt="Screenshot" src="../../image/check.svg" /></td>
-</tr>
-<tr>
 <td align="left">CentOS 6.x</td>
 <td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
 <td align="left"><img alt="Screenshot" src="../../image/check.svg" /></td>
@@ -854,30 +848,6 @@
 <td align="left"><img alt="Screenshot" src="../../image/check.svg" /></td>
 </tr>
 <tr>
-<td align="left">CentOS 8.x</td>
-<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
-<td align="left"><img alt="Screenshot" src="../../image/check.svg" /></td>
-<td align="left"><img alt="Screenshot" src="../../image/check.svg" /></td>
-</tr>
-<tr>
-<td align="left">Oracle Linux 6.x</td>
-<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
-<td align="left"><img alt="Screenshot" src="../../image/check.svg" /></td>
-<td align="left"><img alt="Screenshot" src="../../image/check.svg" /></td>
-</tr>
-<tr>
-<td align="left">Oracle Linux 7.x</td>
-<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
-<td align="left"><img alt="Screenshot" src="../../image/check.svg" /></td>
-<td align="left"><img alt="Screenshot" src="../../image/check.svg" /></td>
-</tr>
-<tr>
-<td align="left">Oracle Linux 8.x</td>
-<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
-<td align="left"><img alt="Screenshot" src="../../image/check.svg" /></td>
-<td align="left"><img alt="Screenshot" src="../../image/check.svg" /></td>
-</tr>
-<tr>
 <td align="left">Windows</td>
 <td align="center"><img alt="Screenshot" src="../../image/error.svg" /></td>
 <td align="left"><img alt="Screenshot" src="../../image/error.svg" /></td>
@@ -885,6 +855,11 @@
 </tr>
 </tbody>
 </table>
+<!--
+| Oracle Linux 6.x        | ![Screenshot](../image/check.svg) | ![Screenshot](../image/check.svg) | ![Screenshot](../image/check.svg) |
+| Oracle Linux 7.x        | ![Screenshot](../image/check.svg) | ![Screenshot](../image/check.svg) | ![Screenshot](../image/check.svg) |
+| Oracle Linux 8.x        | ![Screenshot](../image/check.svg) | ![Screenshot](../image/check.svg) | ![Screenshot](../image/check.svg) |
+-->
 <h3 id="architecture-options-matrix"><a id="architecture options"></a>Architecture Options Matrix</h3>
 <table>
 <thead>
@@ -960,37 +935,29 @@
 </thead>
 <tbody>
 <tr>
-<td align="left">6.0.2.x</td>
+<td align="left">6.0.7.x  - 6.0.11.x</td>
 <td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
 <td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
-<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
+<td align="center"><img alt="Screenshot" src="../../image/error.svg" /></td>
 </tr>
 <tr>
-<td align="left">6.0.3.x  - 6.0.6.x</td>
-<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
-<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
-<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
-</tr>
-<tr>
-<td align="left">6.0.7.x  - 6.0.13.x</td>
-<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
-<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
-<td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
-</tr>
-<tr>
-<td align="left">6.0.14.x - 6.0.15.x</td>
+<td align="left">6.0.12.x - 6.0.15.x</td>
 <td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
 <td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
 <td align="center"><img alt="Screenshot" src="../../image/check.svg" /></td>
 </tr>
 </tbody>
 </table>
+<!--
+| 6.0.2.x             | ![Screenshot](../image/check.svg) | ![Screenshot](../image/check.svg) | ![Screenshot](../image/check.svg) | 
+| 6.0.3.x  - 6.0.6.x  | ![Screenshot](../image/check.svg) | ![Screenshot](../image/check.svg) | ![Screenshot](../image/check.svg) | 
+-->
 <h3 id="mongo-version-compatability-across-delphix-environments"><a id="mongo_version_environment_compatibility_matrix"></a>Mongo Version compatability across delphix environments</h3>
 <ul>
-<li>Mongo binaries in all environments ( staging and target ) should be of same version for dSource Type: Seed</li>
-<li>Mongo binaries in all environments ( source, staging and target ) should be of same version for dSource Type: extendedcluster, nonshardedmongo, shardedmongo and stagingpush</li>
-<li>Mongo binaries can be of same or higher version than source in staging environment for offlinemongodump, onlinemongodump </li>
-<li>Mongo binaries in staging and target should be of some version for offlinemongodump, onlinemongodump</li>
+<li>Mongo binaries in all environments ( staging and target ) should be of same version for all dSource Type.</li>
+<li>Mongo binaries in all environments ( source, staging and target ) should be of same version for dSource Type: extendedcluster, nonshardedmongo, shardedmongo and stagingpush.  </li>
+<li>Mongo binaries can be of same or higher version than source in staging environment for offlinemongodump, onlinemongodump adhering to MongoDB vendor support matrix.  </li>
+<li>Mongo binaries in staging and target should be of same or compatible version for dSource types offlinemongodump and onlinemongodump.</li>
 </ul>
 
               

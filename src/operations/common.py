@@ -621,7 +621,13 @@ def gen_configsvrstring(dataset_type, sourceobj, shard_config_list):
     configsvrstring = "{}/{}:{}".format(c0m0_replica_name,
                                         c0m0_host_name, c0m0_port)
 
-    if sourceobj.parameters.make_shards_replicaset:
+    if dataset_type == "Virtual":
+        replicaset = sourceobj.parameters.make_shards_replicaset
+    else:
+        replicaset = False
+
+    # if sourceobj.parameters.make_shards_replicaset:
+    if replicaset:
         c0m1_port = get_shard_port(shard_config_list, 'c0m1')
         c0m1_host = get_shard_host(shard_config_list, 'c0m1')
         c0m1_conn = get_node_conn(sourceobj, c0m1_host, dataset_type)
@@ -2064,7 +2070,11 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
     mount_path = sourceobj.parameters.mount_path
     start_portpool = sourceobj.parameters.start_portpool
     mongos_port = sourceobj.parameters.mongos_port
-    replicaset = sourceobj.parameters.make_shards_replicaset
+    #replicaset = sourceobj.parameters.make_shards_replicaset
+    if dataset_type == "Virtual":
+        replicaset = sourceobj.parameters.make_shards_replicaset
+    else:
+        replicaset = False
 
     if dsource_type == "shardedsource":
         cmax = 1
@@ -2175,7 +2185,8 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
         configsvrstring = "{}/{}:{}".format(c0m0_replica_name,
                                             c0m0_host_name, c0m0_port)
 
-        if sourceobj.parameters.make_shards_replicaset:
+        #if sourceobj.parameters.make_shards_replicaset:
+        if replicaset:
             c0m1_port = get_shard_port(shard_config_list, 'c0m1')
             c0m1_host = get_shard_host(shard_config_list, 'c0m1')
             c0m1_conn = get_node_conn(sourceobj, c0m1_host, dataset_type)
@@ -2453,7 +2464,12 @@ def setup_sharded_mongo_dataset(sourceobj, dataset_type, snapshot):
     mount_path = sourceobj.parameters.mount_path
     start_portpool = sourceobj.parameters.start_portpool
     mongos_port = sourceobj.parameters.mongos_port
-    replicaset = sourceobj.parameters.make_shards_replicaset
+    #replicaset = sourceobj.parameters.make_shards_replicaset
+    if dataset_type == "Virtual":
+        replicaset = sourceobj.parameters.make_shards_replicaset
+    else:
+        replicaset = False
+
     cmax = 1
     if dataset_type == 'Staging':
         smax = len(sourceobj.parameters.shard_backupfiles)
@@ -2532,7 +2548,8 @@ def setup_sharded_mongo_dataset(sourceobj, dataset_type, snapshot):
     configsvrstring = "{}/{}:{}".format(c0m0_replica_name,
                                         c0m0_host_name, c0m0_port)
 
-    if sourceobj.parameters.make_shards_replicaset:
+    #if sourceobj.parameters.make_shards_replicaset:
+    if replicaset:
         c0m1_port = get_shard_port(shard_config_list, 'c0m1')
         c0m1_host = get_shard_host(shard_config_list, 'c0m1')
         c0m1_conn = get_node_conn(sourceobj, c0m1_host, dataset_type)

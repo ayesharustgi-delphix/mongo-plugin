@@ -112,7 +112,7 @@ def restore_mongodump_online(sourceobj, dataset_type, mongo_backup_dir):
 
     start_portpool = sourceobj.parameters.start_portpool
     # -u {} -p {} --host {} --authenticationDatabase=admin
-    cmd = "{}/mongorestore --port {} --drop --quiet --gzip --dir={}".format(
+    cmd = "{}/mongorestore --port {} --drop --gzip --dir={}".format(
         os.path.dirname(sourceobj.mongo_restore_path), start_portpool, mongo_backup_dir)
     res = common.execute_bash_cmd(rx_connection, cmd, {})
 
@@ -138,7 +138,7 @@ def restore_mongodump_online_presync(sourceobj, dataset_type, mongo_backup_dir):
     mongorestore_cmd = "{} {}".format(sourceobj.mongo_restore_path, mongorestore_connparams)
 
     start_portpool = sourceobj.parameters.start_portpool
-    cmd = "{} --port {} --drop --quiet --gzip --dir={}".format(
+    cmd = "{} --port {} --drop --gzip --dir={}".format(
         mongorestore_cmd, start_portpool, mongo_backup_dir)
     res = common.execute_bash_cmd(rx_connection, cmd, {})
 
@@ -211,7 +211,7 @@ def restore_mongodump(sourceobj, dataset_type):
     start_portpool = sourceobj.parameters.start_portpool
     config_backupfile = sourceobj.parameters.config_backupfile
 
-    cmd = "{}/mongorestore --port {} --drop --quiet --gzip --dir={}".format(
+    cmd = "{}/mongorestore --port {} --drop --gzip --dir={}".format(
         os.path.dirname(sourceobj.mongo_restore_path), start_portpool, config_backupfile)
     res = common.execute_bash_cmd(rx_connection, cmd, {})
 
@@ -237,7 +237,11 @@ def setup_dataset_mongodump_offline(sourceobj, dataset_type, snapshot, dsource_t
     mount_path = sourceobj.parameters.mount_path
     start_portpool = sourceobj.parameters.start_portpool
     mongos_port = sourceobj.parameters.mongos_port
-    replicaset = sourceobj.parameters.make_shards_replicaset
+    #replicaset = sourceobj.parameters.make_shards_replicaset
+    if dsource_type == "Virtual":
+        replicaset = sourceobj.parameters.make_shards_replicaset
+    else:
+        replicaset = False
 
     config_backupfile = sourceobj.parameters.config_backupfile
     rx_connection = sourceobj.staged_connection
@@ -318,7 +322,11 @@ def setup_dataset_seed(sourceobj, dataset_type, snapshot, dsource_type):
     mount_path = sourceobj.parameters.mount_path
     start_portpool = sourceobj.parameters.start_portpool
     mongos_port = sourceobj.parameters.mongos_port
-    replicaset = sourceobj.parameters.make_shards_replicaset
+    #replicaset = sourceobj.parameters.make_shards_replicaset
+    if dsource_type == "Virtual":
+        replicaset = sourceobj.parameters.make_shards_replicaset
+    else:
+        replicaset = False
 
     config_backupfile = sourceobj.parameters.config_backupfile
     rx_connection = sourceobj.staged_connection
@@ -394,7 +402,12 @@ def setup_dataset_mongodump_online(sourceobj, dataset_type, snapshot, dsource_ty
     mount_path = sourceobj.parameters.mount_path
     start_portpool = sourceobj.parameters.start_portpool
     mongos_port = sourceobj.parameters.mongos_port
-    replicaset = sourceobj.parameters.make_shards_replicaset
+    #replicaset = sourceobj.parameters.make_shards_replicaset
+    if dsource_type == "Virtual":
+        replicaset = sourceobj.parameters.make_shards_replicaset
+    else:
+        replicaset = False
+
     # logsync = True
     logsync = sourceobj.parameters.enable_logsync
 
@@ -529,7 +542,11 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
     mount_path = sourceobj.parameters.mount_path
     start_portpool = sourceobj.parameters.start_portpool
     mongos_port = sourceobj.parameters.mongos_port
-    replicaset = sourceobj.parameters.make_shards_replicaset
+    #replicaset = sourceobj.parameters.make_shards_replicaset
+    if dsource_type == "Virtual":
+        replicaset = sourceobj.parameters.make_shards_replicaset
+    else:
+        replicaset = False
 
     config_backupfile = sourceobj.parameters.config_backupfile
     rx_connection = sourceobj.staged_connection

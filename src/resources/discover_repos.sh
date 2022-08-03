@@ -3,7 +3,7 @@
 #DLPX_REPO_CFGFILE='ManualRepoDiscoveryFileNotProvided'
 #${DELPHIX_DIR}/../../..
 #DLPX_BIN_JQ=/u01/delphix/toolkit/Delphix_COMMON_56c4f1568fe9_a24eef3c6e13_14_host/scripts/jq/linux_x86/bin/jq
-TOOLKIT_VERSION="0.0.6"
+TOOLKIT_VERSION="1.0.2"
 DLPX_TOOLKIT_NAME="mongo"
 DLPX_LOG_DIRECTORY="/tmp"
 TIMESTAMP=$(date +%Y-%m-%dT%H:%M:%S)
@@ -203,7 +203,7 @@ assembleJson()
 {
 	# Assemble JSON and write output variables to output file
 	CURRENT_REPO='{}'
-	PRETTYNAME="PY EDSI MongoDB (${VERSION})"
+	PRETTYNAME="MongoDB - (version: ${VERSION}) [${INSTALLPATH}]"
 	CURRENT_REPO=$(jq ".mongo_install_path = $(jqQuote "$INSTALLPATH")" <<< "$CURRENT_REPO")
 	CURRENT_REPO=$(jq ".mongo_dump_path = $(jqQuote "$MONGO_DUMP_PATH")" <<< "$CURRENT_REPO")
 	CURRENT_REPO=$(jq ".mongo_restore_path = $(jqQuote "$MONGO_RESTORE_PATH")" <<< "$CURRENT_REPO")

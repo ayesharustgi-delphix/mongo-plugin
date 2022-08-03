@@ -459,8 +459,6 @@
       "backup_metadata_file",
       "mongo_db_user",
       "mongo_db_password",
-      "make_shards_replicaset",
-      "source_sharded",
       "config_backupfile",
       "shard_backupfiles",
       "enable_ssl_tls",
@@ -567,12 +565,6 @@
         "default": 30,
         "environmentVariable": "MONGO_JOURNAL_FLUSH"
       },
-      "make_shards_replicaset": {
-        "default": false,
-        "type": "boolean",
-        "prettyName": "Convert each shards to replicaset",
-        "description": ""
-      },
       "mount_path": {
         "type": "string",
         "prettyName": "Mount Path",
@@ -584,12 +576,6 @@
         "prettyName": "Backup Metadata File Name (Backup datetime)",
         "description": "Content - MMDDYYYY_HH24MISS",
         "default": ""
-      },
-      "source_sharded": {
-        "default": false,
-        "type": "boolean",
-        "prettyName": "Source Sharded Cluster",
-        "description": ""
       },
       "config_backupfile": {
         "type": "string",

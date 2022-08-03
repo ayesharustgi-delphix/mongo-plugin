@@ -65,6 +65,14 @@ logger = logging.getLogger(__name__)
 
 plugin = Plugin()
 
+# @plugin.upgrade.repository("2022.08.02.04")
+# def modify_repo_field(old_repository):
+#     new_repository = dict(old_repository)
+#     new_repository["mongo_dump_path"] = new_repository["mongo_install_path"]
+#     new_repository["mongo_restore_path"] = new_repository["mongo_install_path"]
+#     new_repository["pretty_name"] = "MongoDB - (version: {}) [{}]".format(new_repository["version"], new_repository["mongo_install_path"])
+#     return new_repository
+
 @plugin.upgrade.linked_source("2022.08.02.03")
 def del_user_auth_param_linked(old_linked_source):
     new_linked_source = dict(old_linked_source)
@@ -365,7 +373,11 @@ def staged_post_snapshot(repository, source_config, staged_source, optional_snap
     snapshot.append_db_path = "N/A"
     snapshot.mongo_db_user = staged_source.parameters.mongo_db_user
     snapshot.mongo_db_password = staged_source.parameters.mongo_db_password
-    snapshot.source_sharded = staged_source.parameters.source_sharded
+    #snapshot.source_sharded = staged_source.parameters.source_sharded
+    if staged_source.parameters.d_source_type == "shardedsource":
+        snapshot.source_sharded = True
+    else:
+        snapshot.source_sharded = False
     snapshot.shard_count = (len(staged_source.parameters.shard_backupfiles))
     snapshot.source_encrypted = staged_source.parameters.source_encrypted
     snapshot.cluster_auth_mode = staged_source.parameters.cluster_auth_mode

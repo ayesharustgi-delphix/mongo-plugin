@@ -881,7 +881,6 @@ def setup_replicaset_dsource(sourceobj, dataset_type, dsource_type):
     enable_ssl_tls = sourceobj.parameters.enable_ssl_tls
     ssl_tls_params = sourceobj.parameters.ssl_tls_params
 
-    user_auth_mode = sourceobj.parameters.user_auth_mode
     keyfile_path = sourceobj.parameters.keyfile_path
 
     cluster_auth_mode = sourceobj.parameters.cluster_auth_mode
@@ -947,7 +946,7 @@ def setup_replicaset_dsource(sourceobj, dataset_type, dsource_type):
     logger.info("After add_net - mongo_cmd = {}".format(mongo_cmd))
     common.add_debug_space()
 
-    mongo_cmd = common.add_keyfile_auth(mongo_cmd, enable_user_auth, user_auth_mode, keyfile_path)
+    mongo_cmd = common.add_keyfile_auth(mongo_cmd, enable_user_auth, keyfile_path)
     logger.info("After add_keyfile_auth - mongo_cmd = {}".format(mongo_cmd))
     common.add_debug_space()
 
@@ -1174,7 +1173,6 @@ def initiate_emptyfs_for_dsource(sourceobj, dataset_type, dsource_type):
     enable_ssl_tls = sourceobj.parameters.enable_ssl_tls
     ssl_tls_params = sourceobj.parameters.ssl_tls_params
 
-    user_auth_mode = sourceobj.parameters.user_auth_mode
     keyfile_path = sourceobj.parameters.keyfile_path
 
     cluster_auth_mode = sourceobj.parameters.cluster_auth_mode

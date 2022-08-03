@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 from dlpx.virtualization.common import RemoteConnection
 from dlpx.virtualization.common import RemoteEnvironment
 from dlpx.virtualization.common import RemoteUser
+from dlpx.virtualization.platform.exceptions import UserError
 
 from dlpx.virtualization import libs
 
@@ -691,7 +692,6 @@ def gen_mongo_conf_files(dataset_type, sourceobj, shard_config_list, snapshot):
         enable_ssl_tls = sourceobj.parameters.enable_ssl_tls
         ssl_tls_params = sourceobj.parameters.ssl_tls_params
 
-        user_auth_mode = sourceobj.parameters.user_auth_mode
         keyfile_path = sourceobj.parameters.keyfile_path
 
         cluster_auth_mode = sourceobj.parameters.cluster_auth_mode
@@ -740,22 +740,22 @@ def gen_mongo_conf_files(dataset_type, sourceobj, shard_config_list, snapshot):
         add_debug_space()
 
         logger.info("mongo_process_type: {}".format(mongo_process_type))
-        if mongo_process_type == "mongos":
-            logger.info("user_auth_mode: {}".format(user_auth_mode))
-            if user_auth_mode == "None" or user_auth_mode == "SCRAM":
-                logger.info("keyfile_path: {}".format(keyfile_path))
-                if keyfile_path is not None and keyfile_path != "":
-                    mongo_cmd = "{} --keyFile {}".format(mongo_cmd, keyfile_path)
-                    logger.info("After add_keyfile_auth - mongo_cmd = {}".format(mongo_cmd))
-                else:
-                    logger.info("Keyfile is empty")
-                    logger.info("After add_keyfile_auth - mongo_cmd = {}".format(mongo_cmd))
-            else:
-                logger.info("After add_keyfile_auth - mongo_cmd = {}".format(mongo_cmd))
-        else:
-            mongo_cmd = add_keyfile_auth(mongo_cmd, enable_user_auth, user_auth_mode, keyfile_path)
-            logger.info("After add_keyfile_auth - mongo_cmd = {}".format(mongo_cmd))
-            add_debug_space()
+        # if mongo_process_type == "mongos":
+        #     logger.info("user_auth_mode: {}".format(user_auth_mode))
+        #     if user_auth_mode == "None" or user_auth_mode == "SCRAM":
+        #         logger.info("keyfile_path: {}".format(keyfile_path))
+        #         if keyfile_path is not None and keyfile_path != "":
+        #             mongo_cmd = "{} --keyFile {}".format(mongo_cmd, keyfile_path)
+        #             logger.info("After add_keyfile_auth - mongo_cmd = {}".format(mongo_cmd))
+        #         else:
+        #             logger.info("Keyfile is empty")
+        #             logger.info("After add_keyfile_auth - mongo_cmd = {}".format(mongo_cmd))
+        #     else:
+        #         logger.info("After add_keyfile_auth - mongo_cmd = {}".format(mongo_cmd))
+        # else:
+        mongo_cmd = add_keyfile_auth(mongo_cmd, enable_user_auth, keyfile_path)
+        logger.info("After add_keyfile_auth - mongo_cmd = {}".format(mongo_cmd))
+        add_debug_space()
 
         mongo_cmd = add_cluster_auth(mongo_cmd, cluster_auth_mode, keyfile_path)
         logger.info("After add_cluster_auth - mongo_cmd = {}".format(mongo_cmd))
@@ -1112,7 +1112,6 @@ def update_mongoadmin_pwd(sourceobj, connection, shard_count, shard_config_list,
 def gen_mongo_cmd(dataset_type, sourceobj, hostname):
     client_tls_cert = sourceobj.parameters.client_tls_cert
     client_tls_cacert = sourceobj.parameters.client_tls_cacert
-    user_auth_mode = sourceobj.parameters.user_auth_mode
     mount_path = sourceobj.parameters.mount_path
 
     if dataset_type == "Staging":
@@ -1137,7 +1136,7 @@ def gen_mongo_cmd(dataset_type, sourceobj, hostname):
         # mongo_shell_cmd = "mongo"
         mongo_shell_cmd = "{}".format(sourceobj.mongo_shell_path)
 
-    if user_auth_mode == "SCRAM":
+    if sourceobj.parameters.keyfile_path:
         mongo_shell_cmd = "{} --username {} --password {} --authenticationDatabase admin".format(mongo_shell_cmd,
                                                                                                  mongo_db_user,
                                                                                                  mongo_db_password)
@@ -1887,15 +1886,15 @@ def add_net(mongo_cmd, bind_ip, mongod_port, enable_ssl_tls, ssl_tls_params):
     return mongo_cmd
 
 
-def add_keyfile_auth(mongo_cmd, enable_user_auth, user_auth_mode, keyfile_path):
+def add_keyfile_auth(mongo_cmd, enable_user_auth, keyfile_path):
     # user_auth_mode = None,SCRAM,x509,ldap
-    if user_auth_mode == "None":
-        # mongo_cmd = "{} --noauth".format(mongo_cmd)
-        mongo_cmd = mongo_cmd
-    elif user_auth_mode == "SCRAM" or user_auth_mode == "x509" or user_auth_mode == "ldap":
-        if mongo_cmd.split(" ")[0] != "mongos":
-            if enable_user_auth:
-                mongo_cmd = "{} --auth".format(mongo_cmd)
+    # if user_auth_mode == "None":
+    #     # mongo_cmd = "{} --noauth".format(mongo_cmd)
+    #     mongo_cmd = mongo_cmd
+    # elif user_auth_mode == "SCRAM" or user_auth_mode == "x509" or user_auth_mode == "ldap":
+    if not mongo_cmd.split(" ")[0].endswith("mongos"):
+        if enable_user_auth:
+            mongo_cmd = "{} --auth".format(mongo_cmd)
 
     if keyfile_path is not None and keyfile_path != "":
         mongo_cmd = "{} --keyFile {}".format(mongo_cmd, keyfile_path)
@@ -2734,3 +2733,33 @@ def add_debug_heading_block(heading):
     logger.info("++++++++++++++++++++++++++++++++++++++++++++++++++++++")
     logger.info("++++++++++++++++++++++++++++++++++++++++++++++++++++++")
     logger.debug("\n\n\n\n")
+
+
+def check_input_parameters(source_obj):
+    if source_obj.parameters.enable_authentication:
+        if (source_obj.parameters.cluster_auth_mode in ["keyFile","sendKeyFile"] and
+                not source_obj.parameters.keyfile_path):
+            raise UserError(
+                "Incorrect authentication configuration provided. "
+                "Please provide keyFile path when cluster authentication "
+                "mode is keyFile.")
+        elif source_obj.parameters.cluster_auth_mode in ["x509","sendX509"]:
+            if source_obj.parameters.enable_ssl_tls:
+                tls_param_name_list =[p["property_name"] for p in
+                                      source_obj.parameters.ssl_tls_params]
+                tls_expected_param = ["tlsMode", "tlsCAFile", "tlsPEMKeyFile",
+                                      "sslAllowConnectionsWithoutCertificates"]
+                list_diff = set(tls_expected_param) - set(tls_param_name_list)
+                if list_diff:
+                    raise UserError(
+                        f"Incorrect authentication configuration provided. "
+                        f"Please provide all necessary SSL/TLS parameters when "
+                        f"cluster authentication mode is x509. "
+                        f"Params provided : {tls_param_name_list} "
+                        f"Expected parameters: {tls_expected_param} ")
+            else:
+                raise UserError(
+                    "Incorrect authentication configuration provided. "
+                    "Please provide SSL/TLS parameters when cluster "
+                    "authentication mode is x509.")
+

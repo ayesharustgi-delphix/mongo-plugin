@@ -65,6 +65,18 @@ logger = logging.getLogger(__name__)
 
 plugin = Plugin()
 
+@plugin.upgrade.linked_source("2022.08.02.03")
+def del_user_auth_param_linked(old_linked_source):
+    new_linked_source = dict(old_linked_source)
+    del new_linked_source["user_auth_mode"]
+    return new_linked_source
+
+@plugin.upgrade.virtual_source("2022.08.02.02")
+def del_user_auth_param_virtual(old_virtual_source):
+    new_virtual_source = dict(old_virtual_source)
+    del new_virtual_source["user_auth_mode"]
+    return new_virtual_source
+
 @plugin.upgrade.snapshot("2021.09.20.009")
 def add_new_flag_to_snapshot(old_snapshot):
     return old_snapshot
@@ -138,6 +150,7 @@ def staged_pre_snapshot(repository, source_config, staged_source, optional_snaps
     common.add_debug_heading_block("Start Staged Pre Snapshot")
     helpers._record_hook("staging pre snapshot",
                          staged_source.staged_connection)
+    common.check_input_parameters(staged_source)
     staged_source.mongo_install_path = repository.mongo_install_path
     staged_source.mongo_shell_path = repository.mongo_shell_path
     staged_source.mongo_dump_path = repository.mongo_dump_path
@@ -344,7 +357,6 @@ def staged_post_snapshot(repository, source_config, staged_source, optional_snap
     snapshot.mongo_version = repository.version
     snapshot.delphix_mount = staged_source.parameters.mount_path
     snapshot.storage_engine = staged_source.parameters.storage_engine
-    snapshot.user_auth_mode = staged_source.parameters.user_auth_mode
     snapshot.keyfile_path = staged_source.parameters.keyfile_path
     snapshot.replica_set = "N/A"
     snapshot.journal_interval = staged_source.parameters.journal_interval
@@ -508,6 +520,7 @@ def mount_specification(repository, virtual_source):
 def configure(virtual_source, repository, snapshot):
     helpers._record_hook("virtual configure", virtual_source.connection)
     helpers._set_running(virtual_source.connection, virtual_source.guid)
+    common.check_input_parameters(virtual_source)
 
     virtual_source.mongo_install_path = repository.mongo_install_path
     virtual_source.mongo_shell_path = repository.mongo_shell_path
@@ -629,7 +642,6 @@ def post_snapshot(repository, source_config, virtual_source):
     snapshot.mongo_version = repository.version
     snapshot.delphix_mount = virtual_source.parameters.mount_path
     snapshot.storage_engine = "WiredTiger"
-    snapshot.user_auth_mode = virtual_source.parameters.user_auth_mode
     snapshot.keyfile_path = virtual_source.parameters.keyfile_path
     snapshot.replica_set = "N/A"
 
@@ -680,6 +692,7 @@ def post_snapshot(repository, source_config, virtual_source):
 def reconfigure(snapshot, repository, source_config, virtual_source):
     helpers._record_hook("virtual reconfigure", virtual_source.connection)
     helpers._set_running(virtual_source.connection, virtual_source.guid)
+    common.check_input_parameters(virtual_source)
 
     virtual_source.mongo_install_path = repository.mongo_install_path
     virtual_source.mongo_shell_path = repository.mongo_shell_path

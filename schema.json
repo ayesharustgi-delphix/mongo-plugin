@@ -97,7 +97,6 @@
       "enable_ssl_tls",
       "ssl_tls_params",
       "enable_authentication",
-      "user_auth_mode",
       "keyfile_path",
       "cluster_auth_mode",
       "encryption_keyfile",
@@ -247,17 +246,6 @@
         "type": "boolean",
         "prettyName": "Enable Authentication",
         "description": ""
-      },
-      "user_auth_mode": {
-        "type": "string",
-        "prettyName": "User Auth Mode",
-        "description": "",
-        "enum": [
-          "None",
-          "SCRAM",
-          "x509"
-        ],
-        "default": "None"
       },
       "keyfile_path": {
         "type": "string",
@@ -478,7 +466,6 @@
       "enable_ssl_tls",
       "ssl_tls_params",
       "enable_authentication",
-      "user_auth_mode",
       "keyfile_path",
       "cluster_auth_mode",
       "source_encrypted",
@@ -675,17 +662,6 @@
         "type": "boolean",
         "prettyName": "Enable Authentication",
         "description": ""
-      },
-      "user_auth_mode": {
-        "type": "string",
-        "prettyName": "User Auth Mode",
-        "description": "",
-        "enum": [
-          "None",
-          "SCRAM",
-          "x509"
-        ],
-        "default": "SCRAM"
       },
       "keyfile_path": {
         "type": "string",
@@ -935,9 +911,6 @@
         "type": "string"
       },
       "storage_engine": {
-        "type": "string"
-      },
-      "user_auth_auth": {
         "type": "string"
       },
       "keyfile_path": {

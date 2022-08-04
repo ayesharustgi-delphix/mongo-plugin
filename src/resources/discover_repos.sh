@@ -3,7 +3,6 @@
 #DLPX_REPO_CFGFILE='ManualRepoDiscoveryFileNotProvided'
 #${DELPHIX_DIR}/../../..
 #DLPX_BIN_JQ=/u01/delphix/toolkit/Delphix_COMMON_56c4f1568fe9_a24eef3c6e13_14_host/scripts/jq/linux_x86/bin/jq
-TOOLKIT_VERSION="1.0.2"
 DLPX_TOOLKIT_NAME="mongo"
 DLPX_LOG_DIRECTORY="/tmp"
 TIMESTAMP=$(date +%Y-%m-%dT%H:%M:%S)
@@ -303,19 +302,19 @@ if [ $MANUAL_MONGO_FIND -eq 1 ]; then
           if [[ "$MONGO_DUMP_PATH" = '' ]]; then
             e3=1
             # Mongo Dump path not found - return empty repo config
-            log "Mongo Dump path $FIND_MONGO_TOOL_PATH/*..*/mongodump not found"
-            printf "Mongo Dump path $FIND_MONGO_TOOL_PATH/*..*/mongodump not found"
+            log "Mongo Dump path $MONGO_TOOL_PATH/*..*/mongodump not found"
+            printf "Mongo Dump path $MONGO_TOOL_PATH/*..*/mongodump not found"
             exit 1
           else
             log "MONGO_DUMP_PATH=$MONGO_DUMP_PATH"
           fi
 
-          MONGO_RESTORE_PATH=$(find $FIND_MONGO_TOOL_PATH -name mongorestore | head -1)
+          MONGO_RESTORE_PATH=$(find $MONGO_TOOL_PATH -name mongorestore | head -1)
           if [[ "$MONGO_RESTORE_PATH" = '' ]]; then
             e4=1
             # Mongo Restore path not found - return empty repo config
-            log "Mongo Restore path $MONGO_RESTORE_PATH/*..*/mongorestore not found"
-            printf "Mongo Restore path $MONGO_RESTORE_PATH/*..*/mongorestore not found"
+            log "Mongo Restore path $MONGO_TOOL_PATH/*..*/mongorestore not found"
+            printf "Mongo Restore path $MONGO_TOOL_PATH/*..*/mongorestore not found"
             exit 1
           else
             log "MONGO_RESTORE_PATH=$MONGO_RESTORE_PATH"

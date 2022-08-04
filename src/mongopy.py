@@ -19,6 +19,7 @@ import _version
 from utils import plugin_logger
 
 import json
+import os
 # import logging
 import pkgutil
 import re, copy
@@ -61,18 +62,22 @@ logger = plugin_logger.PluginLogger("MONGODB")
 
 plugin = Plugin()
 
-# @plugin.upgrade.repository("2022.08.02.04")
-# def modify_repo_field(old_repository):
-#     new_repository = dict(old_repository)
-#     new_repository["mongo_dump_path"] = new_repository["mongo_install_path"]
-#     new_repository["mongo_restore_path"] = new_repository["mongo_install_path"]
-#     new_repository["pretty_name"] = "MongoDB - (version: {}) [{}]".format(new_repository["version"], new_repository["mongo_install_path"])
-#     return new_repository
+@plugin.upgrade.repository("2022.08.02.04")
+def modify_repo_field(old_repository):
+    new_repository = dict(old_repository)
+    logger.debug(f"new_repo={new_repository}")
+    new_repository["mongo_dump_path"] = os.path.join(os.path.dirname(new_repository["mongo_install_path"]), "mongodump")
+    new_repository["mongo_restore_path"] = os.path.join(os.path.dirname(new_repository["mongo_install_path"]), "mongorestore")
+    new_repository["pretty_name"] = "MongoDB - (version: {}) [{}]".format(new_repository["version"], new_repository["mongo_install_path"])
+    new_repository["nameField"] = new_repository["pretty_name"]
+    return new_repository
 
 @plugin.upgrade.linked_source("2022.08.02.03")
 def del_user_auth_param_linked(old_linked_source):
     new_linked_source = dict(old_linked_source)
     del new_linked_source["user_auth_mode"]
+    del new_linked_source["make_shards_replicaset"]
+    del new_linked_source["source_sharded"]
     return new_linked_source
 
 @plugin.upgrade.virtual_source("2022.08.02.02")
@@ -93,7 +98,8 @@ def repository_discovery(source_connection):
     env = {
         "DELPHIX_DIR": source_connection.environment.host.binary_path,
         "DLPX_PLUGIN_WORKFLOW": 'repoDiscovery',
-        "DLPX_TOOLKIT_WORKFLOW": 'repoDiscovery'
+        "DLPX_TOOLKIT_WORKFLOW": 'repoDiscovery',
+        "TOOLKIT_VERSION": _version.Version
     }
     logger.debug("env: {}".format(env))
     repositories = []

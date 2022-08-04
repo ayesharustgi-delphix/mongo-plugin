@@ -36,8 +36,8 @@
     "nameField": "pretty_name",
     "identityFields": [
       "mongo_install_path",
-      "mongo_shell_path",
-      "pretty_name"
+      "pretty_name",
+      "version"
     ]
   },
   "sourceConfigDefinition": {

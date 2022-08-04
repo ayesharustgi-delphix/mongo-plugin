@@ -83,7 +83,7 @@ class PluginLogger:
 
         :return: masked log message
         """
-        log_msg = log_msg.strip()
+        log_msg = f"{log_msg}".strip()
         masked_log_msg = log_msg
 
         for pwd_key, pwd_sep in self.password_keywords:
@@ -127,22 +127,22 @@ class PluginLogger:
         )
         return log_msg
 
-    def info(self, msg):
+    def info(self, msg, *args, **kwargs):
         msg = self.mask_password(msg)
         msg = self.format_log(msg)
-        self.logger_object.info(msg)
+        self.logger_object.info(msg, *args, **kwargs)
 
-    def warning(self, msg):
+    def warning(self, msg, *args, **kwargs):
         msg = self.mask_password(msg)
         msg = self.format_log(msg)
-        self.logger_object.warning(msg)
+        self.logger_object.warning(msg, *args, **kwargs)
 
-    def debug(self, msg):
+    def debug(self, msg, *args, **kwargs):
         msg = self.mask_password(msg)
         msg = self.format_log(msg)
-        self.logger_object.debug(msg)
+        self.logger_object.debug(msg, *args, **kwargs)
 
-    def error(self, msg):
+    def error(self, msg, *args, **kwargs):
         msg = self.mask_password(msg)
         msg = self.format_log(msg)
-        self.logger_object.error(msg)
+        self.logger_object.error(msg, *args, **kwargs)

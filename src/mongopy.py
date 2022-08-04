@@ -16,10 +16,10 @@ from operations import common
 
 import _version
 
-from utils import setup_logger
+from utils import plugin_logger
 
 import json
-import logging
+# import logging
 import pkgutil
 import re, copy
 import time
@@ -33,10 +33,6 @@ from dlpx.virtualization.platform.exceptions import UserError
 #     '{}\n{}'.format(" ", " "))
 
 from dlpx.virtualization import libs
-from dlpx.virtualization.common import RemoteConnection
-from dlpx.virtualization.common import RemoteEnvironment
-from dlpx.virtualization.common import RemoteUser
-
 
 
 # stg_dsource_type
@@ -57,8 +53,8 @@ from generated.definitions import SourceConfigDefinition
 from generated.definitions import SnapshotDefinition
 from helpers import helpers
 
-setup_logger._setup_logger()
-logger = logging.getLogger(__name__)
+# setup_logger._setup_logger()
+logger = plugin_logger.PluginLogger("MONGODB")
 # logger = logging.getLogger()
 # logger.addHandler(libs.PlatformHandler())
 # logger.setLevel(logging.DEBUG)
@@ -111,7 +107,7 @@ def repository_discovery(source_connection):
     logger.debug("res = {}".format(res))
     logger.debug("res.stdout = {}".format(res.stdout))
     repodiscovery = json.loads(res.stdout)
-    logger.debug(repodiscovery)
+    logger.debug(f"repodiscovery: {repodiscovery}")
     for item in repodiscovery:
         logger.debug("item:{}".format(item))
         repository = RepositoryDefinition(version=item['version'], mongo_install_path=item['mongo_install_path'],

@@ -1,9 +1,9 @@
-import logging
+from utils import plugin_logger
 
 from dlpx.virtualization.platform import Mount
 
 # Global logger object for this file
-logger = logging.getLogger(__name__)
+logger = plugin_logger.PluginLogger("MONGODB")
 
 from dlpx.virtualization.common import RemoteConnection
 from dlpx.virtualization.common import RemoteEnvironment

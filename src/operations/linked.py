@@ -1,5 +1,5 @@
 from dlpx.virtualization.platform.exceptions import UserError
-import logging
+from utils import plugin_logger
 from operations import common
 import datetime
 import os
@@ -7,7 +7,7 @@ import json
 import time
 
 # Global logger object for this file
-logger = logging.getLogger(__name__)
+logger = plugin_logger.PluginLogger("MONGODB")
 
 
 def validate_backup_configfile(staged_source):

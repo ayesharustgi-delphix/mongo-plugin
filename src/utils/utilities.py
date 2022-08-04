@@ -2,13 +2,13 @@
 # Copyright (c) 2020 by Delphix. All rights reserved.
 #
 
-import logging
+from utils import plugin_logger
 
 from dlpx.virtualization import libs
 from dlpx.virtualization.libs import exceptions
 
 # logger object
-logger = logging.getLogger(__name__)
+logger = plugin_logger.PluginLogger("MONGODB")
 
 
 def execute_bash(source_connection, command_name, callback_func=None, environment_vars=None):

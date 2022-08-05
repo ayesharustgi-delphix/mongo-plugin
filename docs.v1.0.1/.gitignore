@@ -1,9 +1,0 @@
-.DS_Store
-build.sh
-.venv/
-venv/
-Pipfile
-include
-lib
-lib64
-site

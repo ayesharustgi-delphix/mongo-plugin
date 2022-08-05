@@ -40,7 +40,7 @@ Steps:
     echo "MONGO_PATH=/u01/mongodb428/bin/mongod" > $MONGO_REPO_CFGFILE  
     ```
 
-    If there are multiple version binaries, specify each on seperate line as below  
+    If there are multiple version binaries, specify each on separate lines as below  
 
     ```
     source $HOME/.setDelphixMongoEnv  
@@ -52,6 +52,18 @@ Steps:
 
     ```
     echo "MONGO_PATH=/u01/mongodb509/bin/mongod" >> $MONGO_REPO_CFGFILE  
+    ```
+   If the MongoDB database tools are installed at different location, specify the MongoDB tools path on separate lines as below  
+
+    ```
+    source $HOME/.setDelphixMongoEnv  
+    ```
+
+    ```
+    echo "MONGO_PATH=/u01/mongodb428/bin/mongod:/u01/mongodb428/mongodb-database-tools/bin" > $MONGO_REPO_CFGFILE  
+    ```
+    ```
+    echo "MONGO_PATH=/u01/mongodb509/bin/mongod:/u01/mongodb509/mongodb-database-tools/bin" > $MONGO_REPO_CFGFILE  
     ```
 
 5. Login to the Delphix Management application.

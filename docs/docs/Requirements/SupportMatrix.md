@@ -29,10 +29,10 @@
 
 ### <a id="engine compatibility"></a>Engine Compatibility Matrix
 
-| Engine Version      | Mongopy 1.0.0                     | Mongopy 1.0.1                     | Mongopy 1.0.2                     |
-| :-                  | :-:                               | :-:                               | :-:                               |
-| 6.0.7.x  - 6.0.11.x | ![Screenshot](../image/check.svg) | ![Screenshot](../image/check.svg) | ![Screenshot](../image/error.svg) | 
-| 6.0.12.x - 6.0.15.x | ![Screenshot](../image/check.svg) | ![Screenshot](../image/check.svg) | ![Screenshot](../image/check.svg) | 
+| Engine Version      | Mongopy 1.0.0                     | Mongopy 1.0.1                     | Mongopy 1.0.2                     | Mongopy 1.1.0                     |
+| :-                  | :-:                               | :-:                               | :-:                               | :-:                               |
+| 6.0.7.x  - 6.0.11.x | ![Screenshot](../image/check.svg) | ![Screenshot](../image/check.svg) | ![Screenshot](../image/error.svg) | ![Screenshot](../image/error.svg) | 
+| 6.0.12.x - 6.0.15.x | ![Screenshot](../image/check.svg) | ![Screenshot](../image/check.svg) | ![Screenshot](../image/check.svg) |  ![Screenshot](../image/check.svg) | 
 
 <!--
 | 6.0.2.x             | ![Screenshot](../image/check.svg) | ![Screenshot](../image/check.svg) | ![Screenshot](../image/check.svg) | 

@@ -44,7 +44,7 @@ Procedure:
 
 7. Select a target environment from the left pane.  
 
-    ![Screenshot](../image/provision_screen0.png) 
+    ![Screenshot](../image/mongo_provision.png) 
 
 8. Select an Installation to use from the dropdown list of available mongo binaries on that environment.  
 9. Select the Environment User.  
@@ -69,7 +69,6 @@ Procedure:
     | Enable SSL/TLS                                                                                  | Enable SSL/ TLS                                                                                                                                                                                                                  |
     | SSL/TLS Parameters                                                                              | SSL/TLS Parameters (e.g. tlsMode, tlsCAFile, tlsPEMKeyFile, sslAllowConnectionsWithoutCertificates etc)                                                                                                                          |
     | Enable Authentication                                                                           | Enable Authentication                                                                                                                                                                                                            |
-    | User Auth Mode                                                                                  | None, SCRAM, x509                                                                                                                                                                                                                |
     | keyfile_path                                                                                    | KeyAuth keyfile name (Full Path)                                                                                                                                                                                                 |
     | Cluster Auth Mode                                                                               | None, keyFile, x509, sendKeyFile, sendX509                                                                                                                                                                                       |
     | Source is Encrypted                                                                             | Does source mongo instance use encryption ?                                                                                                                                                                                      |

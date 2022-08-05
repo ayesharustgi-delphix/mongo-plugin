@@ -8,7 +8,7 @@ Periodically Lower environments are upgraded for various reasons like
 -   Security concerns  
 -   To meet compatibility with other software.  
 
-## Upgrade VDB to a higher version.  
+## Upgrade VDB to a higher version. (Until 1.0.2 MongoDB Plugin)
 - Step 1: Install the same version of Mongo software on the Target host.[ same version as Source/Target ].  
 - Step 2: Update repoconfig file. Please refer [Discovery](../Discovery.md) Section.
 - Step 3: Refresh Target Environment in Delphix.  

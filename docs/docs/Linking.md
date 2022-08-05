@@ -19,7 +19,7 @@ Every environment contains `repositories` and each environment may have any numb
 4. Select the repository
 5. Click on `+` icon ( Shown in next image )
 
-    ![Screenshot](../image/image10.png)
+    ![Screenshot](../image/mongo_discovery.png)
 
 6. Add required details in `Add database` section.  
  - `identity field`: Proivide unique name for staging database
@@ -35,7 +35,7 @@ dSource is delphix representation of source database copy. Following are the ste
 1. Login to Delphix Management application.
 2. Click Manage >  Datasets
 3. Click on `Add dSource`.
-    ![Screenshot](../image/image11b.png)
+    ![Screenshot](../image/mongo_linking.png)
 4. In the Add dSource wizard, select the mongo source config you just created on the staging host.
 5. Select the dSource type from the drop-down available on dSource wizard. Refer different [dSource Types](https://delphix.github.io/mongo-plugin/index.html#ingestion-types)  
 6. Enter the mongo-specific parameters for your dSource configuration.  
@@ -65,13 +65,11 @@ dSource Parameters
 | Backup Metadata File Name                                                                                                     | File that contains backup datetime - Content : MMDDYYYY_HH24MISS                                                  | shardedsource, nonshardedsource, offlinemongodump                                                         |
 | Mongo Admin User                                                                                                              | Mongo Admin User on Staging Host                                                                                  | shardedsource, nonshardedsource, offlinemongodump, onlinemongodump, extendedcluster, seed, stagingpush    |
 | MongoDB Password                                                                                                              | Mongo Admin User Password on Staging Host                                                                         | shardedsource, nonshardedsource, offlinemongodump, onlinemongodump, extendedcluster, seed, stagingpush    |
-| Source Sharded Cluster                                                                                                        | Is Source Sharded Cluster                                                                                         | shardedsource                                                                                             |
 | Config Server Backup File (sharded mongo) <br> replicaset backup file (nonsharded mongo) <br> Backup directory for Mongodump  | Config Server Backup File Name <br> replicaset backup file (nonsharded mongo) <br> Backup directory for Mongodump | shardedsource <br> offlinemongodump, onlinemongodump <br> offlinemongodump, onlinemongodump               |
 | Shard Backup Files                                                                                                            | Shard Backup File Full Path. Add File for each Shard. I file per shard                                            | shardedsource                                                                                             |
 | Enable SSL/TLS                                                                                                                | Enable SSL/ TLS                                                                                                   | shardedsource, nonshardedsource, offlinemongodump, onlinemongodump, extendedcluster, seed, stagingpush    |
 | SSL/TLS Parameters                                                                                                            | SSL/TLS Parameters (e.g. tlsMode, tlsCAFile, tlsPEMKeyFile, sslAllowConnectionsWithoutCertificates etc)           | shardedsource, nonshardedsource, offlinemongodump, onlinemongodump, extendedcluster, seed, stagingpush    |
 | Enable Authentication                                                                                                         | Enable Authentication                                                                                             | shardedsource, nonshardedsource, offlinemongodump, onlinemongodump, extendedcluster, seed, stagingpush    |
-| User Auth Mode                                                                                                                | None, SCRAM, x509                                                                                                 | shardedsource, nonshardedsource, offlinemongodump, onlinemongodump, extendedcluster, seed, stagingpush    |
 | keyfile_path                                                                                                                  | KeyAuth keyfile name (Full Path)                                                                                  | shardedsource, nonshardedsource, offlinemongodump, onlinemongodump, extendedcluster, seed, stagingpush    |
 | Cluster Auth Mode                                                                                                             | None, keyFile, x509, sendKeyFile, sendX509                                                                        | shardedsource, nonshardedsource, offlinemongodump, onlinemongodump, extendedcluster, seed, stagingpush    |
 | Source is Encrypted                                                                                                           | Does source mongo instance use encryption ?                                                                       | shardedsource, nonshardedsource, offlinemongodump, onlinemongodump, extendedcluster, seed, stagingpush    |

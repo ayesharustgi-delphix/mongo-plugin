@@ -69,7 +69,7 @@ _Note_: Delphix always appends `/s0m0` as subfolder to the filesystem provuded w
 
 #### **Restore Mongo Database backup using Mongo OPS Manager  [ Non-Sharded ONLY ]**
 1. Create new dSource of type stagingpush and Capture name of mountpoint filesystem, replicaset name provided to delphix while creating dsource. 
-2. Create new empty single member mongo replicaset cluster using Mongo OPS Manager. Make sure to use same delphix mountpoint path used in dsource creation, appended with `s0m0` as location for datafiles. Also use same port and replicaset name that was provided while creating dSource.  
+2. Create new empty single member mongo replicaset cluster using Mongo OPS Manager or by any other tool/mechanism. Make sure to use same delphix mountpoint path used in dsource creation, appended with `s0m0` as location for datafiles. Also use same port and replicaset name that was provided while creating dSource.  
 3. Select desired backup to restore from Mongo OPS Manager.
 4. Restore backup to existing cluster and select the name of cluster that was created for dSource.
 5. Mongo OPS Manager will restore backup replacing existing data (empty instance) and keep same port and datafile location.
@@ -86,7 +86,7 @@ login as mongod
   chmod -R 775 /mnt/provision/stagingpush/s0m0
 ```
 
-_Note_: Delphix always appends `/s0m0` as subfolder to the filesystem provuded while creating stagingpush dSource. If `/mnt/provision/stagingpush` was provided as mountpoint while creating dsource, provide `/mnt/provision/stagingpush/s0m0` as datafile location while creating mongo Instance manually or via tools.
+_Note_: Delphix always appends `/s0m0` as subfolder to the filesystem provided while creating stagingpush dSource. If `/mnt/provision/stagingpush` was provided as mountpoint while creating dsource, provide `/mnt/provision/stagingpush/s0m0` as datafile location while creating mongo Instance manually or via tools.
 
 #### **Create Mongo Secondary Instance  [ Non-Sharded ONLY ]**  
 1. Create new dSource of type stagingpush and Capture name of mountpoint filesystem provided to delphix while creating dsource. Provide correct primary source hostname, port and replicaset name during dSource creation. 

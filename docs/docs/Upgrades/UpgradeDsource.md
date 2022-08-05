@@ -10,7 +10,7 @@ Periodically Production and Lower environments are upgraded for various reasons 
 
 Upgrading the Source database to a higher version will impact dSource snapsyncs if the version upgraded is not compatible with version of staging database. Delphix can handle the upgrade of the databases by updating the configuration in dSource.
 
-## Upgrade dSource to a higher version.
+## Upgrade dSource to a higher version. (Until 1.0.2 MongoDB Plugin)
 - Step 1: Install the same version of Mongo software on the staging host.[ same version as source ].  
 - Step 2: Update repoconfig file. Please refer [Discovery](../Discovery.md) Section.
 - Step 3: Refresh Staging Environment in Delphix.  

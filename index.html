@@ -640,12 +640,59 @@
       
       
         <label class="md-nav__link" for="__nav_11_1">
+          1.1.0
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="1.1.0" data-md-level="2">
+        <label class="md-nav__title" for="__nav_11_1">
+          <span class="md-nav__icon md-icon"></span>
+          1.1.0
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Release_Notes/1.1.0/Release-v1.1.0/" class="md-nav__link">
+        Release-v1.1.0
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_11_2" type="checkbox" id="__nav_11_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_11_2">
           1.0.2
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="1.0.2" data-md-level="2">
-        <label class="md-nav__title" for="__nav_11_1">
+        <label class="md-nav__title" for="__nav_11_2">
           <span class="md-nav__icon md-icon"></span>
           1.0.2
         </label>
@@ -681,18 +728,18 @@
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_11_2" type="checkbox" id="__nav_11_2" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_11_3" type="checkbox" id="__nav_11_3" >
       
       
       
       
-        <label class="md-nav__link" for="__nav_11_2">
+        <label class="md-nav__link" for="__nav_11_3">
           1.0.1
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="1.0.1" data-md-level="2">
-        <label class="md-nav__title" for="__nav_11_2">
+        <label class="md-nav__title" for="__nav_11_3">
           <span class="md-nav__icon md-icon"></span>
           1.0.1
         </label>
@@ -728,18 +775,18 @@
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_11_3" type="checkbox" id="__nav_11_3" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_11_4" type="checkbox" id="__nav_11_4" >
       
       
       
       
-        <label class="md-nav__link" for="__nav_11_3">
+        <label class="md-nav__link" for="__nav_11_4">
           1.0.0
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="1.0.0" data-md-level="2">
-        <label class="md-nav__title" for="__nav_11_3">
+        <label class="md-nav__title" for="__nav_11_4">
           <span class="md-nav__icon md-icon"></span>
           1.0.0
         </label>
@@ -1041,7 +1088,7 @@ login as mongod
 <h4 id="restore-mongo-database-backup-using-mongo-ops-manager-non-sharded-only"><strong>Restore Mongo Database backup using Mongo OPS Manager  [ Non-Sharded ONLY ]</strong></h4>
 <ol>
 <li>Create new dSource of type stagingpush and Capture name of mountpoint filesystem, replicaset name provided to delphix while creating dsource. </li>
-<li>Create new empty single member mongo replicaset cluster using Mongo OPS Manager. Make sure to use same delphix mountpoint path used in dsource creation, appended with <code>s0m0</code> as location for datafiles. Also use same port and replicaset name that was provided while creating dSource.  </li>
+<li>Create new empty single member mongo replicaset cluster using Mongo OPS Manager or by any other tool/mechanism. Make sure to use same delphix mountpoint path used in dsource creation, appended with <code>s0m0</code> as location for datafiles. Also use same port and replicaset name that was provided while creating dSource.  </li>
 <li>Select desired backup to restore from Mongo OPS Manager.</li>
 <li>Restore backup to existing cluster and select the name of cluster that was created for dSource.</li>
 <li>Mongo OPS Manager will restore backup replacing existing data (empty instance) and keep same port and datafile location.</li>
@@ -1055,7 +1102,7 @@ OR<br />
 login as mongod
 <div class="highlight"><pre><span></span><code>  chmod -R 775 /mnt/provision/stagingpush/s0m0
 </code></pre></div></p>
-<p><em>Note</em>: Delphix always appends <code>/s0m0</code> as subfolder to the filesystem provuded while creating stagingpush dSource. If <code>/mnt/provision/stagingpush</code> was provided as mountpoint while creating dsource, provide <code>/mnt/provision/stagingpush/s0m0</code> as datafile location while creating mongo Instance manually or via tools.</p>
+<p><em>Note</em>: Delphix always appends <code>/s0m0</code> as subfolder to the filesystem provided while creating stagingpush dSource. If <code>/mnt/provision/stagingpush</code> was provided as mountpoint while creating dsource, provide <code>/mnt/provision/stagingpush/s0m0</code> as datafile location while creating mongo Instance manually or via tools.</p>
 <h4 id="create-mongo-secondary-instance-non-sharded-only"><strong>Create Mongo Secondary Instance  [ Non-Sharded ONLY ]</strong></h4>
 <ol>
 <li>Create new dSource of type stagingpush and Capture name of mountpoint filesystem provided to delphix while creating dsource. Provide correct primary source hostname, port and replicaset name during dSource creation. </li>

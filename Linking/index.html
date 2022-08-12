@@ -579,12 +579,59 @@
       
       
         <label class="md-nav__link" for="__nav_11_1">
+          1.1.0
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="1.1.0" data-md-level="2">
+        <label class="md-nav__title" for="__nav_11_1">
+          <span class="md-nav__icon md-icon"></span>
+          1.1.0
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Release_Notes/1.1.0/Release-v1.1.0/" class="md-nav__link">
+        Release-v1.1.0
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_11_2" type="checkbox" id="__nav_11_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_11_2">
           1.0.2
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="1.0.2" data-md-level="2">
-        <label class="md-nav__title" for="__nav_11_1">
+        <label class="md-nav__title" for="__nav_11_2">
           <span class="md-nav__icon md-icon"></span>
           1.0.2
         </label>
@@ -620,18 +667,18 @@
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_11_2" type="checkbox" id="__nav_11_2" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_11_3" type="checkbox" id="__nav_11_3" >
       
       
       
       
-        <label class="md-nav__link" for="__nav_11_2">
+        <label class="md-nav__link" for="__nav_11_3">
           1.0.1
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="1.0.1" data-md-level="2">
-        <label class="md-nav__title" for="__nav_11_2">
+        <label class="md-nav__title" for="__nav_11_3">
           <span class="md-nav__icon md-icon"></span>
           1.0.1
         </label>
@@ -667,18 +714,18 @@
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_11_3" type="checkbox" id="__nav_11_3" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_11_4" type="checkbox" id="__nav_11_4" >
       
       
       
       
-        <label class="md-nav__link" for="__nav_11_3">
+        <label class="md-nav__link" for="__nav_11_4">
           1.0.0
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="1.0.0" data-md-level="2">
-        <label class="md-nav__title" for="__nav_11_3">
+        <label class="md-nav__title" for="__nav_11_4">
           <span class="md-nav__icon md-icon"></span>
           1.0.0
         </label>
@@ -826,7 +873,7 @@
 <li>Select the repository</li>
 <li>
 <p>Click on <code>+</code> icon ( Shown in next image )</p>
-<p><img alt="Screenshot" src="../image/image10.png" /></p>
+<p><img alt="Screenshot" src="../image/mongo_discovery.png" /></p>
 </li>
 <li>
 <p>Add required details in <code>Add database</code> section.  </p>
@@ -844,7 +891,7 @@
 <li>Login to Delphix Management application.</li>
 <li>Click Manage &gt;  Datasets</li>
 <li>Click on <code>Add dSource</code>.
-    <img alt="Screenshot" src="../image/image11b.png" /></li>
+    <img alt="Screenshot" src="../image/mongo_linking.png" /></li>
 <li>In the Add dSource wizard, select the mongo source config you just created on the staging host.</li>
 <li>Select the dSource type from the drop-down available on dSource wizard. Refer different <a href="https://delphix.github.io/mongo-plugin/index.html#ingestion-types">dSource Types</a>  </li>
 <li>Enter the mongo-specific parameters for your dSource configuration.  </li>
@@ -947,11 +994,6 @@
 <td align="left">shardedsource, nonshardedsource, offlinemongodump, onlinemongodump, extendedcluster, seed, stagingpush</td>
 </tr>
 <tr>
-<td align="left">Source Sharded Cluster</td>
-<td align="left">Is Source Sharded Cluster</td>
-<td align="left">shardedsource</td>
-</tr>
-<tr>
 <td align="left">Config Server Backup File (sharded mongo) <br> replicaset backup file (nonsharded mongo) <br> Backup directory for Mongodump</td>
 <td align="left">Config Server Backup File Name <br> replicaset backup file (nonsharded mongo) <br> Backup directory for Mongodump</td>
 <td align="left">shardedsource <br> offlinemongodump, onlinemongodump <br> offlinemongodump, onlinemongodump</td>
@@ -974,11 +1016,6 @@
 <tr>
 <td align="left">Enable Authentication</td>
 <td align="left">Enable Authentication</td>
-<td align="left">shardedsource, nonshardedsource, offlinemongodump, onlinemongodump, extendedcluster, seed, stagingpush</td>
-</tr>
-<tr>
-<td align="left">User Auth Mode</td>
-<td align="left">None, SCRAM, x509</td>
 <td align="left">shardedsource, nonshardedsource, offlinemongodump, onlinemongodump, extendedcluster, seed, stagingpush</td>
 </tr>
 <tr>

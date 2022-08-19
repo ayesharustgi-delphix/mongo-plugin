@@ -60,9 +60,10 @@ class PluginLogger:
             if pass_end_sep:
                 for s in pwd_split[1:]:
                     pwd = s.split(pass_end_sep, 1)[0]
-                    masked_pwd = "x" * self.masked_password_len
-                    masked_str = s.replace(pwd, masked_pwd)
-                    masked_log += pass_key + masked_str
+                    s = pass_key + s
+                    masked_pwd = pass_key + "x" * self.masked_password_len
+                    masked_str = s.replace(pass_key+pwd, masked_pwd)
+                    masked_log += masked_str
             else:
                 for s in pwd_split[1:]:
                     masked_pwd = "x" * self.masked_password_len

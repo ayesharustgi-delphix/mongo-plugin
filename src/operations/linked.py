@@ -128,19 +128,28 @@ def restore_mongodump_online_presync(sourceobj, dataset_type, mongo_backup_dir):
 
     cmd = "echo \"{}\"|cut -f2- -d' '".format(mongo_shell_cmd)
     mongorestore_connparams = common.execute_bash_cmd_silent_status(rx_connection, cmd, {})
-    resarr = mongorestore_connparams.split()
-    if sourceobj.parameters.mongo_db_password:
-        if sourceobj.parameters.mongo_db_password in resarr:
-            i_pwd = resarr.index(sourceobj.parameters.mongo_db_password)
-            resarr[i_pwd] =  'xxxxxxxxx'
-    logger.info("mongorestore_connparams: {}".format(' '.join(resarr)))
+    logger.info("mongorestore_connparams: {}".format(mongorestore_connparams))
 
     mongorestore_cmd = "{} {}".format(sourceobj.mongo_restore_path, mongorestore_connparams)
 
     start_portpool = sourceobj.parameters.start_portpool
-    cmd = "{} --port {} --drop --gzip --dir={}".format(
+    cmd = "{} --port {} --drop --gzip --dir={} --nsExclude='config.*' --nsExclude='admin.*'".format(
         mongorestore_cmd, start_portpool, mongo_backup_dir)
     res = common.execute_bash_cmd(rx_connection, cmd, {})
+
+    # nodes = common.create_node_array(dataset_type, sourceobj)
+    # mount_path = sourceobj.parameters.mount_path
+    # if dataset_type == "Virtual":
+    #     replicaset = sourceobj.parameters.make_shards_replicaset
+    # else:
+    #     replicaset = False
+    # replicaset_config_list = common.gen_replicaset_config_list(nodes,
+    #                                                            start_portpool,
+    #                                                            mount_path,
+    #                                                            replicaset)
+    # resync = False
+    # dsource_type = sourceobj.parameters.d_source_type
+    # common.create_mongoadmin_user(sourceobj, rx_connection, 0, replicaset_config_list, resync, dsource_type)
 
     common.add_debug_space()
 
@@ -403,7 +412,7 @@ def setup_dataset_mongodump_online(sourceobj, dataset_type, snapshot, dsource_ty
     start_portpool = sourceobj.parameters.start_portpool
     mongos_port = sourceobj.parameters.mongos_port
     #replicaset = sourceobj.parameters.make_shards_replicaset
-    if dsource_type == "Virtual":
+    if dataset_type == "Virtual":
         replicaset = sourceobj.parameters.make_shards_replicaset
     else:
         replicaset = False
@@ -473,7 +482,7 @@ def setup_dataset_mongodump_online(sourceobj, dataset_type, snapshot, dsource_ty
 
         # generate mongodump backup
         common.add_debug_heading_block("Generate mongodump backup")
-        cmd = "{}/mongodump -u {} -p {} --host {} --authenticationDatabase=admin --oplog --gzip -o {}".format(
+        cmd = "{}/mongodump --username {} --password {} --host {} --authenticationDatabase=admin --oplog --gzip -o {}".format(
             os.path.dirname(sourceobj.mongo_dump_path), src_db_user, src_db_password, src_mongo_host_conn,
             mongo_backup_dir)
         res = common.execute_bash_cmd(rx_connection, cmd, {})
@@ -481,7 +490,7 @@ def setup_dataset_mongodump_online(sourceobj, dataset_type, snapshot, dsource_ty
     else:
         # generate mongodump backup
         common.add_debug_heading_block("Generate mongodump backup")
-        cmd = "{}/mongodump -u {} -p {} --host {} --authenticationDatabase=admin --gzip -o {}".format(
+        cmd = "{}/mongodump --username {} --password {} --host {} --authenticationDatabase=admin --gzip -o {}".format(
             os.path.dirname(sourceobj.mongo_dump_path), src_db_user, src_db_password, src_mongo_host_conn,
             mongo_backup_dir)
         res = common.execute_bash_cmd(rx_connection, cmd, {})
@@ -761,7 +770,7 @@ def presync_mongodump_online(sourceobj, dataset_type, snapshot, dsource_type):
     if logsync:
         # generate mongodump backup
         common.add_debug_heading_block("Generate mongodump backup")
-        cmd = "{}/mongodump -u {} -p {} --host {} --authenticationDatabase=admin --oplog --gzip -o {}".format(
+        cmd = "{}/mongodump --username {} --password {} --host {} --authenticationDatabase=admin --oplog --gzip -o {}".format(
             os.path.dirname(sourceobj.mongo_dump_path), src_db_user, src_db_password, src_mongo_host_conn,
             mongo_backup_dir)
         res = common.execute_bash_cmd(rx_connection, cmd, {})
@@ -769,7 +778,7 @@ def presync_mongodump_online(sourceobj, dataset_type, snapshot, dsource_type):
     else:
         # generate mongodump backup
         common.add_debug_heading_block("Generate mongodump backup")
-        cmd = "{}/mongodump -u {} -p {} --host {} --authenticationDatabase=admin --gzip -o {}".format(
+        cmd = "{}/mongodump --username {} --password {} --host {} --authenticationDatabase=admin --gzip -o {}".format(
             os.path.dirname(sourceobj.mongo_dump_path), src_db_user, src_db_password, src_mongo_host_conn,
             mongo_backup_dir)
         res = common.execute_bash_cmd(rx_connection, cmd, {})
@@ -812,9 +821,9 @@ def get_current_oplog_position(sourceobj, dataset_type):
     src_mongo_host_conn = sourceobj.parameters.src_mongo_host_conn
 
     logger.info("Find current oplog position")
-    cmd = "{} -u {} -p {} --host {} --authenticationDatabase=admin --quiet local --eval \"printjson(db.oplog.rs.find().sort({{\$natural:-1}}).limit(1).next().ts)\"|tail -1".format(
+    cmd = "{} --username {} --password {} --host {} --authenticationDatabase=admin --quiet local --eval \"printjson(db.oplog.rs.find().sort({{\$natural:-1}}).limit(1).next().ts)\"|tail -1".format(
         sourceobj.mongo_shell_path, src_db_user, src_db_password, src_mongo_host_conn)
-    cmdlog = "{} -u {} -p {} --host {} --authenticationDatabase=admin --quiet local --eval \"printjson(db.oplog.rs.find().sort({{\$natural:-1}}).limit(1).next().ts)\"|tail -1".format(
+    cmdlog = "{} --username {} --password {} --host {} --authenticationDatabase=admin --quiet local --eval \"printjson(db.oplog.rs.find().sort({{\$natural:-1}}).limit(1).next().ts)\"|tail -1".format(
         sourceobj.mongo_shell_path,
         src_db_user, "xxxxxx", src_mongo_host_conn)
     curroplogpos = common.execute_bash_cmd(rx_connection, cmd, {})

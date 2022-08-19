@@ -1054,14 +1054,20 @@ def get_status_sharded_mongo(dataset_type, sourceobj):
     return active_status_flag
 
 
-def create_mongoadmin_user(sourceobj, connection, shard_count, shard_config_list):
+def create_mongoadmin_user(sourceobj, connection, shard_count, shard_config_list, resync=False, dsource_type=None):
     logger.info("Creating Mongo Admin User")
     mongo_db_user = sourceobj.parameters.mongo_db_user
     mongo_db_password = sourceobj.parameters.mongo_db_password
     # In case of nonsharded source, start_portpool is copied to mongos_port in mongopy.py
     mongos_port = sourceobj.parameters.mongos_port
     # mongo_shell_cmd = "mongo"
-    mongo_shell_cmd = "{}/mongo".format(os.path.dirname(sourceobj.mongo_install_path))
+
+    if not resync and dsource_type and dsource_type == "onlinemongodump":
+        cmd = "hostname"
+        hostname = execute_bash_cmd(connection, cmd, {})
+        mongo_shell_cmd = gen_mongo_cmd("Staging",sourceobj,hostname)
+    else:
+        mongo_shell_cmd = "{}/mongo".format(os.path.dirname(sourceobj.mongo_install_path))
 
     # cmd = "{} --port {} --quiet --eval \"db.createRole({{ role: \"delphixadminrole\", privileges: [ {{ resource: {{ anyResource: true }}, actions: [ \"anyAction\" ] }}], roles: [{{ role: 'root', db: 'admin'}},{{ role: 'userAdminAnyDatabase', db: 'admin'}},{{ role: 'dbAdminAnyDatabase', db: 'admin'}},{{ role: 'readWriteAnyDatabase', db: 'admin'}},{{ role: 'clusterAdmin', db: 'admin'}}]}})\"".format(mongo_shell_cmd,mongos_port,mongo_db_user,mongo_db_password)
     cmd = "{} admin --port {} --quiet --eval \"db.createRole({{ role: \\\"delphixadminrole\\\", privileges: [{{ resource: {{ anyResource: true }}, actions: [ \\\"anyAction\\\" ] }}], roles: []}})\"".format(
@@ -1115,22 +1121,26 @@ def update_mongoadmin_pwd(sourceobj, connection, shard_count, shard_config_list,
     return res
 
 
-def gen_mongo_cmd(dataset_type, sourceobj, hostname):
+def gen_mongo_cmd(dataset_type, sourceobj, hostname, use_source=False):
     client_tls_cert = sourceobj.parameters.client_tls_cert
     client_tls_cacert = sourceobj.parameters.client_tls_cacert
     mount_path = sourceobj.parameters.mount_path
 
-    if dataset_type == "Staging":
-        mongo_db_user = sourceobj.parameters.mongo_db_user
-        mongo_db_password = sourceobj.parameters.mongo_db_password
-    elif dataset_type == "Virtual":
-        rx_connection = sourceobj.connection
-        cmd = "cat {}/.delphix/.stg_config.txt|grep 'MONGO_DB_USER:'|cut -d':' -f2".format(mount_path)
-        mongo_db_user = execute_bash_cmd(rx_connection, cmd, {})
-        mongo_db_password = sourceobj.parameters.mongo_db_password
+    if use_source:
+        mongo_db_user = sourceobj.parameters.src_db_user
+        mongo_db_password = sourceobj.parameters.src_db_password
+    else:
+        if dataset_type == "Staging":
+            mongo_db_user = sourceobj.parameters.mongo_db_user
+            mongo_db_password = sourceobj.parameters.mongo_db_password
+        elif dataset_type == "Virtual":
+            rx_connection = sourceobj.connection
+            cmd = "cat {}/.delphix/.stg_config.txt|grep 'MONGO_DB_USER:'|cut -d':' -f2".format(mount_path)
+            mongo_db_user = execute_bash_cmd(rx_connection, cmd, {})
+            mongo_db_password = sourceobj.parameters.mongo_db_password
 
     # mongo_shell_cmd = "mongo"
-    mongo_shell_cmd = "{}".format(sourceobj.mongo_shell_path)
+    mongo_shell_cmd = "{} ".format(sourceobj.mongo_shell_path)
 
     logger.debug("enable_ssl_tls: {}".format(sourceobj.parameters.enable_ssl_tls))
     if sourceobj.parameters.enable_ssl_tls:
@@ -1138,9 +1148,6 @@ def gen_mongo_cmd(dataset_type, sourceobj, hostname):
                                                                                                 hostname,
                                                                                                 client_tls_cert,
                                                                                                 client_tls_cacert)
-    else:
-        # mongo_shell_cmd = "mongo"
-        mongo_shell_cmd = "{}".format(sourceobj.mongo_shell_path)
 
     if sourceobj.parameters.keyfile_path:
         mongo_shell_cmd = "{} --username {} --password {} --authenticationDatabase admin".format(mongo_shell_cmd,

@@ -304,6 +304,9 @@ def staged_pre_snapshot(repository, source_config, staged_source, optional_snaps
     #logger.debug("Staging Pre Snapshot - Freeze IO")
     #common.fsync_lock_sharded_mongo(staged_source, 'Staging')
     #logger.debug("Staging Pre Snapshot - Freeze IO - done")
+    if staged_source.parameters.d_source_type == "onlinemongodump":
+        cmd = "rm -Rf {}/mongo_bkps/*".format(staged_source.parameters.mount_path)
+        res = common.execute_bash_cmd_nofail(staged_source.staged_connection, cmd, {})
 
     logger.debug("End of pre snapshot")
     common.add_debug_heading_block("End Staged Pre Snapshot")

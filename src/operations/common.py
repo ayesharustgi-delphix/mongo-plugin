@@ -19,6 +19,7 @@ import os
 
 from operations import linked
 
+
 def adjust_mount_env(imounts, inodes, itotalnodes):
     i = 0
     itotalnodes = itotalnodes - 1
@@ -438,8 +439,12 @@ def _handle_exit_code(exit_code, std_err=None, std_output=None, callback_func=No
                 logger.debug("Failed to execute call back function with error: {}".format(err.message))
 
     error_details = std_output
+
     if error_details is None or error_details == "":
         error_details = std_err
+    else:
+        error_details = "{}\n{}".format(error_details, std_err)
+
     logger.debug("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  ERRROR  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
     logger.debug("cmd Exit Code: {}, Error Msg : {}".format(exit_code, error_details))
     add_debug_space()
@@ -467,6 +472,38 @@ def execute_bash_cmd(connection, cmd, env):
 
     # Verify the exit code of each executed command. 0 means command ran successfully and for other code it is failed.
     # For failed cases we need to find the scenario in which programs will die and otherwise execution will continue.
+    if exit_code != 0:
+        # logger.debug("HERE1.3")
+        if "--logpath" in cmd:
+            # logger.debug("HERE1.4")
+            cmd = "grep errmsg {}".format(cmd.split("--logpath")[1].split()[0])
+            _res = libs.run_bash(connection, cmd, env)
+            _exit_code = _res.exit_code
+            if _exit_code == 0:
+                # logger.debug("HERE1.5")
+                mongo_errmsg_raw = _res.stdout.replace("\n", "").strip()
+                if mongo_errmsg_raw != "":
+                    # logger.debug("HERE1.6")
+                    logger.info(mongo_errmsg_raw)
+                    mongo_errmsg_dict = dict(json.loads(mongo_errmsg_raw))['attr']['error']
+                    if mongo_errmsg_dict:
+                        # logger.debug("HERE1.7")
+                        logger.info(mongo_errmsg_dict)
+                        errmsg = "{}\n{}:{}".format(
+                            errmsg,
+                            mongo_errmsg_dict['codeName'],
+                            mongo_errmsg_dict['errmsg']
+                        )
+                        # logger.debug("HERE1.8")
+                        # logger.debug(errmsg)
+            else:
+                errmsg = "{}\n{}".format(
+                    errmsg,
+                    "Unable to capture the mongo error message."
+                )
+
+    # logger.debug("HERE1.9")
+    # logger.debug(errmsg)
     _handle_exit_code(exit_code, errmsg, outputmsg, callback_func, 'N')
 
     return outputmsg
@@ -530,8 +567,9 @@ def execute_bash_cmd_silent_status(connection, cmd, env):
     outputmsg = res.stdout.replace("\n", "").strip()
     errmsg = res.stderr.replace("\n", "").strip()
     exit_code = res.exit_code
-    logger.debug("Value for result: cmd: {} ---- outputmsg: {} ---- errmsg: {} ---- exit_code: {} ".format(cmd, outputmsg,
-                                                               errmsg, exit_code ))
+    logger.debug(
+        "Value for result: cmd: {} ---- outputmsg: {} ---- errmsg: {} ---- exit_code: {} ".format(cmd, outputmsg,
+                                                                                                  errmsg, exit_code))
 
     # Verify the exit code of each executed command. 0 means command ran successfully and for other code it is failed.
     # For failed cases we need to find the scenario in which programs will die and otherwise execution will continue.
@@ -1065,7 +1103,7 @@ def create_mongoadmin_user(sourceobj, connection, shard_count, shard_config_list
     if not resync and dsource_type and dsource_type == "onlinemongodump":
         cmd = "hostname"
         hostname = execute_bash_cmd(connection, cmd, {})
-        mongo_shell_cmd = gen_mongo_cmd("Staging",sourceobj,hostname)
+        mongo_shell_cmd = gen_mongo_cmd("Staging", sourceobj, hostname)
     else:
         mongo_shell_cmd = "{}/mongo".format(os.path.dirname(sourceobj.mongo_install_path))
 
@@ -1556,8 +1594,9 @@ def setup_shard_replset_members(shard_config_list, virtual_source, mount_path, e
             cmd = "sed -i '/Master Key UUID/d' {}/s{}m{}/restoreInfo.txt".format(mount_path, shardnum, membernum)
             res = execute_bash_cmd(snmn_conn, cmd, {})
             if encryption_method:
-                cmd = "echo 'Master Key UUID: {}' >> {}/s{}m{}/restoreInfo.txt".format(kmip_key_id, mount_path, shardnum,
-                                                                                   membernum)
+                cmd = "echo 'Master Key UUID: {}' >> {}/s{}m{}/restoreInfo.txt".format(kmip_key_id, mount_path,
+                                                                                       shardnum,
+                                                                                       membernum)
                 res = execute_bash_cmd(snmn_conn, cmd, {})
             logger.info("Copied and Adjusted restoreInfo.txt")
 
@@ -1941,12 +1980,15 @@ def add_ldap(mongo_cmd, enable_ldap, ldap_params):
                     if utilityname == "mongos":
                         print("Skip ldapAuthzQueryTemplate")
                     else:
-                        ldap_params_list_string = ldap_params_list_string + " --{} {}".format(ldap_params_rec['property_name'], ldap_params_rec['value'])
+                        ldap_params_list_string = ldap_params_list_string + " --{} {}".format(
+                            ldap_params_rec['property_name'], ldap_params_rec['value'])
                 else:
-                    ldap_params_list_string = ldap_params_list_string + " --{} {}".format(ldap_params_rec['property_name'],
-                                                                                      ldap_params_rec['value'])
+                    ldap_params_list_string = ldap_params_list_string + " --{} {}".format(
+                        ldap_params_rec['property_name'],
+                        ldap_params_rec['value'])
         mongo_cmd = "{} {}".format(mongo_cmd, ldap_params_list_string)
     return mongo_cmd
+
 
 def add_set_parameters(mongo_cmd, enable_setparams, setparam_params):
     if enable_setparams:
@@ -1955,8 +1997,9 @@ def add_set_parameters(mongo_cmd, enable_setparams, setparam_params):
             if set_params_rec['value'].upper() == "TRUE":
                 set_params_list_string = set_params_list_string + " --{}".format(set_params_rec['property_name'])
             else:
-                set_params_list_string = set_params_list_string + " --setParameter {}={}".format(set_params_rec['property_name'],
-                                                                                    set_params_rec['value'])
+                set_params_list_string = set_params_list_string + " --setParameter {}={}".format(
+                    set_params_rec['property_name'],
+                    set_params_rec['value'])
         mongo_cmd = "{} {}".format(mongo_cmd, set_params_list_string)
     return mongo_cmd
 
@@ -2077,7 +2120,7 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
     mount_path = sourceobj.parameters.mount_path
     start_portpool = sourceobj.parameters.start_portpool
     mongos_port = sourceobj.parameters.mongos_port
-    #replicaset = sourceobj.parameters.make_shards_replicaset
+    # replicaset = sourceobj.parameters.make_shards_replicaset
     if dataset_type == "Virtual":
         replicaset = sourceobj.parameters.make_shards_replicaset
     else:
@@ -2135,7 +2178,8 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
             nodes, start_portpool, cmax, smax, mmax, mount_path, mongos_port, replicaset)
         for shard_config in shard_config_list:
             logger.info("shard config :{}".format(shard_config))
-    elif dsource_type in [ "nonshardedsource", "offlinemongodump", "onlinemongodump", "extendedcluster", "stagingpush", "seed" ]:
+    elif dsource_type in ["nonshardedsource", "offlinemongodump", "onlinemongodump", "extendedcluster", "stagingpush",
+                          "seed"]:
         # Generate replicaset mappings
         add_debug_heading_block("Generate replicaset mappings")
         replicaset_config_list = []
@@ -2152,7 +2196,8 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
         elif dataset_type == 'Virtual':
             cmd = "echo \"{}\" > {}/.delphix/.tgt_vdbcfg.txt".format(shard_config_list, mount_path)
         res = execute_bash_cmd(rx_connection, cmd, {})
-    elif dsource_type in [ "nonshardedsource", "offlinemongodump", "onlinemongodump", "extendedcluster", "stagingpush", "seed" ]:
+    elif dsource_type in ["nonshardedsource", "offlinemongodump", "onlinemongodump", "extendedcluster", "stagingpush",
+                          "seed"]:
         if dataset_type == 'Staging':
             cmd = "echo \"{}\" > {}/.delphix/.stg_dsourcecfg.txt".format(replicaset_config_list, mount_path)
         elif dataset_type == 'Virtual':
@@ -2192,7 +2237,7 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
         configsvrstring = "{}/{}:{}".format(c0m0_replica_name,
                                             c0m0_host_name, c0m0_port)
 
-        #if sourceobj.parameters.make_shards_replicaset:
+        # if sourceobj.parameters.make_shards_replicaset:
         if replicaset:
             c0m1_port = get_shard_port(shard_config_list, 'c0m1')
             c0m1_host = get_shard_host(shard_config_list, 'c0m1')
@@ -2240,13 +2285,14 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
         if dsource_type == "shardedsource":
             cmd = "echo \"SHARD_COUNT:{}\" > {}/.delphix/{}".format(smax, mount_path, dataset_cfgfile)
             res = execute_bash_cmd(rx_connection, cmd, {})
-        elif dsource_type in [ "nonshardedsource", "offlinemongodump", "onlinemongodump", "extendedcluster", "stagingpush", "seed" ]:
+        elif dsource_type in ["nonshardedsource", "offlinemongodump", "onlinemongodump", "extendedcluster",
+                              "stagingpush", "seed"]:
             cmd = "cat /dev/null > {}/.delphix/{}".format(mount_path, dataset_cfgfile)
             res = execute_bash_cmd(rx_connection, cmd, {})
         cmd = "echo \"DSOURCE_TYPE:{}\" >> {}/.delphix/{}".format(snapshot.d_source_type, mount_path, dataset_cfgfile)
         res = execute_bash_cmd(rx_connection, cmd, {})
         cmd = "echo \"MONGO_DB_USER:{}\" >> {}/.delphix/{}".format(snapshot.mongo_db_user, mount_path,
-                                                                      dataset_cfgfile)
+                                                                   dataset_cfgfile)
         res = execute_bash_cmd(rx_connection, cmd, {})
 
     if source_encrypted:
@@ -2310,7 +2356,8 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
             res = setup_config_member(sourceobj, rx_connection, mount_path, confignum, membernum, start_portpool, smax,
                                       shard_config_list, None, None, shardserver_setting_list)
 
-    elif dsource_type in [ "nonshardedsource", "offlinemongodump", "onlinemongodump", "extendedcluster", "stagingpush", "seed" ]:
+    elif dsource_type in ["nonshardedsource", "offlinemongodump", "onlinemongodump", "extendedcluster", "stagingpush",
+                          "seed"]:
 
         # setup Replicaset
         if source_encrypted:
@@ -2343,7 +2390,8 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
 
             add_debug_space()
 
-    elif dsource_type in [ "nonshardedsource", "offlinemongodump", "onlinemongodump", "extendedcluster", "stagingpush", "seed" ]:
+    elif dsource_type in ["nonshardedsource", "offlinemongodump", "onlinemongodump", "extendedcluster", "stagingpush",
+                          "seed"]:
 
         if replicaset:
             add_debug_heading_block("Replicaset - setup_replset_members")
@@ -2429,14 +2477,16 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
         add_debug_heading_block("Generate Config files")
         gen_config_files(dataset_type, sourceobj, shard_config_list, snapshot)
 
-    elif dsource_type in [ "nonshardedsource", "offlinemongodump", "onlinemongodump", "extendedcluster", "stagingpush", "seed" ]:
+    elif dsource_type in ["nonshardedsource", "offlinemongodump", "onlinemongodump", "extendedcluster", "stagingpush",
+                          "seed"]:
         if dataset_type == 'Staging':
             if dsource_type != "extendedcluster":
                 # Create mongo admin user
                 create_mongoadmin_user(sourceobj, rx_connection, 0, replicaset_config_list)
         elif dataset_type == 'Virtual':
             # Update mongo admin password
-            update_mongoadmin_pwd(sourceobj, rx_connection, 0, replicaset_config_list, snapshot.mongo_db_user, sourceobj.parameters.mongo_db_password,
+            update_mongoadmin_pwd(sourceobj, rx_connection, 0, replicaset_config_list, snapshot.mongo_db_user,
+                                  sourceobj.parameters.mongo_db_password,
                                   mongos_port)
 
         # Generate Config files
@@ -2471,7 +2521,7 @@ def setup_sharded_mongo_dataset(sourceobj, dataset_type, snapshot):
     mount_path = sourceobj.parameters.mount_path
     start_portpool = sourceobj.parameters.start_portpool
     mongos_port = sourceobj.parameters.mongos_port
-    #replicaset = sourceobj.parameters.make_shards_replicaset
+    # replicaset = sourceobj.parameters.make_shards_replicaset
     if dataset_type == "Virtual":
         replicaset = sourceobj.parameters.make_shards_replicaset
     else:
@@ -2555,7 +2605,7 @@ def setup_sharded_mongo_dataset(sourceobj, dataset_type, snapshot):
     configsvrstring = "{}/{}:{}".format(c0m0_replica_name,
                                         c0m0_host_name, c0m0_port)
 
-    #if sourceobj.parameters.make_shards_replicaset:
+    # if sourceobj.parameters.make_shards_replicaset:
     if replicaset:
         c0m1_port = get_shard_port(shard_config_list, 'c0m1')
         c0m1_host = get_shard_host(shard_config_list, 'c0m1')
@@ -2598,8 +2648,6 @@ def setup_sharded_mongo_dataset(sourceobj, dataset_type, snapshot):
     elif dataset_type == 'Virtual':
         cmd = "echo \"DSOURCE_TYPE:{}\" >> {}/.delphix/{}".format(snapshot.d_source_type, mount_path, dataset_cfgfile)
         res = execute_bash_cmd(rx_connection, cmd, {})
-
-
 
     if source_encrypted:
         cmd = "echo \"SOURCE_ENCRYPTED:{}\" >> {}/.delphix/{}".format("True", mount_path, dataset_cfgfile)
@@ -2761,16 +2809,16 @@ def add_debug_heading_block(heading):
 
 def check_input_parameters(source_obj):
     if source_obj.parameters.enable_authentication:
-        if (source_obj.parameters.cluster_auth_mode in ["keyFile","sendKeyFile"] and
+        if (source_obj.parameters.cluster_auth_mode in ["keyFile", "sendKeyFile"] and
                 not source_obj.parameters.keyfile_path):
             raise UserError(
                 "Incorrect authentication configuration provided. "
                 "Please provide keyFile path when cluster authentication "
                 "mode is keyFile.")
-        elif source_obj.parameters.cluster_auth_mode in ["x509","sendX509"]:
+        elif source_obj.parameters.cluster_auth_mode in ["x509", "sendX509"]:
             if source_obj.parameters.enable_ssl_tls:
-                tls_param_name_list =[p["property_name"] for p in
-                                      source_obj.parameters.ssl_tls_params]
+                tls_param_name_list = [p["property_name"] for p in
+                                       source_obj.parameters.ssl_tls_params]
                 tls_expected_param = ["tlsMode", "tlsCAFile", "tlsPEMKeyFile",
                                       "sslAllowConnectionsWithoutCertificates"]
                 list_diff = set(tls_expected_param) - set(tls_param_name_list)
@@ -2786,4 +2834,3 @@ def check_input_parameters(source_obj):
                     "Incorrect authentication configuration provided. "
                     "Please provide SSL/TLS parameters when cluster "
                     "authentication mode is x509.")
-

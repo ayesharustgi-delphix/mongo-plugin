@@ -198,7 +198,9 @@ def create_seed_database(sourceobj, dataset_type):
             sourceobj.mongo_install_path,
             mount_path, mount_path, start_portpool, start_portpool, replicaset_name)
 
+    logger.info("HERE1.1")
     res = common.execute_bash_cmd(rx_connection, start_mongo_cmd, {})
+    logger.info("HERE1.2")
 
     cmd = "{} --port {} --quiet --eval 'rs.initiate()'".format(sourceobj.mongo_shell_path, start_portpool)
     res = common.execute_bash_cmd(rx_connection, cmd, {})

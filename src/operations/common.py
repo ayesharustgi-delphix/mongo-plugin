@@ -78,7 +78,7 @@ def cr_dir_structure_replicaset(mount_path, replicaset, rx_connection):
 
 
 def extract_shard_config_backup(backupfile, mount_path, confignum, connection):
-    cmd = "tar -{}xvf {} -C {}/c{}m0 --strip-components 1".format(
+    cmd = "tar -{}xf {} -C {}/c{}m0 --strip-components 1".format(
         "z" if backupfile.endswith(".tar.gz") else "",
         backupfile,
         mount_path, confignum)
@@ -86,7 +86,7 @@ def extract_shard_config_backup(backupfile, mount_path, confignum, connection):
 
 
 def extract_shard_backup(backupfile, mount_path, shardnum, connection):
-    cmd = "tar -{}xvf {} -C {}/s{}m0 --strip-components 1".format(
+    cmd = "tar -{}xf {} -C {}/s{}m0 --strip-components 1".format(
         "z" if backupfile.endswith(".tar.gz") else "",
         backupfile,
         mount_path, shardnum)
@@ -94,7 +94,7 @@ def extract_shard_backup(backupfile, mount_path, shardnum, connection):
 
 
 def extract_replicaset_backup(backupfile, mount_path, connection):
-    cmd = "tar -{}xvf {} -C {}/s0m0 --strip-components 1".format(
+    cmd = "tar -{}xf {} -C {}/s0m0 --strip-components 1".format(
         "z" if backupfile.endswith(".tar.gz") else "",
         backupfile,
         mount_path)
@@ -437,11 +437,11 @@ def _handle_exit_code(exit_code, std_err=None, std_output=None, callback_func=No
             except Exception as err:
                 logger.debug("Failed to execute call back function with error: {}".format(err.message))
 
-    error_details = std_output
+    error_details = std_err
     if error_details is None or error_details == "":
-        error_details = std_err
+        error_details = std_output
     logger.debug("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  ERRROR  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-    logger.debug("cmd Exit Code: {}, Error Msg : {}".format(exit_code, error_details))
+    logger.debug("cmd Exit Code: {}, Error Msg : {}, Output Msg : {}".format(exit_code, std_err, std_output))
     add_debug_space()
     raise Exception(error_details)
 

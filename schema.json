@@ -31,6 +31,11 @@
         "type": "string",
         "prettyName": "Mongo Restore Path",
         "description": "Path to Mongo restore folder"
+      },
+      "mongosync_path": {
+        "type": "string",
+        "prettyName": "Mongosync Path",
+        "description": "Path to Mongosync utility"
       }
     },
     "nameField": "pretty_name",
@@ -447,6 +452,8 @@
       "src_replicaset_name",
       "src_db_user",
       "src_db_password",
+      "enable_clustersync",
+      "mongosync_port",
       "enable_logsync",
       "mongo_host",
       "start_portpool",
@@ -520,10 +527,22 @@
         "description": "",
         "default": ""
       },
+      "mongosync_port": {
+        "type": "integer",
+        "prettyName": "Mongosync Port Number (ONLY for Cluster to Cluster Sync)",
+        "description": "",
+        "default": 0
+      },
       "enable_logsync": {
         "default": false,
         "type": "boolean",
         "prettyName": "Capture oplogs of replicaset (ONLY for onlinemongodump)",
+        "description": ""
+      },
+      "enable_clustersync": {
+        "default": false,
+        "type": "boolean",
+        "prettyName": "Cluster to Cluster Sync (ONLY for shardedsource)",
         "description": ""
       },
       "src_replicaset_name": {

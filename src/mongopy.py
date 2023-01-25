@@ -23,7 +23,6 @@ import os
 # import logging
 import pkgutil
 import re, copy
-import time
 # import pickle
 from datetime import datetime
 
@@ -53,6 +52,7 @@ from generated.definitions import RepositoryDefinition
 from generated.definitions import SourceConfigDefinition
 from generated.definitions import SnapshotDefinition
 from helpers import helpers
+from operations.mongosyncAPI import MongosyncAPILib
 
 # setup_logger._setup_logger()
 logger = plugin_logger.PluginLogger("MONGODB")
@@ -116,9 +116,26 @@ def repository_discovery(source_connection):
     logger.debug(f"repodiscovery: {repodiscovery}")
     for item in repodiscovery:
         logger.debug("item:{}".format(item))
-        repository = RepositoryDefinition(version=item['version'], mongo_install_path=item['mongo_install_path'],
-                                          mongo_dump_path=item['mongo_dump_path'],mongo_restore_path=item['mongo_restore_path'],mongo_shell_path=item['mongo_shell_path'], pretty_name=item['pretty_name'])
+        repository = RepositoryDefinition(
+            version=item['version'],
+            mongo_install_path=item['mongo_install_path'],
+            mongo_dump_path=item['mongo_dump_path'],
+            mongo_restore_path=item['mongo_restore_path'],
+            mongo_shell_path=item['mongo_shell_path'],
+            mongosync_path=item['mongosync_path'],
+            pretty_name=item['pretty_name']
+        )
         repositories.append(repository)
+
+    # api = 'curl -s -w "DLPX_API_HTTP_CODE=%{http_code}" -o - localhost:48271/api/v1/progress -XGET'
+    # logger.debug(f"Running API test: {api}")
+    # res = libs.run_bash(source_connection, api, env)
+    # logger.debug(f"stdout={res.stdout}  exit_code={res.exit_code}")
+
+    # test usage implementation for MongoSyncAPILib
+    # rest_obj = MongosyncAPILib(source_connection, "localhost", 48271)
+    # result = rest_obj.get_progress()
+    # logger.debug(f"result={result}")
 
     # # Write library file for future use
     # env = {

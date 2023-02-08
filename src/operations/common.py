@@ -1063,16 +1063,11 @@ def create_mongoadmin_user(sourceobj, connection, shard_count, shard_config_list
     mongos_port = sourceobj.parameters.mongos_port
     # mongo_shell_cmd = "mongo"
 
-    mongo_shell_cmd = None
+    mongo_shell_cmd = sourceobj.mongo_shell_path
     if not resync and dsource_type and dsource_type == "onlinemongodump":
         cmd = "hostname"
         hostname = execute_bash_cmd(connection, cmd, {})
         mongo_shell_cmd = gen_mongo_cmd("Staging",sourceobj,hostname)
-    else:
-        if sourceobj.mongo_shell_path.split('/')[-1] == 'mongosh':
-            mongo_shell_cmd = sourceobj.mongo_shell_path
-        else:
-            mongo_shell_cmd = "{}/mongo".format(os.path.dirname(sourceobj.mongo_install_path))
 
     # cmd = "{} --port {} --quiet --eval \"db.createRole({{ role: \"delphixadminrole\", privileges: [ {{ resource: {{ anyResource: true }}, actions: [ \"anyAction\" ] }}], roles: [{{ role: 'root', db: 'admin'}},{{ role: 'userAdminAnyDatabase', db: 'admin'}},{{ role: 'dbAdminAnyDatabase', db: 'admin'}},{{ role: 'readWriteAnyDatabase', db: 'admin'}},{{ role: 'clusterAdmin', db: 'admin'}}]}})\"".format(mongo_shell_cmd,mongos_port,mongo_db_user,mongo_db_password)
     cmd = "{} admin --port {} --quiet --eval \"db.createRole({{ role: \\\"delphixadminrole\\\", privileges: [{{ resource: {{ anyResource: true }}, actions: [ \\\"anyAction\\\" ] }}], roles: []}})\"".format(

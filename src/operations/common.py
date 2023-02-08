@@ -18,6 +18,7 @@ import re
 import os
 
 from operations import linked
+from operations import constants
 
 def adjust_mount_env(imounts, inodes, itotalnodes):
     i = 0
@@ -1062,12 +1063,11 @@ def create_mongoadmin_user(sourceobj, connection, shard_count, shard_config_list
     mongos_port = sourceobj.parameters.mongos_port
     # mongo_shell_cmd = "mongo"
 
+    mongo_shell_cmd = sourceobj.mongo_shell_path
     if not resync and dsource_type and dsource_type == "onlinemongodump":
         cmd = "hostname"
         hostname = execute_bash_cmd(connection, cmd, {})
         mongo_shell_cmd = gen_mongo_cmd("Staging",sourceobj,hostname)
-    else:
-        mongo_shell_cmd = "{}/mongo".format(os.path.dirname(sourceobj.mongo_install_path))
 
     # cmd = "{} --port {} --quiet --eval \"db.createRole({{ role: \"delphixadminrole\", privileges: [ {{ resource: {{ anyResource: true }}, actions: [ \"anyAction\" ] }}], roles: [{{ role: 'root', db: 'admin'}},{{ role: 'userAdminAnyDatabase', db: 'admin'}},{{ role: 'dbAdminAnyDatabase', db: 'admin'}},{{ role: 'readWriteAnyDatabase', db: 'admin'}},{{ role: 'clusterAdmin', db: 'admin'}}]}})\"".format(mongo_shell_cmd,mongos_port,mongo_db_user,mongo_db_password)
     cmd = "{} admin --port {} --quiet --eval \"db.createRole({{ role: \\\"delphixadminrole\\\", privileges: [{{ resource: {{ anyResource: true }}, actions: [ \\\"anyAction\\\" ] }}], roles: []}})\"".format(
@@ -1435,9 +1435,7 @@ def setup_config_member(sourceobj, rx_connection, mount_path, confignum, membern
         logger.debug("adjust_config_shardinfo - End")
 
     # cmd = "ps -ef|grep mongo|grep {}|grep {}|grep -v grep|awk '{ print \"kill \"$2}'|sh".format(dbpath, cfg_port)
-    cmd = "{} admin --port {} --quiet --eval 'db.shutdownServer()'".format(sourceobj.mongo_shell_path, cfg_port)
-    res = execute_bash_cmd(rx_connection, cmd, {})
-    time.sleep(7)
+    shutdown_server(rx_connection, sourceobj.mongo_shell_path, cfg_port)
 
     # start_mongod_cmd = "mongod -f {}".format(cfgfile)
     res = execute_bash_cmd(rx_connection, restart_mongod_cmd, {})
@@ -1498,9 +1496,8 @@ def setup_config_replset_members(shard_config_list, sourceobj, mount_path, encry
         time.sleep(7)
 
         # cmd = "ps -ef|grep mongo|grep {}|grep {}|grep -v grep|awk '{ print \"kill \"$2}'|sh".format(dbpath, cnmn_port)
-        cmd = "{} admin --port {} --quiet --eval 'db.shutdownServer()'".format(sourceobj.mongo_shell_path, cnmn_port)
-        res = execute_bash_cmd(cnmn_conn, cmd, {})
-        time.sleep(7)
+
+        shutdown_server(cnmn_conn, sourceobj.mongo_shell_path, cnmn_port)
 
         res = execute_bash_cmd(cnmn_conn, restart_mongod_cmd, {})
         time.sleep(5)
@@ -1589,10 +1586,7 @@ def setup_shard_replset_members(shard_config_list, virtual_source, mount_path, e
             add_debug_space()
 
             # cmd = "ps -ef|grep mongo|grep {}|grep {}|grep -v grep|awk '{ print \"kill \"$2}'|sh".format(dbpath, snmn_conn)
-            cmd = "{} admin --port {} --quiet --eval 'db.shutdownServer()'".format(virtual_source.mongo_shell_path,
-                                                                                   snmn_port)
-            res = execute_bash_cmd(snmn_conn, cmd, {})
-            time.sleep(7)
+            shutdown_server(snmn_conn, virtual_source.mongo_shell_path, snmn_port)
 
             add_debug_space()
 
@@ -1751,9 +1745,7 @@ def setup_shard_member(sourceobj, rx_connection, mount_path, shardnum, membernum
     res = execute_bash_cmd(rx_connection, cmd, {})
 
     # cmd = "ps -ef|grep mongo|grep {}|grep {}|grep -v grep|awk '{ print \"kill \"$2}'|sh".format(dbpath, snm0_port)
-    cmd = "{} admin --port {} --quiet --eval 'db.shutdownServer()'".format(sourceobj.mongo_shell_path, snm0_port)
-    res = execute_bash_cmd(rx_connection, cmd, {})
-    time.sleep(7)
+    shutdown_server(rx_connection, sourceobj.mongo_shell_path, snm0_port)
 
     # Create YAML file
     cmd = "{} --outputConfig |grep -v outputConfig > {}".format(restart_mongod_cmd, cfgfile)
@@ -2323,8 +2315,7 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
             res = setup_replicaset_member(sourceobj, rx_connection, mount_path, start_portpool, None, None,
                                           dsource_type)
 
-    cmd = "{} --port {} --quiet --eval 'rs.initiate()'".format(sourceobj.mongo_shell_path, start_portpool)
-    res = execute_bash_cmd(rx_connection, cmd, {})
+    rs_initiate(rx_connection, sourceobj.mongo_shell_path, start_portpool)
 
     cmd = "{} --port {} --quiet --eval 'rs.conf()'".format(sourceobj.mongo_shell_path, start_portpool)
     res = execute_bash_cmd(rx_connection, cmd, {})
@@ -2380,8 +2371,7 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
                 setup_shard_member(sourceobj, rx_connection, mount_path, shardnum, membernum, snm0_port, smax,
                                    shard_config_list, encryption_method, enc_params_list_string, configsvrstring)
 
-                cmd = "{} --port {} --quiet --eval 'rs.initiate()'".format(sourceobj.mongo_shell_path, snm0_port)
-                res = execute_bash_cmd(rx_connection, cmd, {})
+                rs_initiate(rx_connection, sourceobj.mongo_shell_path, snm0_port)
 
                 cmd = "{} --port {} --quiet --eval 'rs.status()'".format(sourceobj.mongo_shell_path, snm0_port)
                 res = execute_bash_cmd(rx_connection, cmd, {})
@@ -2396,8 +2386,7 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
                 setup_shard_member(sourceobj, rx_connection, mount_path, shardnum, membernum, snm0_port, smax,
                                    shard_config_list, None, None, configsvrstring)
 
-                cmd = "{} --port {} --quiet --eval 'rs.initiate()'".format(sourceobj.mongo_shell_path, snm0_port)
-                res = execute_bash_cmd(rx_connection, cmd, {})
+                rs_initiate(rx_connection, sourceobj.mongo_shell_path, snm0_port)
 
                 cmd = "{} --port {} --quiet --eval 'rs.status()'".format(sourceobj.mongo_shell_path, snm0_port)
                 res = execute_bash_cmd(rx_connection, cmd, {})
@@ -2656,8 +2645,7 @@ def setup_sharded_mongo_dataset(sourceobj, dataset_type, snapshot):
         res = setup_config_member(rx_connection, mount_path, confignum, membernum, start_portpool, smax,
                                   shard_config_list, None, None, shardserver_setting_list)
 
-    cmd = "{} --port {} --quiet --eval 'rs.initiate()'".format(sourceobj.mongo_shell_path, start_portpool)
-    res = execute_bash_cmd(rx_connection, cmd, {})
+    rs_initiate(rx_connection, sourceobj.mongo_shell_path, start_portpool)
 
     cmd = "{} --port {} --quiet --eval 'rs.status()'".format(sourceobj.mongo_shell_path, start_portpool)
     res = execute_bash_cmd(rx_connection, cmd, {})
@@ -2697,8 +2685,7 @@ def setup_sharded_mongo_dataset(sourceobj, dataset_type, snapshot):
             setup_shard_member(sourceobj, rx_connection, mount_path, shardnum, membernum, snm0_port, smax,
                                shard_config_list, encryption_method, enc_params_list_string, configsvrstring)
 
-            cmd = "{} --port {} --quiet --eval 'rs.initiate()'".format(sourceobj.mongo_shell_path, snm0_port)
-            res = execute_bash_cmd(rx_connection, cmd, {})
+            rs_initiate(rx_connection, sourceobj.mongo_shell_path, snm0_port)
 
             cmd = "{} --port {} --quiet --eval 'rs.status()'".format(sourceobj.mongo_shell_path, snm0_port)
             res = execute_bash_cmd(rx_connection, cmd, {})
@@ -2712,8 +2699,7 @@ def setup_sharded_mongo_dataset(sourceobj, dataset_type, snapshot):
             setup_shard_member(sourceobj, rx_connection, mount_path, shardnum, membernum, snm0_port, smax,
                                shard_config_list, None, None, configsvrstring)
 
-            cmd = "{} --port {} --quiet --eval 'rs.initiate()'".format(sourceobj.mongo_shell_path, snm0_port)
-            res = execute_bash_cmd(rx_connection, cmd, {})
+            rs_initiate(rx_connection, sourceobj.mongo_shell_path, snm0_port)
 
             cmd = "{} --port {} --quiet --eval 'rs.status()'".format(sourceobj.mongo_shell_path, snm0_port)
             res = execute_bash_cmd(rx_connection, cmd, {})
@@ -2759,6 +2745,28 @@ def add_debug_heading_block(heading):
     logger.debug("\n\n\n\n")
 
 
+def _is_port_empty(port: int) -> bool:
+    assert str(port) != '', "Port number must not be empty."
+    assert port != 0, "Port number must not be 0."
+
+
+def _validate_clustersync_user_inputs(source_obj) -> None:
+    # clustersync and backupfiles must not coexist.
+    try:
+        assert str(source_obj.parameters.config_backupfile) == '', \
+            "Cluster sync and backup file parameters can't coexist."
+    except AssertionError as ae:
+        raise UserError(f"{str(ae)}")
+
+    # Check if Mongosync port is not empty/0
+    try:
+        _is_port_empty(source_obj.parameters.mongosync_port)
+    except AssertionError as ae:
+        raise UserError(
+            f"{str(ae)}. Please provide a valid unused Mongosync port number."
+        )
+
+
 def check_input_parameters(source_obj):
     if source_obj.parameters.enable_authentication:
         if (source_obj.parameters.cluster_auth_mode in ["keyFile","sendKeyFile"] and
@@ -2787,3 +2795,69 @@ def check_input_parameters(source_obj):
                     "Please provide SSL/TLS parameters when cluster "
                     "authentication mode is x509.")
 
+    # cluster sync specific validation
+    if source_obj.parameters.enable_clustersync:
+        _validate_clustersync_user_inputs(source_obj)
+
+
+def _mongosh_marked_failed_shutdown(shutdown_error: str) -> bool:
+    # REFERENCE:
+    # $ /u01/mongo603/bin/mongosh admin --port 28500 --quiet
+    #   --eval ‘db.shutdownServer()’
+    # MongoNetworkError: connection 3 to 127.0.0.1:28500 closed
+    # [delphix@mongo509-src-13sep22 ~]$ echo $?
+    # 1
+    return shutdown_error.split()[0] == \
+           constants.Globals.EXPECTED_SERVER_SHUTDOWN_ERROR.split()[0] \
+             and shutdown_error.split()[-1] == \
+                constants.Globals.EXPECTED_SERVER_SHUTDOWN_ERROR.split()[-1]
+
+
+def _mongosh_marked_failed_rs_initiate(rs_initiate_error: str) -> bool:
+    # REFERENCE:
+    # $ /u01/mongo603/bin/mongosh --port 28801 --quiet --eval 'rs.initiate()' -u dlpxadmin -p delphix --verbose
+    # MongoServerError: already initialized
+    # [delphix@mongo509-src-13sep22 ~]$ echo $?
+    # 1
+    return rs_initiate_error == constants.Globals.EXPECTED_RS_INITIATE_ERROR
+
+
+def shutdown_server(
+        rx_connection,
+        mongo_shell_path: str,
+        port: int
+        ) -> None:
+
+    cmd = constants.Globals.SERVER_SHUTDOWN.format(
+            mongo_shell_path=mongo_shell_path,
+            port=port
+        )
+    try:
+        execute_bash_cmd(rx_connection, cmd, {})
+        time.sleep(5)
+    except Exception as e:
+        if not mongo_shell_path.split('/')[-1] == 'mongosh' \
+         and not _mongosh_marked_failed_shutdown(str(e)):
+            err = constants.Globals.ERR_SERVER_SHUTDOWN.format(port=port)
+            err += str(e)
+            raise Exception(err)
+
+
+def rs_initiate(
+        rx_connection,
+        mongo_shell_path: str,
+        port: int
+) -> None:
+    cmd = constants.Globals.RS_INITIATE.format(
+        mongo_shell_path=mongo_shell_path,
+        port=port
+    )
+    try:
+        execute_bash_cmd(rx_connection, cmd, {})
+        time.sleep(5)
+    except Exception as e:
+        if not mongo_shell_path.split('/')[-1] == 'mongosh' \
+         and not _mongosh_marked_failed_rs_initiate(str(e)):
+            err = constants.Globals.ERR_RS_INITIATE
+            err += str(e)
+            raise Exception(err)

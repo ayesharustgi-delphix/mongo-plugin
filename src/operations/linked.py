@@ -200,8 +200,7 @@ def create_seed_database(sourceobj, dataset_type):
 
     res = common.execute_bash_cmd(rx_connection, start_mongo_cmd, {})
 
-    cmd = "{} --port {} --quiet --eval 'rs.initiate()'".format(sourceobj.mongo_shell_path, start_portpool)
-    res = common.execute_bash_cmd(rx_connection, cmd, {})
+    common.rs_initiate(rx_connection, sourceobj.mongo_shell_path, start_portpool)
 
     cmd = "{} --port {} --quiet --eval 'rs.status()'".format(sourceobj.mongo_shell_path, start_portpool)
     res = common.execute_bash_cmd(rx_connection, cmd, {})

@@ -1,8 +1,13 @@
 #
 # Copyright (c) 2019 by Delphix. All rights reserved.
 #
-
 from __future__ import print_function
+
+import sys, os
+sys.path.append(os.path.join(
+    os.getcwd() if sys.path[0] == "" else sys.path[0],
+    "libs")
+)
 
 from dlpx.virtualization.platform import (
     Mount,
@@ -52,7 +57,7 @@ from generated.definitions import RepositoryDefinition
 from generated.definitions import SourceConfigDefinition
 from generated.definitions import SnapshotDefinition
 from helpers import helpers
-from operations.mongosyncAPI import MongosyncAPILib
+from operations.mongosync import MongoSync
 
 # setup_logger._setup_logger()
 logger = plugin_logger.PluginLogger("MONGODB")
@@ -105,7 +110,7 @@ def repository_discovery(source_connection):
     repositories = []
     script_content = pkgutil.get_data('resources', 'discover_repos.sh')
     #logger.debug("discover_repos_repository_script: {}".format(script_content))
-    res = libs.run_bash(source_connection, script_content, env)
+    res = libs.run_bash(source_connection, script_content.decode(), env)
 
     if res.exit_code != 0:
         raise RuntimeError(('Could not execute {} script on the remote host.\n{} {}').format('discover_repos.sh', res.stdout, res.stderr))
@@ -136,6 +141,13 @@ def repository_discovery(source_connection):
     # rest_obj = MongosyncAPILib(source_connection, "localhost", 48271)
     # result = rest_obj.get_progress()
     # logger.debug(f"result={result}")
+
+    # mongosync_obj = MongoSync(connection=source_connection,
+    #                           mount_path=None,
+    #                           host="localhost",
+    #                           port=48271,
+    #                           mongosync_path="/u01/mongo-sync/bin/mongosync",
+    #                           mongod_path="/u01/mongo-6.0.4/bin/mongod")
 
     # # Write library file for future use
     # env = {
@@ -177,6 +189,9 @@ def staged_pre_snapshot(repository, source_config, staged_source, optional_snaps
     common.add_debug_heading_block("Start Staged Pre Snapshot")
     helpers._record_hook("staging pre snapshot",
                          staged_source.staged_connection)
+    mongosync_obj = MongoSync(staged_source=staged_source,
+                              repository=repository,
+                              mongosync_host="localhost")
     common.check_input_parameters(staged_source)
     staged_source.mongo_install_path = repository.mongo_install_path
     staged_source.mongo_shell_path = repository.mongo_shell_path
@@ -186,7 +201,8 @@ def staged_pre_snapshot(repository, source_config, staged_source, optional_snaps
 
     if staged_source.parameters.d_source_type not in ["onlinemongodump",
                                                       "extendedcluster",
-                                                      "stagingpush", "seed"]:
+                                                      "stagingpush", "seed"]\
+            and not staged_source.parameters.enable_clustersync:
         # Write backup information
         cmd = "cat {}".format(staged_source.parameters.backup_metadata_file)
         date_validate = common.execute_bash_cmd(

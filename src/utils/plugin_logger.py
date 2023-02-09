@@ -7,7 +7,7 @@ import os
 __lock = threading.Lock()
 
 
-def _singleton_class(class_: Callable) -> Callable[[str], object]:
+def _singleton_class(class_: Callable):
     """
     A decorator to make sure only one object of class `LoggingLogger` is created
     for one value of `unique_logger_name`.
@@ -147,3 +147,8 @@ class PluginLogger:
         msg = self.mask_password(msg)
         msg = self.format_log(msg)
         self.logger_object.error(msg, *args, **kwargs)
+
+    def exception(self, msg, *args, **kwargs):
+        msg = self.mask_password(msg)
+        msg = self.format_log(msg)
+        self.logger_object.exception(msg, *args, **kwargs)

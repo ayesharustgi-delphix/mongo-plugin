@@ -1,4 +1,4 @@
-from operations.rest_lib.RestAPI import RestAPI
+from ce_lib.rest_lib.RestAPI import RestAPI
 
 
 class MongosyncAPILib:

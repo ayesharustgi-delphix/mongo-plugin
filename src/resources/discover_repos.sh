@@ -19,6 +19,7 @@ function log {
 		Parms=$@
 	fi
 	#printf "[${TIMESTAMP}][DEBUG][%s][%s]:[$Parms]\n" $DLPX_TOOLKIT_WORKFLOW $PGM_NAME
+	printf "[${TIMESTAMP}][DEBUG][${DLPX_TOOLKIT_WORKFLOW}][${PGM_NAME}]:[$Parms]\n"
 	printf "[${TIMESTAMP}][DEBUG][%s][%s]:[$Parms]\n" $DLPX_TOOLKIT_WORKFLOW $PGM_NAME >> $DEBUG_LOG
 	if [[ $die = 'yes' ]]; then
 		exit 2
@@ -263,129 +264,131 @@ then
 	log "Manual/Custom Discovery Enabled"
 else
 	MANUAL_MONGO_FIND=0
-	log "AutoDiscovery Enabled. Using default path for mongo /usr/bin/mongod"
+	log "$MANUAL_MONGO_FIND_FILE not found, discovery failed!"
+	echo "DISCOVERED_REPOSITORIES=[]"
+	exit 0
 fi
-if [ $MANUAL_MONGO_FIND -eq 1 ]; then
-    #cat $MANUAL_MONGO_FIND_FILE|awk -F"=" '{ print $2}'| while read line
-	while read line
-	do
-	    MONGOD_PATH=""
-        MONGO_PATH=""
-        MONGOSH_PATH=""
-        MONGORESTORE_PATH=""
-        MONGODUMP_PATH=""
-        MONGOSYNC_PATH=""
-		if [[ ${line} = *"MONGO_PATH"* ]]; then
-		    DIR_PATHS=$(echo "$line"|awk -F"=" '{ print $2}')
-		    log "DIR_PATHS: $DIR_PATHS"
-		    BIN_LIST=(mongod mongo mongosh mongorestore mongodump mongosync)
-		    for bin in "${BIN_LIST[@]}"; do
-		        log "$bin"
-    		    for dir in $(echo "$DIR_PATHS" | grep -o -e "[^:]*"); do
-                    if [[ -f $dir ]]; then
-                        dir=$(dirname "$dir")
-                    fi
-                    if [[ -d $dir ]]; then
-                        bin_path=$(find "$dir" -maxdepth 1 -name "$bin" 2>&1 | head -1)
-                        if [[ ${bin_path} = *"Permission denied"* ]]; then
-                            e1=1
-                            log "Insufficient privileges to scan $FIND_BIN_PATH"
-                        elif [[ "$bin_path" = '' ]]; then
-                            e2=1
-                            # Install path not found - return empty repo config
-                            log "Install path $dir/*..*/$bin not found"
-                        else
-                            installPathFound=1
-                            log "binary_path=$bin_path"
-                            if [[ "$bin" = 'mongod' ]]; then
-                                MONGOD_PATH=$bin_path
-                            elif [[ "$bin" = 'mongo' ]]; then
-                                MONGO_PATH=$bin_path
-                            elif [[ "$bin" = 'mongosh' ]]; then
-                                MONGOSH_PATH=$bin_path
-                            elif [[ "$bin" = 'mongorestore' ]]; then
-                                MONGORESTORE_PATH=$bin_path
-                            elif [[ "$bin" = 'mongodump' ]]; then
-                                MONGODUMP_PATH=$bin_path
-                            elif [[ "$bin" = 'mongosync' ]]; then
-                                MONGOSYNC_PATH=$bin_path
-                            fi
-                            break
-                        fi
-                    else
-                        log "Invalid Path : $dir OR Incorrect permissions to access it."
-                    fi
-                done
-            done
-
-            log "MONGOD_PATH: $MONGOD_PATH"
-            log "MONGO_PATH: $MONGO_PATH"
-            log "MONGOSH_PATH: $MONGOSH_PATH"
-            log "MONGORESTORE_PATH: $MONGORESTORE_PATH"
-            log "MONGODUMP_PATH: $MONGODUMP_PATH"
-            log "MONGOSYNC_PATH: $MONGOSYNC_PATH"
-
-            if [[ $MONGOSH_PATH != "" ]]; then
-                MONGOSHELL_PATH=$MONGOSH_PATH
-            elif [[ $MONGO_PATH != "" ]]; then
-                MONGOSHELL_PATH=$MONGO_PATH
-            else
-                MONGOSHELL_PATH=""
-            fi
-
-            log "MONGOSHELL_PATH: $MONGOSHELL_PATH"
-
-
-            if [[ $MONGOD_PATH != "" ]] && [[ $MONGOSHELL_PATH != "" ]]; then
-                log "Mongo Installations found"
-                getVersion
-                assembleJson
-                i=$(( $i + 1))
-            else
-                log "Unable to discover Mongo repo with variables, MONGOD_PATH: $MONGOD_PATH and MONGOSHELL_PATH: $MONGOSHELL_PATH"
-                log "Line for the above repo: $line"
-            fi
-		fi
-	done < 	$MANUAL_MONGO_FIND_FILE
-	log "Number of Installations found : $i"
-	if [ $i -eq 0 ]; then
-		echo "[]"
-		exit 0
-	fi
-else
+#if [ $MANUAL_MONGO_FIND -eq 1 ]; then
+#    #cat $MANUAL_MONGO_FIND_FILE|awk -F"=" '{ print $2}'| while read line
+while read line
+do
     MONGOD_PATH=""
     MONGO_PATH=""
     MONGOSH_PATH=""
     MONGORESTORE_PATH=""
     MONGODUMP_PATH=""
     MONGOSYNC_PATH=""
-	log "Auto Discovery"
-	FIND_BIN_PATH=/usr/bin
-	log "FIND_BIN_PATH : $FIND_BIN_PATH"
-	MONGOD_PATH=$(find $FIND_BIN_PATH -name mongod 2>&1 | head -1)
-	if [[ ${MONGOD_PATH} = *"Permission denied"* ]]; then
-		log "Insufficient privileges to scan $FIND_BIN_PATH"
-		echo "[]"
-		exit 0
-	elif [[ "$MONGOD_PATH" = '' ]]; then
-		# Install path not found - return empty repo config
-		log "Install path $FIND_BIN_PATH/*..*/mongod not found"
-		echo "[]"
-		exit 0
-	fi
-	log "MONGOD_PATH=$MONGOD_PATH"
-	# See if mongo shell exist
-	MONGOSHELL_PATH=$(find $FIND_BIN_PATH -name mongo | head -1)
-	if [[ "$MONGOSHELL_PATH" = '' ]]; then
-		# Shell path not found - return empty repo config
-		log "Shell path $FIND_BIN_PATH/*..*/mongo not found"
-		echo "[]"
-		exit 0
-	fi
-	log "MONGOSHELL_PATH=$MONGOSHELL_PATH"
-	getVersion
-	assembleJson
+    if [[ ${line} = *"MONGO_PATH"* ]]; then
+        DIR_PATHS=$(echo "$line"|awk -F"=" '{ print $2}')
+        log "DIR_PATHS: $DIR_PATHS"
+        BIN_LIST=(mongod mongo mongosh mongorestore mongodump mongosync)
+        for bin in "${BIN_LIST[@]}"; do
+            log "$bin"
+            for dir in $(echo "$DIR_PATHS" | grep -o -e "[^:]*"); do
+                if [[ -f $dir ]]; then
+                    dir=$(dirname "$dir")
+                fi
+                if [[ -d $dir ]]; then
+                    bin_path=$(find "$dir" -maxdepth 1 -name "$bin" 2>&1 | head -1)
+                    if [[ ${bin_path} = *"Permission denied"* ]]; then
+                        e1=1
+                        log "Insufficient privileges to scan $FIND_BIN_PATH"
+                    elif [[ "$bin_path" = '' ]]; then
+                        e2=1
+                        # Install path not found - return empty repo config
+                        log "Install path $dir/*..*/$bin not found"
+                    else
+                        installPathFound=1
+                        log "binary_path=$bin_path"
+                        if [[ "$bin" = 'mongod' ]]; then
+                            MONGOD_PATH=$bin_path
+                        elif [[ "$bin" = 'mongo' ]]; then
+                            MONGO_PATH=$bin_path
+                        elif [[ "$bin" = 'mongosh' ]]; then
+                            MONGOSH_PATH=$bin_path
+                        elif [[ "$bin" = 'mongorestore' ]]; then
+                            MONGORESTORE_PATH=$bin_path
+                        elif [[ "$bin" = 'mongodump' ]]; then
+                            MONGODUMP_PATH=$bin_path
+                        elif [[ "$bin" = 'mongosync' ]]; then
+                            MONGOSYNC_PATH=$bin_path
+                        fi
+                        break
+                    fi
+                else
+                    log "Invalid Path : $dir OR Incorrect permissions to access it."
+                fi
+            done
+        done
+
+        log "MONGOD_PATH: $MONGOD_PATH"
+        log "MONGO_PATH: $MONGO_PATH"
+        log "MONGOSH_PATH: $MONGOSH_PATH"
+        log "MONGORESTORE_PATH: $MONGORESTORE_PATH"
+        log "MONGODUMP_PATH: $MONGODUMP_PATH"
+        log "MONGOSYNC_PATH: $MONGOSYNC_PATH"
+
+        if [[ $MONGOSH_PATH != "" ]]; then
+            MONGOSHELL_PATH=$MONGOSH_PATH
+        elif [[ $MONGO_PATH != "" ]]; then
+            MONGOSHELL_PATH=$MONGO_PATH
+        else
+            MONGOSHELL_PATH=""
+        fi
+
+        log "MONGOSHELL_PATH: $MONGOSHELL_PATH"
+
+
+        if [[ $MONGOD_PATH != "" ]] && [[ $MONGOSHELL_PATH != "" ]]; then
+            log "Mongo Installations found"
+            getVersion
+            assembleJson
+            i=$(( $i + 1))
+        else
+            log "Unable to discover Mongo repo with variables, MONGOD_PATH: $MONGOD_PATH and MONGOSHELL_PATH: $MONGOSHELL_PATH"
+            log "Line for the above repo: $line"
+        fi
+    fi
+done < 	$MANUAL_MONGO_FIND_FILE
+log "Number of Installations found : $i"
+if [ $i -eq 0 ]; then
+    echo "DISCOVERED_REPOSITORIES=[]"
+    exit 0
 fi
-echo "$REPOSITORIES"
+#else
+#    MONGOD_PATH=""
+#    MONGO_PATH=""
+#    MONGOSH_PATH=""
+#    MONGORESTORE_PATH=""
+#    MONGODUMP_PATH=""
+#    MONGOSYNC_PATH=""
+#	log "Auto Discovery"
+#	FIND_BIN_PATH=/usr/bin
+#	log "FIND_BIN_PATH : $FIND_BIN_PATH"
+#	MONGOD_PATH=$(find $FIND_BIN_PATH -name mongod 2>&1 | head -1)
+#	if [[ ${MONGOD_PATH} = *"Permission denied"* ]]; then
+#		log "Insufficient privileges to scan $FIND_BIN_PATH"
+#		echo "[]"
+#		exit 0
+#	elif [[ "$MONGOD_PATH" = '' ]]; then
+#		# Install path not found - return empty repo config
+#		log "Install path $FIND_BIN_PATH/*..*/mongod not found"
+#		echo "[]"
+#		exit 0
+#	fi
+#	log "MONGOD_PATH=$MONGOD_PATH"
+#	# See if mongo shell exist
+#	MONGOSHELL_PATH=$(find $FIND_BIN_PATH -name mongo | head -1)
+#	if [[ "$MONGOSHELL_PATH" = '' ]]; then
+#		# Shell path not found - return empty repo config
+#		log "Shell path $FIND_BIN_PATH/*..*/mongo not found"
+#		echo "[]"
+#		exit 0
+#	fi
+#	log "MONGOSHELL_PATH=$MONGOSHELL_PATH"
+#	getVersion
+#	assembleJson
+#fi
+echo "DISCOVERED_REPOSITORIES=$REPOSITORIES"
 echo "`echo $REPOSITORIES|python -m json.tool`" >> $DEBUG_LOG
 exit 0

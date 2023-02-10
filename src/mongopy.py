@@ -113,11 +113,12 @@ def repository_discovery(source_connection):
     res = libs.run_bash(source_connection, script_content.decode(), env)
 
     if res.exit_code != 0:
-        raise RuntimeError(('Could not execute {} script on the remote host.\n{} {}').format('discover_repos.sh', res.stdout, res.stderr))
+        raise RuntimeError(('Could not execute {} script on the remote host.\n{} {}').format('discover_repos.sh', res.stderr))
 
-    logger.debug("res = {}".format(res))
+    # logger.debug("res = {}".format(res))
     logger.debug("res.stdout = {}".format(res.stdout))
-    repodiscovery = json.loads(res.stdout)
+    logger.debug("res.stderr = {}".format(res.stderr))
+    repodiscovery = json.loads(res.stdout.split("DISCOVERED_REPOSITORIES=")[-1])
     logger.debug(f"repodiscovery: {repodiscovery}")
     for item in repodiscovery:
         logger.debug("item:{}".format(item))
@@ -189,9 +190,9 @@ def staged_pre_snapshot(repository, source_config, staged_source, optional_snaps
     common.add_debug_heading_block("Start Staged Pre Snapshot")
     helpers._record_hook("staging pre snapshot",
                          staged_source.staged_connection)
-    mongosync_obj = MongoSync(staged_source=staged_source,
-                              repository=repository,
-                              mongosync_host="localhost")
+    # mongosync_obj = MongoSync(staged_source=staged_source,
+    #                           repository=repository,
+    #                           mongosync_host="localhost")
     common.check_input_parameters(staged_source)
     staged_source.mongo_install_path = repository.mongo_install_path
     staged_source.mongo_shell_path = repository.mongo_shell_path

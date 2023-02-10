@@ -41,6 +41,7 @@ class MongoDB:
         return roles
 
     def get_jdbc_conn_string(self, host, port, username, password, database=None):
+        # TODO: change function name to native connection string
         jdbc = f"mongodb://{username}:{password}@{host}:{port}"
         if database:
             jdbc = f"{jdbc}/{database}"

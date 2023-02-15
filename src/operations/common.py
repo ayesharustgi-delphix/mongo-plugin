@@ -1097,7 +1097,9 @@ def update_mongoadmin_pwd(sourceobj, connection, shard_count, shard_config_list,
                           mongos_port):
     logger.info("Updating password of Mongo Admin User")
     # mongo_shell_cmd = "mongo"
-    mongo_shell_cmd = "{}/mongo".format(os.path.dirname(sourceobj.mongo_install_path))
+
+    # mongo_shell_cmd = "{}/mongo".format(os.path.dirname(sourceobj.mongo_install_path))
+    mongo_shell_cmd = sourceobj.mongo_shell_path
 
     logger.info("Update {} password".format(mongo_db_user))
     cmd = "{} --port {} --eval \"db.getSiblingDB('admin').updateUser('{}', {{pwd :  '{}'}});\"".format(mongo_shell_cmd,
@@ -2796,7 +2798,9 @@ def check_input_parameters(source_obj):
                     "authentication mode is x509.")
 
     # cluster sync specific validation
-    if source_obj.parameters.enable_clustersync:
+    if hasattr(source_obj.parameters,
+               'enable_clustersync') \
+     and source_obj.parameters.enable_clustersync:
         _validate_clustersync_user_inputs(source_obj)
 
 

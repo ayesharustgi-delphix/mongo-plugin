@@ -61,8 +61,7 @@
         "default": "Manual",
         "type": "string",
         "enum": [
-          "Manual",
-          "Auto"
+          "Manual"
         ],
         "prettyName": "discoveryType",
         "description": ""

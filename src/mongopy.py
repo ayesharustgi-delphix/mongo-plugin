@@ -190,9 +190,6 @@ def staged_pre_snapshot(repository, source_config, staged_source, optional_snaps
     common.add_debug_heading_block("Start Staged Pre Snapshot")
     helpers._record_hook("staging pre snapshot",
                          staged_source.staged_connection)
-    # mongosync_obj = MongoSync(staged_source=staged_source,
-    #                           repository=repository,
-    #                           mongosync_host="localhost")
     common.check_input_parameters(staged_source)
     staged_source.mongo_install_path = repository.mongo_install_path
     staged_source.mongo_shell_path = repository.mongo_shell_path
@@ -200,10 +197,16 @@ def staged_pre_snapshot(repository, source_config, staged_source, optional_snaps
     staged_source.mongo_restore_path = repository.mongo_restore_path
     logger.info("optional_snapshot_parameters={}".format(optional_snapshot_parameters))
 
+    # mongosync_obj = MongoSync(staged_source=staged_source,
+    #                           repository=repository,
+    #                           mongosync_host="localhost")
+    # mongosync_obj.create_mongosync_conf()
+
     if staged_source.parameters.d_source_type not in ["onlinemongodump",
                                                       "extendedcluster",
                                                       "stagingpush", "seed"]\
             and not staged_source.parameters.enable_clustersync:
+
         # Write backup information
         cmd = "cat {}".format(staged_source.parameters.backup_metadata_file)
         date_validate = common.execute_bash_cmd(
@@ -583,7 +586,7 @@ def configure(virtual_source, repository, snapshot):
     logger.debug("End of virtual configure")
     logger.debug(" ")
 
-    discovery_type = "Auto"
+    discovery_type = "Manual"
     pretty_name = "{}-{}-{}".format(d_source_type, virtual_source.parameters.mount_path, virtual_source.parameters.start_portpool)
 
     return SourceConfigDefinition(

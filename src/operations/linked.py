@@ -40,8 +40,15 @@ def write_first_backup_timestamp(staged_source):
 
 
 def stg_pre_snapsync(staged_source):
-    cmd = "(ls {} >> /dev/null 2>&1 && echo yes) || echo no".format(staged_source.parameters.backup_metadata_file)
-    res = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
+
+    if staged_source.parameters.backup_metadata_file:
+        cmd = "(ls {} >> /dev/null 2>&1 && echo yes) || echo no".format(staged_source.parameters.backup_metadata_file)
+        res = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
+    else:
+        # NOTE: in case of clustersync backupfile is not specified by
+        # the user hence it doesn't exist.
+        res = "no"
+
     if res == "yes":
         logger.info("Backup File {} exists.".format(staged_source.parameters.backup_metadata_file))
         cmd = "cat {}".format(staged_source.parameters.backup_metadata_file)

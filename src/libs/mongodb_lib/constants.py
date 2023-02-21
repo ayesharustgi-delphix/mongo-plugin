@@ -1,21 +1,24 @@
 
 class MongoDBLibConstants:
-    db_version_cmd = "db.version()"
-    build_info_cmd = "db.serverBuildInfo()"
-    modules_cmd = f"{build_info_cmd}.modules"
-    user_details_cmd = "EJSON.stringify(db.getUser('{user}'))"
+    DB_VERSION_CMD = "db.version()"
+    BUILD_INFO_CMD = "db.serverBuildInfo()"
+    MODULES_CMD = f"{BUILD_INFO_CMD}.modules"
+    USER_DETAILS_CMD = "EJSON.stringify(db.getUser('{user}'))"
+    SH_STATUS = "EJSON.stringify(sh.status())"
+    SH_ADD_SHARD = "EJSON.stringify(sh.addShard('{replicaset_str}'))"
 
-    run_mongodb_cmd = '{mongo_shell_path} "{host_details}" --quiet --eval "{cmd}"'
+    RUN_MONGODB_CMD = '{mongo_shell_path} "{host_details}" --quiet --eval "{cmd}"'
 
-    standard_conn_string_encoding = {":": "%3A",
+    STANDARD_CONN_STRING_ENCODING = {":": "%3A",
                                 "/": "%2F",
                                 "?": "%3F",
                                 "#": "%23",
                                 "[": "%5B",
                                 "]": "%5D",
                                 "@": "%40"
-                                }
-    standard_conn_string_format = "mongodb://{username}:{password}@{host_conn_string}?{additional_auth_params}/{database}"
+                                     }
+    #standard_conn_string_format = "mongodb://{username}:{password}@{host_conn_string}?{additional_auth_params}/{database}"
+    STANDARD_CONN_STRING_FORMAT = "mongodb://{username}:{password}@{host_conn_string}/{database}?{additional_auth_params}"
 
 
 class MongoSyncConstants:

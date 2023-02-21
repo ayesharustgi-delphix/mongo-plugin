@@ -39,7 +39,12 @@ class MongoDB:
         return roles
 
 
-    def get_sh_status(self, host_conn_string, username, password):
+    def get_sh_status(
+        self,
+        host_conn_string: str,
+        username: str,
+        password: str
+    ) -> json:
         try:
             return self.run_mongo_shell_command(
                 host_conn_string=host_conn_string,
@@ -53,7 +58,12 @@ class MongoDB:
             raise Exception(err)
 
 
-    def get_shards_details(self, host_conn_string, username, password):
+    def get_shards_details(
+        self,
+        host_conn_string: str,
+        username: str,
+        password: str
+    ) -> json:
         try:
             return self.get_sh_status(
                 host_conn_string,
@@ -72,7 +82,7 @@ class MongoDB:
         username: str,
         password: str,
         replicaset_str: str
-    ) -> None:
+    ) -> json:
         try:
             return self.run_mongo_shell_command(
                 host_conn_string=host_conn_string,
@@ -86,7 +96,6 @@ class MongoDB:
             err = "Failed to execute sh.addShard().\n"
             err += str(e)
             raise Exception(err)
-
 
 
 

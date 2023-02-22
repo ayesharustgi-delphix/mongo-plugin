@@ -18,8 +18,9 @@ from dlpx.virtualization.platform import (
 
 from operations import linked
 from operations import common
-from libs.mongodb_lib.MongoDB import MongoDB
-from libs.ce_lib.resource import Resource
+from mongodb_lib.MongoDB import MongoDB
+from ce_lib.resource import Resource
+from ce_lib.os_lib.os_lib import OSLib
 
 import _version
 
@@ -199,13 +200,17 @@ def staged_pre_snapshot(repository, source_config, staged_source, optional_snaps
     staged_source.mongo_restore_path = repository.mongo_restore_path
 
     # MongoDB object creation
+    resource = Resource(
+        connection=staged_source.staged_connection,
+        hidden_directory=""
+    )
     staged_source.mongodb_obj = MongoDB(
             repository,
-            Resource(
-                connection=staged_source.staged_connection,
-                hidden_directory=""
-            )
+            resource,
     )
+
+    # OsLib object creation
+    staged_source.os_lib_obj = OSLib(resource=resource)
 
 
     logger.info("optional_snapshot_parameters={}".format(optional_snapshot_parameters))

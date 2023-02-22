@@ -1,4 +1,3 @@
-import pdb
 
 from utils import plugin_logger
 
@@ -1064,14 +1063,8 @@ def get_status_sharded_mongo(dataset_type, sourceobj):
 def create_mongoadmin_user(sourceobj, connection, shard_count, shard_config_list, resync=False, dsource_type=None):
     logger.info("Creating Mongo Admin User")
 
-    if sourceobj.parameters.enable_clustersync:
-        # NOTE: for clustersync, we will create source database like user
-        # in the destination database.
-        mongo_db_user = sourceobj.parameters.src_db_user
-        mongo_db_password = sourceobj.parameters.src_db_password
-    else:
-        mongo_db_user = sourceobj.parameters.mongo_db_user
-        mongo_db_password = sourceobj.parameters.mongo_db_password
+    mongo_db_user = sourceobj.parameters.mongo_db_user
+    mongo_db_password = sourceobj.parameters.mongo_db_password
 
     # In case of nonsharded source, start_portpool is copied to mongos_port in mongopy.py
     mongos_port = sourceobj.parameters.mongos_port
@@ -2035,6 +2028,7 @@ def gen_config_files(dataset_type, sourceobj, shard_config_list, snapshot=None):
         time.sleep(60)
         add_debug_space()
         logger.info("++++++++++ Start Mongo +++++++++")
+        # TODO here
         start_sharded_mongo(dataset_type, sourceobj)
 
 
@@ -2195,14 +2189,14 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
                 # generate restoreInfo.txt for config server
                 logger.info("Generating restoreInfo.txt for config server.")
                 _generate_restoreinfo_txt_for_config_server(
-                    rx_connection,
+                    sourceobj.os_lib_obj,
                     mount_path,
                 )
                 logger.debug("Successfully generated restoreInfo.txt.")
 
                 logger.info("Generating restoreInfo.txt for all shards.")
                 _generate_restoreinfo_txt_for_all_shards(
-                    rx_connection,
+                    sourceobj.os_lib_obj,
                     mount_path,
                     source_shard_details_list
                 )
@@ -2213,7 +2207,7 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
                 # We need it later on to form sharded cluster using addShard()
                 logger.debug("Adding shard ids to shard_config_list.")
                 _add_shard_id_in_shard_config_list(
-                    rx_connection,
+                    sourceobj.os_lib_obj,
                     shard_config_list
                 )
                 logger.debug("Successfully added shard ids to "
@@ -2291,18 +2285,11 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
                                                                   dataset_cfgfile)
         res = execute_bash_cmd(rx_connection, cmd, {})
 
-        if sourceobj.parameters.enable_clustersync:
-            cmd = "echo \"MONGO_DB_USER:{}\" >> {}/.delphix/{}".format(
-                sourceobj.parameters.src_db_user,
-                mount_path,
-                dataset_cfgfile
-            )
-        else:
-            cmd = "echo \"MONGO_DB_USER:{}\" >> {}/.delphix/{}".format(
-                sourceobj.parameters.mongo_db_user,
-                mount_path,
-                dataset_cfgfile
-            )
+        cmd = "echo \"MONGO_DB_USER:{}\" >> {}/.delphix/{}".format(
+            sourceobj.parameters.mongo_db_user,
+            mount_path,
+            dataset_cfgfile
+        )
         res = execute_bash_cmd(rx_connection, cmd, {})
 
     elif dataset_type == 'Virtual':
@@ -2970,13 +2957,12 @@ def get_source_shards_details(
 
 
 def create_new_file(
-        rx_connection,
+        os_lib_obj,
         file_path: str,
         content: str
         ) -> None:
-    cmd = f"echo \"{content}\" > {file_path}"
     try:
-        execute_bash_cmd_silent(rx_connection, cmd, {})
+        os_lib_obj.dump_to_file(content=content, file_path=file_path)
     except Exception as e:
         err = constants.Globals.ERR_NEW_FILE_CREATION.format(
                 file_path=file_path
@@ -2986,24 +2972,24 @@ def create_new_file(
 
 
 def _generate_restoreinfo_txt_for_config_server(
-        rx_connection,
+        os_lib_obj,
         mount_path,
         ):
     content_str = "Replica Set: {}".format(
         constants.Globals.CONFIG_SERVER_RS_NAME
     )
     create_new_file(
-        rx_connection,
-        "{}/{}".format(
-            mount_path,
-            constants.Globals.CONFIG_SERVER_RESTORE_INFO_TXT_PATH
-            ),
-        content_str
+        os_lib_obj,
+        file_path="{}/{}".format(
+                    mount_path,
+                    constants.Globals.CONFIG_SERVER_RESTORE_INFO_TXT_PATH
+                ),
+        content=content_str
     )
 
 
 def _generate_restoreinfo_txt_for_all_shards(
-        rx_connection,
+        os_lib_obj,
         mount_path: str,
         shard_details: list,
     ) -> None:
@@ -3018,14 +3004,14 @@ def _generate_restoreinfo_txt_for_all_shards(
             shard_data_dict['_id']
         )
         create_new_file(
-            rx_connection,
-            restoreinfo_txt_path,
-            content_str
+            os_lib_obj,
+            file_path=restoreinfo_txt_path,
+            content=content_str
         )
 
 
 def _add_shard_id_in_shard_config_list(
-        rx_connection,
+        os_lib_obj,
         shard_config_list: list,
     ) -> None:
     for shard_config_dict in shard_config_list:
@@ -3034,11 +3020,14 @@ def _add_shard_id_in_shard_config_list(
             restoreinfo_txt = constants.Globals.RESTOREINFO_TXT_NAME
             restoreinfo_txt_path = f"{shard_config_dict['mount_path']}/{snm0}" \
                                    f"/{restoreinfo_txt}"
-            cmd = "cat {} |grep 'Replica Set:'".format(restoreinfo_txt_path)
-            shard_id = execute_bash_cmd(rx_connection, cmd, {})
-            shard_id = "{}".format(
-                shard_id.replace("\n", "").split(':')[1].strip()
-            )
+            # cmd = "cat {} |grep 'Replica Set:'".format(restoreinfo_txt_path)
+            # shard_id = execute_bash_cmd(rx_connection, cmd, {})
+            # shard_id = "{}".format(
+            #     shard_id.replace("\n", "").split(':')[1].strip()
+            # )
+            # shard_config_dict['shard_id'] = shard_id
+            res = os_lib_obj.cat_file(file_path=restoreinfo_txt_path)
+            shard_id = res.split(': ')[-1]
             shard_config_dict['shard_id'] = shard_id
 
 
@@ -3057,7 +3046,7 @@ def form_sharded_cluster_using_addshard(
 
             sourceobj.mongodb_obj.sh_add_shard(
                 host_conn_string,
-                sourceobj.parameters.src_db_user,
-                sourceobj.parameters.src_db_password,
+                sourceobj.parameters.mongo_db_user,
+                sourceobj.parameters.mongo_db_password,
                 replicaset_str
             )

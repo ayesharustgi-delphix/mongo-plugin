@@ -147,12 +147,12 @@ class MongoSync:
         # TODO: storage engine wiredTiger
 
         # verify source database user RBAC
-        user_roles = json.loads(self.mongodb_obj.get_user_roles(
+        user_roles = self.mongodb_obj.get_user_roles(
             host_conn_string=self.staged_source.parameters.src_mongo_host_conn,
             username=self.staged_source.parameters.src_db_user,
             password=self.staged_source.parameters.src_db_password,
             user_check=self.staged_source.parameters.src_db_user
-        ))
+        )
         present_roles = {x["role"] for x in user_roles["roles"]}
         mandatory_roles = MongoSyncConstants.source_user_mandatory_roles
         if ("root" not in present_roles and

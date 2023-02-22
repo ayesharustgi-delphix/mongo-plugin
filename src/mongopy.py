@@ -18,6 +18,9 @@ from dlpx.virtualization.platform import (
 
 from operations import linked
 from operations import common
+from mongodb_lib.MongoDB import MongoDB
+from ce_lib.resource import Resource
+from ce_lib.os_lib.os_lib import OSLib
 
 import _version
 
@@ -195,6 +198,21 @@ def staged_pre_snapshot(repository, source_config, staged_source, optional_snaps
     staged_source.mongo_shell_path = repository.mongo_shell_path
     staged_source.mongo_dump_path = repository.mongo_dump_path
     staged_source.mongo_restore_path = repository.mongo_restore_path
+
+    # MongoDB object creation
+    resource = Resource(
+        connection=staged_source.staged_connection,
+        hidden_directory=""
+    )
+    staged_source.mongodb_obj = MongoDB(
+            repository,
+            resource,
+    )
+
+    # OsLib object creation
+    staged_source.os_lib_obj = OSLib(resource=resource)
+
+
     logger.info("optional_snapshot_parameters={}".format(optional_snapshot_parameters))
 
     # mongosync_obj = MongoSync(staged_source=staged_source,
@@ -386,10 +404,17 @@ def staged_post_snapshot(repository, source_config, staged_source, optional_snap
     output = res.strip().split(":")
     logger.debug("output = {}".format(output))
 
-    if staged_source.parameters.d_source_type in ["shardedsource", "offlinemongodump", "nonshardedsource"]:
+    if staged_source.parameters.d_source_type in ["shardedsource",
+                                                  "offlinemongodump",
+                                                  "nonshardedsource"] \
+            and staged_source.parameters.backup_metadata_file:
         cmd = "cat {}".format(staged_source.parameters.backup_metadata_file)
-        lastbackup_datetime = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
-        dateTimeObj = datetime.strptime(lastbackup_datetime,"%m%d%Y_%H%M%S")
+        lastbackup_datetime = common.execute_bash_cmd(
+            staged_source.staged_connection,
+            cmd,
+            {}
+        )
+        dateTimeObj = datetime.strptime(lastbackup_datetime, "%m%d%Y_%H%M%S")
     else:
         dateTimeObj = datetime.now()
 

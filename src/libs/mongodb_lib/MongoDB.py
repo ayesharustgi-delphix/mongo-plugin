@@ -1,3 +1,5 @@
+import json
+
 from mongodb_lib.constants import MongoDBLibConstants
 from ce_lib import helpers
 
@@ -11,7 +13,7 @@ class MongoDB:
             host_conn_string=host_conn_string,
             username=username,
             password=password,
-            cmd=MongoDBLibConstants.db_version_cmd
+            cmd=MongoDBLibConstants.DB_VERSION_CMD
         )
         version = res.stdout
         return version
@@ -21,7 +23,7 @@ class MongoDB:
             host_conn_string=host_conn_string,
             username=username,
             password=password,
-            cmd=MongoDBLibConstants.modules_cmd
+            cmd=MongoDBLibConstants.MODULES_CMD
         )
         modules = res.stdout
         return modules
@@ -31,14 +33,75 @@ class MongoDB:
             host_conn_string=host_conn_string,
             username=username,
             password=password,
-            cmd=MongoDBLibConstants.user_details_cmd.format(user=user_check)
+            cmd=MongoDBLibConstants.USER_DETAILS_CMD.format(user=user_check)
         )
         roles = res.stdout
         return roles
 
+
+    def get_sh_status(
+        self,
+        host_conn_string: str,
+        username: str,
+        password: str
+    ) -> json:
+        try:
+            return self.run_mongo_shell_command(
+                host_conn_string=host_conn_string,
+                username=username,
+                password=password,
+                cmd=MongoDBLibConstants.SH_STATUS
+            )
+        except Exception as e:
+            err = "Failed to execute sh.status().\n"
+            err += str(e)
+            raise Exception(err)
+
+
+    def get_shards_details(
+        self,
+        host_conn_string: str,
+        username: str,
+        password: str
+    ) -> json:
+        try:
+            return self.get_sh_status(
+                host_conn_string,
+                username,
+                password
+            )['value']['shards']
+        except Exception as e:
+            err = "Failed to get shards details.\n"
+            err += str(e)
+            raise Exception(err)
+
+
+    def sh_add_shard(
+        self,
+        host_conn_string: str,
+        username: str,
+        password: str,
+        replicaset_str: str
+    ) -> json:
+        try:
+            return self.run_mongo_shell_command(
+                host_conn_string=host_conn_string,
+                username=username,
+                password=password,
+                cmd=MongoDBLibConstants.SH_ADD_SHARD.format(
+                    replicaset_str=replicaset_str
+                )
+            )
+        except Exception as e:
+            err = "Failed to execute sh.addShard().\n"
+            err += str(e)
+            raise Exception(err)
+
+
+
     @staticmethod
     def get_standard_conn_string(host_conn_string, username, password, database="", ssl_params=None):
-        percent_encoding_dict = MongoDBLibConstants.standard_conn_string_encoding
+        percent_encoding_dict = MongoDBLibConstants.STANDARD_CONN_STRING_ENCODING
         encoded_username = "".join([percent_encoding_dict[s] if s in percent_encoding_dict else s for s in username])
         encoded_password = "".join([percent_encoding_dict[s] if s in percent_encoding_dict else s for s in password])
 
@@ -56,7 +119,7 @@ class MongoDB:
                 if param_data not in host_params:
                     host_params.append(param_data)
 
-        jdbc = MongoDBLibConstants.standard_conn_string_format.format(
+        jdbc = MongoDBLibConstants.STANDARD_CONN_STRING_FORMAT.format(
             username=encoded_username,
             password=encoded_password,
             host_conn_string=host_conn,
@@ -66,13 +129,13 @@ class MongoDB:
         return jdbc
 
     def run_mongo_shell_command(self, host_conn_string, username, password, cmd, database="admin"):
-        command = MongoDBLibConstants.run_mongodb_cmd.format(
+        command = MongoDBLibConstants.RUN_MONGODB_CMD.format(
             mongo_shell_path=self.repository.mongo_shell_path,
             host_details=self.__class__.get_standard_conn_string(host_conn_string, username, password, database),
             cmd=cmd
         )
         result = self.resource.execute_bash(command)
-        return result
+        return json.loads(result.stdout)
 
 
 if __name__ == "__main__":

@@ -1397,7 +1397,9 @@ def setup_mongos(sourceobj, rx_connection, mount_path, membernum, mongos_port, c
 
 def setup_config_member(sourceobj, rx_connection, mount_path, confignum, membernum, cfg_port, shardcount,
                         shard_config_list,
-                        encryption_method, enc_params_list_string, shardserver_setting_list):
+                        encryption_method, enc_params_list_string,
+                        shardserver_setting_list,
+                        dataset_type=None):
     dbpath = "{}/c{}m{}".format(mount_path, confignum, membernum)
     cfgdir = "{}/cfg".format(mount_path)
     logdir = "{}/logs".format(mount_path)
@@ -1433,7 +1435,8 @@ def setup_config_member(sourceobj, rx_connection, mount_path, confignum, membern
     cmd = "{} local --port {} --quiet --eval 'db.dropDatabase()'".format(sourceobj.mongo_shell_path, cfg_port)
     res = execute_bash_cmd(rx_connection, cmd, {})
 
-    if not sourceobj.parameters.enable_clustersync:
+    if dataset_type == "Virtual" \
+            or not sourceobj.parameters.enable_clustersync:
         for i in range(shardcount):
             shardmember = "s{}m0".format(i)
             snm0_port = get_shard_port(shard_config_list, shardmember)
@@ -2359,12 +2362,15 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
             add_debug_heading_block("Encrypted - setup_config_member")
             res = setup_config_member(sourceobj, rx_connection, mount_path, confignum, membernum, start_portpool, smax,
                                       shard_config_list, encryption_method, enc_params_list_string,
-                                      shardserver_setting_list)
+                                      shardserver_setting_list,
+                                      dataset_type=dataset_type)
 
         else:
             add_debug_heading_block("Unencrypted - setup_config_member")
             res = setup_config_member(sourceobj, rx_connection, mount_path, confignum, membernum, start_portpool, smax,
-                                      shard_config_list, None, None, shardserver_setting_list)
+                                      shard_config_list, None, None,
+                                      shardserver_setting_list,
+                                      dataset_type=dataset_type)
 
     elif dsource_type in [ "nonshardedsource", "offlinemongodump", "onlinemongodump", "extendedcluster", "stagingpush", "seed" ]:
 
@@ -2718,12 +2724,15 @@ def setup_sharded_mongo_dataset(sourceobj, dataset_type, snapshot):
         add_debug_heading_block("Encrypted - setup_config_member")
         res = setup_config_member(rx_connection, mount_path, confignum, membernum, start_portpool, smax,
                                   shard_config_list, encryption_method, enc_params_list_string,
-                                  shardserver_setting_list)
+                                  shardserver_setting_list,
+                                  dataset_type=dataset_type)
 
     else:
         add_debug_heading_block("Unencrypted - setup_config_member")
         res = setup_config_member(rx_connection, mount_path, confignum, membernum, start_portpool, smax,
-                                  shard_config_list, None, None, shardserver_setting_list)
+                                  shard_config_list, None, None,
+                                  shardserver_setting_list,
+                                  dataset_type=dataset_type)
 
     rs_initiate(rx_connection, sourceobj.mongo_shell_path, start_portpool)
 

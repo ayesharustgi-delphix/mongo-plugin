@@ -1435,6 +1435,10 @@ def setup_config_member(sourceobj, rx_connection, mount_path, confignum, membern
     cmd = "{} local --port {} --quiet --eval 'db.dropDatabase()'".format(sourceobj.mongo_shell_path, cfg_port)
     res = execute_bash_cmd(rx_connection, cmd, {})
 
+    # NOTE:
+    # Following code updates the "host" and "shard_id" fields in the existing
+    # backup sourced sharded cluster.
+    # Hence it must not be executed in case of Clustersync staging database.
     if dataset_type == "Virtual" \
             or not sourceobj.parameters.enable_clustersync:
         for i in range(shardcount):

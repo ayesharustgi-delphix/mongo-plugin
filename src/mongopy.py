@@ -442,7 +442,17 @@ def staged_post_snapshot(repository, source_config, staged_source, optional_snap
         snapshot.source_sharded = True
     else:
         snapshot.source_sharded = False
-    snapshot.shard_count = (len(staged_source.parameters.shard_backupfiles))
+
+    if staged_source.parameters.enable_clustersync:
+        cmd = "cat {}/.delphix/.stg_config.txt " \
+              "|grep SHARD_COUNT|awk -F: '{{ print $2 }}'".format(
+                staged_source.parameters.mount_path
+                )
+        res = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
+        snapshot.shard_count = int(res.strip())
+    else:
+        snapshot.shard_count = (len(staged_source.parameters.shard_backupfiles))
+
     snapshot.source_encrypted = staged_source.parameters.source_encrypted
     snapshot.cluster_auth_mode = staged_source.parameters.cluster_auth_mode
     snapshot.encryption_method = staged_source.parameters.encryption_method

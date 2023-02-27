@@ -1,8 +1,10 @@
 
 class MongoDBLibConstants:
-    DB_VERSION_CMD = "db.version()"
-    BUILD_INFO_CMD = "db.serverBuildInfo()"
-    MODULES_CMD = f"{BUILD_INFO_CMD}.modules"
+    """
+    Declares constants used by class MongoDB.
+    """
+    DB_VERSION_CMD = "EJSON.stringify(db.version())"
+    BUILD_INFO_CMD = "EJSON.stringify(db.serverBuildInfo())"
     USER_DETAILS_CMD = "EJSON.stringify(db.getUser('{user}'))"
     SH_STATUS = "EJSON.stringify(sh.status())"
     SH_ADD_SHARD = "EJSON.stringify(sh.addShard('{replicaset_str}'))"
@@ -22,6 +24,9 @@ class MongoDBLibConstants:
 
 
 class MongoSyncConstants:
+    """
+    Declares constants used by MongoSync class.
+    """
     api_method = "CurlAPI"
 
     mongosync_supported_version = "1.0.0"
@@ -40,7 +45,7 @@ class MongoSyncConstants:
                           'port: {mongosync_port}'
 
     mongosync_start_cmd = "nohup bash -c '{mongosync_path} --config " \
-                          "{conf_path}' > /tmp/mongosync_startup.log &"
+                          "{conf_path}' > /dev/null 2>&1 &"
 
     pause_api = "api/v1/pause"
     pause_api_params = {}

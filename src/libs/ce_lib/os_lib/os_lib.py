@@ -901,9 +901,12 @@ class OSLib:
         )
         return cmd_res.stdout
 
-    def readlink_file_name(self, pid) -> str:
+    def readlink_file_name(self, pid: int) -> str:
         """
         Return canonical file or directory path associated with pid.
+
+        :param pid: PID of process
+        :type pid: ``int``
 
         :return: directory or file path
         :rtype: ``str``
@@ -914,7 +917,16 @@ class OSLib:
         )
         return cmd_res.stdout
 
-    def get_binary_version(self, binary_path):
+    def get_binary_version(self, binary_path: str) -> str:
+        """
+        Return version of the binary provided.
+
+        :param binary_path: Path of binary
+        :type binary_path: ``str``
+
+        :return: version of Binary
+        :rtype: str
+        """
         command = f"{binary_path} --version"
         cmd_res = self._resource.execute_bash(
             cmd=command, raise_exception=False

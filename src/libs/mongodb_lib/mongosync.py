@@ -335,11 +335,11 @@ class MongoSync:
         """
         http_code, _, response_json = self.progress_sync()
         if int(http_code) == 200 and response_json["progress"]["state"] != "RUNNING":
-            res = self.rest_obj.request_post(
+            http_code, response, json_response = self.rest_obj.request_post(
                 api_path=MongoSyncConstants.start_api,
                 params=MongoSyncConstants.start_api_params
             )
-            sync_started = res.exit_code == 0
+            sync_started = int(http_code) == 200
         else:
             sync_started = True
         if wait_cancommit:

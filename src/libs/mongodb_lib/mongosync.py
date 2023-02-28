@@ -339,6 +339,9 @@ class MongoSync:
                 api_path=MongoSyncConstants.start_api,
                 params=MongoSyncConstants.start_api_params
             )
+            sync_started = res.exit_code == 0
+        else:
+            sync_started = True
         if wait_cancommit:
             # TODO: timeout when timelagSeconds is same for one hour.
             max_timeout = 5*60
@@ -351,7 +354,7 @@ class MongoSync:
                     else:
                         time.sleep(30)
         else:
-            return res.exit_code == 0
+            return sync_started
 
     def pause_sync(self) -> Tuple[int, str, Dict[str, Union[List, str, int, dict]]]:
         """

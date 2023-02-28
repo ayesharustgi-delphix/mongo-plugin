@@ -1453,7 +1453,7 @@ def setup_config_member(sourceobj, rx_connection, mount_path, confignum, membern
 
     # cmd = "ps -ef|grep mongo|grep {}|grep {}|grep -v grep|awk '{ print \"kill \"$2}'|sh".format(dbpath, cfg_port)
     shutdown_server(rx_connection, sourceobj.mongo_shell_path, cfg_port)
-
+    time.sleep(30)
     # start_mongod_cmd = "mongod -f {}".format(cfgfile)
     res = execute_bash_cmd(rx_connection, restart_mongod_cmd, {})
 
@@ -1763,6 +1763,7 @@ def setup_shard_member(sourceobj, rx_connection, mount_path, shardnum, membernum
 
     # cmd = "ps -ef|grep mongo|grep {}|grep {}|grep -v grep|awk '{ print \"kill \"$2}'|sh".format(dbpath, snm0_port)
     shutdown_server(rx_connection, sourceobj.mongo_shell_path, snm0_port)
+    time.sleep(30)
 
     # Create YAML file
     cmd = "{} --outputConfig |grep -v outputConfig > {}".format(restart_mongod_cmd, cfgfile)

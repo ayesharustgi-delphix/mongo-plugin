@@ -60,7 +60,7 @@ from generated.definitions import RepositoryDefinition
 from generated.definitions import SourceConfigDefinition
 from generated.definitions import SnapshotDefinition
 from helpers import helpers
-from operations.mongosync import MongoSync
+from mongodb_lib.mongosync import MongoSync
 
 # setup_logger._setup_logger()
 logger = plugin_logger.PluginLogger("MONGODB")
@@ -266,7 +266,14 @@ def staged_pre_snapshot(repository, source_config, staged_source, optional_snaps
                 staged_source.parameters.mount_path))
 
         if staged_source.parameters.d_source_type == "shardedsource":
+            if staged_source.parameters.enable_clustersync:
+                mongosync_obj = MongoSync(staged_source, repository)
+            else:
+                mongosync_obj = None
             common.setup_dataset(staged_source, 'Staging', None, "shardedsource")
+            if mongosync_obj is not None:
+                mongosync_obj.start_mongosync()
+                mongosync_obj.start_sync(wait_cancommit=True)
 
         elif staged_source.parameters.d_source_type == "nonshardedsource":
             staged_source.parameters.mongos_port = staged_source.parameters.start_portpool
@@ -849,3 +856,8 @@ def unconfigure(repository, source_config, virtual_source):
     common.stop_sharded_mongo('Virtual', virtual_source)
 
 
+# @plugin.linked.source_size()
+# def linked_source_size(staged_source, repository, source_config):
+#     database_size = 123456899
+#     # Implementation to fetch the database size.
+#     return database_size

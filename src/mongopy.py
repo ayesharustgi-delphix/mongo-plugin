@@ -260,6 +260,8 @@ def staged_pre_snapshot(repository, source_config, staged_source, optional_snaps
 
         if res == "yes":
             logger.info("Its resync operation on dSource as File {}/.delphix/DSOURCE_RESYNC.cfg exists.".format(staged_source.parameters.mount_path))
+            mongosync_obj = MongoSync(staged_source, repository, check_params=False)
+            mongosync_obj.stop_mongosync(force_stop=True)
             linked.stg_cleanup_pre_snapsync(staged_source, repository, None)
         else:
             logger.info("Its new dSource as File {}/.delphix/DSOURCE_RESYNC.cfg does not exists.".format(
@@ -267,7 +269,7 @@ def staged_pre_snapshot(repository, source_config, staged_source, optional_snaps
 
         if staged_source.parameters.d_source_type == "shardedsource":
             if staged_source.parameters.enable_clustersync:
-                mongosync_obj = MongoSync(staged_source, repository)
+                mongosync_obj = MongoSync(staged_source, repository, check_params=True)
             else:
                 mongosync_obj = None
             common.setup_dataset(staged_source, 'Staging', None, "shardedsource")
@@ -324,7 +326,19 @@ def staged_pre_snapshot(repository, source_config, staged_source, optional_snaps
         staged_source.parameters.mongo_db_password = staged_source.parameters.src_db_password
 
     if staged_source.parameters.d_source_type not in ["onlinemongodump","extendedcluster","stagingpush","seed"]:
-        ret = linked.stg_pre_snapsync(staged_source)
+        if staged_source.parameters.d_source_type == "shardedsource" and staged_source.parameters.enable_clustersync:
+            mongosync_obj = MongoSync(staged_source, repository, check_params=False)
+            ret_mongosync, error_mongosync = mongosync_obj.status_mongosync()
+            if ret_mongosync:
+                http_code, response, progress_json = mongosync_obj.progress_sync()
+                if int(http_code) == 200 and progress_json["progress"]["state"] == "RUNNING":
+                    ret = 1
+                else:
+                    raise UserError(f"Not able to reach Mongosync API. http_code={http_code} , response={response}")
+            else:
+                raise UserError(f"Mongosync not running! error={error_mongosync}")
+        else:
+            ret = linked.stg_pre_snapsync(staged_source)
     else:
         ret = 0
 

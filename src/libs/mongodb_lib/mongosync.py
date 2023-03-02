@@ -21,7 +21,8 @@ class MongoSync:
     def __init__(self,
                  staged_source: LinkedSourceDefinition,
                  repository: RepositoryDefinition,
-                 mongosync_host: str = "127.0.0.1"
+                 mongosync_host: str = "127.0.0.1",
+                 check_params: bool = True
                  ) -> None:
         """
         Initialise MongoSync object.
@@ -60,7 +61,8 @@ class MongoSync:
         )
         self.logger = self.resource.logger
 
-        self.check_input_parameters()
+        if check_params:
+            self.check_input_parameters()
 
     def check_input_parameters(self) -> None:
         """
@@ -291,10 +293,13 @@ class MongoSync:
         """
         if not force_stop:
             self.pause_sync()
-        kill_cmd = f"ps -eaf | grep {self.repository.mongosync_path} | " \
-                   f"grep {self.get_mongosync_conf_path()} | " \
-                   f"awk '{{print $2}}' | xargs kill -9"
-        self.resource.execute_bash(kill_cmd)
+        pids = self.os_lib_obj.find_running_processes(
+            process_name=self.repository.mongosync_path,
+            grep_params=[self.get_mongosync_conf_path()],
+            awk_param="$2"
+        )
+        if pids.strip() != "":
+            self.os_lib_obj.process_kill(process_id=pids, option="-9")
 
     def status_mongosync(self, fetch_error: bool = True) -> Tuple[bool, str]:
         """

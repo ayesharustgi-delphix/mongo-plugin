@@ -526,6 +526,22 @@ def start_staging(repository, source_config, staged_source):
 
         common.start_sharded_mongo('Staging', staged_source)
 
+        if staged_source.parameters.enable_clustersync:
+            # NOTE:
+            # In case of Clustersync, once database is started, start the
+            # mongosync process and resume the sync.
+            mongosync_obj = MongoSync(staged_source, repository, check_params=False)
+
+            # start mongosync process because it was killed in the "disable".
+            logger.info("Starting mongosync process.")
+            mongosync_obj.start_mongosync(create_conf=False)
+
+            # No need to wait for canCommit:true because it is idempotent
+            logger.info("Resuming synchronisation between source and staging "
+                        "databases.")
+            mongosync_obj.resume_sync()
+
+
     logger.debug("End of start staging")
     common.add_debug_heading_block("End Staged - Start Staging")
     logger.debug(" ")
@@ -551,6 +567,13 @@ def stop_staging(repository, source_config, staged_source):
 
         if staged_source.parameters.d_source_type == "nonshardedsource":
             staged_source.parameters.mongos_port = staged_source.parameters.start_portpool
+
+        if staged_source.parameters.enable_clustersync:
+            # NOTE:
+            # For Clustersync, pause mongosync and then kill the
+            # mongosync process
+            mongosync_obj = MongoSync(staged_source, repository, check_params=False)
+            mongosync_obj.stop_mongosync(force_stop=False)
 
         common.stop_sharded_mongo('Staging', staged_source)
 
@@ -688,6 +711,19 @@ def post_snapshot(repository, source_config, virtual_source):
     virtual_source.mongo_install_path = repository.mongo_install_path
     virtual_source.mongo_shell_path = repository.mongo_shell_path
 
+    # MongoDB object creation
+    resource = Resource(
+        connection=virtual_source.connection,
+        hidden_directory=""
+    )
+    virtual_source.mongodb_obj = MongoDB(
+        repository,
+        resource,
+    )
+
+    # OsLib object creation
+    virtual_source.os_lib_obj = OSLib(resource=resource)
+
     # Define variables
     mount_path = virtual_source.parameters.mount_path
     start_portpool = virtual_source.parameters.start_portpool
@@ -708,6 +744,13 @@ def post_snapshot(repository, source_config, virtual_source):
         shard_count = common.execute_bash_cmd(virtual_source.connection, cmd, {})
         if not isinstance(shard_count, int):
             shard_count = int(shard_count)
+
+        # NOTE: If a VDB is created from a staging DB which is created using
+        # Clustersync, the VDB would always have a database called
+        # "reserved_for_internel_purpose". We should remove this database.
+        # So check if this database exist and then remove it.
+        common.check_and_remove_clustersync_internal_database(virtual_source)
+
 
     cmd = "cat {}|grep DSOURCE_TYPE|awk -F: '{{ print $2 }}'".format(cfgfile)
     d_source_type = common.execute_bash_cmd(virtual_source.connection, cmd, {})

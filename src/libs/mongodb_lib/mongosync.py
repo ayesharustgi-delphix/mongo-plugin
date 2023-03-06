@@ -303,7 +303,7 @@ class MongoSync:
 
     def status_mongosync(self, fetch_error: bool = True) -> Tuple[bool, str]:
         """
-        Checks status og Mongosync Status. Also, fetches from logs if not
+        Checks status of Mongosync Status. Also, fetches from logs if not
         running and fetch_error=True.
 
         :param fetch_error: Boolean to specify if errors have to be fetched

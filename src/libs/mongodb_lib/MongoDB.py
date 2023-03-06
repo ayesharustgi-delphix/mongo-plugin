@@ -85,10 +85,10 @@ class MongoDB:
         return roles
 
     def get_sh_status(
-        self,
-        host_conn_string: str,
-        username: str,
-        password: str
+            self,
+            host_conn_string: str,
+            username: str,
+            password: str
     ) -> json:
         """
         Fetch shard status of a cluster.
@@ -116,10 +116,10 @@ class MongoDB:
             raise Exception(err)
 
     def get_shards_details(
-        self,
-        host_conn_string: str,
-        username: str,
-        password: str
+            self,
+            host_conn_string: str,
+            username: str,
+            password: str
     ) -> json:
         """
         Fetches Shard Details of the cluster.
@@ -146,11 +146,11 @@ class MongoDB:
             raise Exception(err)
 
     def sh_add_shard(
-        self,
-        host_conn_string: str,
-        username: str,
-        password: str,
-        replicaset_str: str
+            self,
+            host_conn_string: str,
+            username: str,
+            password: str,
+            replicaset_str: str
     ) -> json:
         """
         Add Shard to cluster.
@@ -181,6 +181,97 @@ class MongoDB:
             err += str(e)
             raise Exception(err)
 
+    def show_databases(
+            self,
+            host_conn_string: str,
+            username: str,
+            password: str,
+    ) -> list:
+        """
+        Show databases.
+
+        :param host_conn_string: Connection string of database
+        :type host_conn_string: ``str``
+        :param username: Username of database
+        :type username: ``str``
+        :param password: Password of database
+        :type password: ``str``
+
+        :return: list of databases
+        :rtype: ``list``
+        """
+        database_names_list = self.run_mongo_shell_command(
+            host_conn_string=host_conn_string,
+            username=username,
+            password=password,
+            cmd=MongoDBLibConstants.SHOW_DBS,
+        ).splitlines()
+        # database_names_list = ['admin   248.00 KiB', 'config    1.19 MiB']
+        # need to further parse it to remove DB sizes.
+        return list(db_name.split()[0] for db_name in database_names_list)
+
+
+    def db_exists(
+            self,
+            host_conn_string: str,
+            username: str,
+            password: str,
+            db_name: str,
+    ) -> bool:
+        """
+        Check if database exists.
+
+        :param host_conn_string: Connection string of database
+        :type host_conn_string: ``str``
+        :param username: Username of database
+        :type username: ``str``
+        :param password: Password of database
+        :type password: ``str``
+        :param db_name: Name of database
+        :type db_name: ``str``
+
+        :return: True or False
+        :rtype: ``bool``
+        """
+        return db_name in self.show_databases(
+            host_conn_string=host_conn_string,
+            username=username,
+            password=password,
+        )
+
+    def drop_database(
+            self,
+            host_conn_string: str,
+            username: str,
+            password: str,
+            db_name: str,
+    ) -> None:
+        """
+        Drops database.
+
+        :param host_conn_string: Connection string of database
+        :type host_conn_string: ``str``
+        :param username: Username of database
+        :type username: ``str``
+        :param password: Password of database
+        :type password: ``str``
+        :param db_name: Name of database
+        :type db_name: ``str``
+
+        :return: None
+        :rtype: ``None``
+        :raises:
+            Exception: stdout/stderr
+        """
+        self.run_mongo_shell_command(
+            host_conn_string=host_conn_string,
+            username=username,
+            password=password,
+            cmd=MongoDBLibConstants.DROP_DATABASE.format(
+                db_name=db_name
+            )
+        )
+
     @staticmethod
     def get_standard_conn_string(host_conn_string: str, username: str,
                                  password: str, database: str = "",
@@ -199,22 +290,31 @@ class MongoDB:
         :type password: ``str``
         :param database: Database for connection
         :type database: ``str``
-        :param ssl_params: SSL params in the format [{'<property_name>':'<value>'}]
+        :param ssl_params: SSL/TLS params in the following format
+              [
+               {"property_name": "<ssl param name1>", "value": "<value1>"},
+               {"property_name": "<ssl param name2>", "value": "<value2>"},
+              ]
         :type ssl_params: ``list``
 
         :return: Standard connection string
         :rtype: ``str``
         """
         percent_encoding_dict = MongoDBLibConstants.STANDARD_CONN_STRING_ENCODING
-        encoded_username = "".join([percent_encoding_dict[s] if s in percent_encoding_dict else s for s in username])
-        encoded_password = "".join([percent_encoding_dict[s] if s in percent_encoding_dict else s for s in password])
+        encoded_username = "".join(
+            [percent_encoding_dict[s] if s in percent_encoding_dict else s for s
+             in username])
+        encoded_password = "".join(
+            [percent_encoding_dict[s] if s in percent_encoding_dict else s for s
+             in password])
 
         host_param_dict = helpers.parse_shell_params(host_conn_string)
 
         host_conn = host_param_dict["primary_key"]
         del host_param_dict["primary_key"]
 
-        host_params = [f"{k}={host_param_dict[k]}" for k in host_param_dict.keys()]
+        host_params = [f"{k}={host_param_dict[k]}" for k in
+                       host_param_dict.keys()]
 
         if ssl_params:
             host_params.append("tls=true")
@@ -254,11 +354,20 @@ class MongoDB:
         """
         command = MongoDBLibConstants.RUN_MONGODB_CMD.format(
             mongo_shell_path=self.repository.mongo_shell_path,
-            host_details=self.__class__.get_standard_conn_string(host_conn_string, username, password, database),
+            host_details=self.__class__.get_standard_conn_string(
+                host_conn_string=host_conn_string,
+                username=username,
+                password=password,
+                database=database,
+            ),
             cmd=cmd
         )
         result = self.resource.execute_bash(command)
-        return json.loads(result.stdout)
+        try:
+            return json.loads(result.stdout)
+        except json.decoder.JSONDecodeError:
+            # Commands like "show dbs" doesn't return json
+            return result.stdout
 
 
 if __name__ == "__main__":

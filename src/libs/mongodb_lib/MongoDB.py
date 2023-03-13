@@ -200,15 +200,25 @@ class MongoDB:
         :return: list of databases
         :rtype: ``list``
         """
-        database_names_list = self.run_mongo_shell_command(
+        res = self.run_mongo_shell_command(
             host_conn_string=host_conn_string,
             username=username,
             password=password,
             cmd=MongoDBLibConstants.SHOW_DBS,
-        ).splitlines()
-        # database_names_list = ['admin   248.00 KiB', 'config    1.19 MiB']
-        # need to further parse it to remove DB sizes.
-        return list(db_name.split()[0] for db_name in database_names_list)
+        )
+        # res = {"databases":[{"name":"admin"},{"name":"config"},
+        # {"name":"sample_airbnb"},{"name":"sample_analytics"},
+        # {"name":"sample_geospatial"},{"name":"sample_guides"},
+        # {"name":"sample_mflix"},{"name":"sample_restaurants"},
+        # {"name":"sample_supplies"},{"name":"sample_training"},
+        # {"name":"sample_weatherdata"},{"name":"ycsb"}],
+        # "ok":1,"$clusterTime":{"clusterTime":
+        # {"$timestamp":"7208819696840212482"},"signature":
+        # {"hash":"AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        # "keyId":{"low":0,"high":0,"unsigned":false}}},
+        # "operationTime":{"$timestamp":"7208819696840212482"}}
+
+        return list(database_dict["name"] for database_dict in res["databases"])
 
 
     def db_exists(

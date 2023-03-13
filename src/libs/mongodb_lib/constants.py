@@ -8,8 +8,8 @@ class MongoDBLibConstants:
     USER_DETAILS_CMD = "EJSON.stringify(db.getUser('{user}'))"
     SH_STATUS = "EJSON.stringify(sh.status())"
     SH_ADD_SHARD = "EJSON.stringify(sh.addShard('{replicaset_str}'))"
-    SHOW_DBS = "show dbs"
-    DROP_DATABASE = "EJSON.stringify(db.getSiblingDB('{db_name}')" \
+    SHOW_DBS = "JSON.stringify(db.adminCommand({listDatabases: 1, nameOnly: true}))"
+    DROP_DATABASE = "JSON.stringify(db.getSiblingDB('{db_name}')" \
                     ".dropDatabase())"
 
     RUN_MONGODB_CMD = '{mongo_shell_path} "{host_details}" --quiet --eval "{cmd}"'

@@ -129,26 +129,26 @@ class PluginLogger:
         return log_msg
 
     def info(self, msg, *args, **kwargs):
-        msg = self.mask_password(msg)
         msg = self.format_log(msg)
         self.logger_object.info(msg, *args, **kwargs)
+        return msg
 
     def warning(self, msg, *args, **kwargs):
-        msg = self.mask_password(msg)
         msg = self.format_log(msg)
         self.logger_object.warning(msg, *args, **kwargs)
+        return msg
 
     def debug(self, msg, *args, **kwargs):
-        msg = self.mask_password(msg)
         msg = self.format_log(msg)
         self.logger_object.debug(msg, *args, **kwargs)
+        return msg
 
     def error(self, msg, *args, **kwargs):
-        msg = self.mask_password(msg)
         msg = self.format_log(msg)
         self.logger_object.error(msg, *args, **kwargs)
+        return msg
 
     def exception(self, msg, *args, **kwargs):
-        msg = self.mask_password(msg)
         msg = self.format_log(msg)
         self.logger_object.exception(msg, *args, **kwargs)
+        return msg

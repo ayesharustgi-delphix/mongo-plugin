@@ -22,7 +22,9 @@ class MongoSync:
                  staged_source: LinkedSourceDefinition,
                  repository: RepositoryDefinition,
                  mongosync_host: str = "127.0.0.1",
-                 check_params: bool = True
+                 mongosync_port: int = None,
+                 check_params: bool = True,
+                 mongosync_id: str = None
                  ) -> None:
         """
         Initialise MongoSync object.
@@ -33,6 +35,14 @@ class MongoSync:
         :type repository: ``generated.definitions.RepositoryDefinition``
         :param mongosync_host: Host address for contacting mongosync API server
         :type mongosync_host: ``str``
+        :param mongosync_port: Host port for contacting mongosync API server
+        :type mongosync_port: ``int``
+        :param check_params: boolean specifying whether to perform input
+                                parameters check
+        :type check_params: ``bool``
+        :param mongosync_id: ID specifying shard_id or replicaset id in
+                                case of multiple mongosync instances.
+        :type mongosync_id: ``str``
 
         :return: None
         :rtype: ``NoneType``
@@ -40,6 +50,8 @@ class MongoSync:
         self.staged_source = staged_source
         self.repository = repository
         self.mongosync_host = mongosync_host
+        self.mongosync_id = mongosync_id
+        self.mongosync_port = mongosync_port if mongosync_port else self.staged_source.parameters.mongosync_port
 
         self.resource = Resource(
             connection=self.staged_source.staged_connection,
@@ -49,7 +61,7 @@ class MongoSync:
         self.rest_obj = RestAPI.get_rest_api_lib(
             connection=self.staged_source.staged_connection,
             host=self.mongosync_host,
-            port=self.staged_source.parameters.mongosync_port,
+            port=self.mongosync_port,
             api_type=MongoSyncConstants.api_method,
             resource=self.resource
         )
@@ -155,10 +167,10 @@ class MongoSync:
 
         # mongosync port number is available
         if not self.os_lib_obj.check_port_available(
-                self.staged_source.parameters.mongosync_port
+                self.mongosync_port
         ):
             error_msg = f"Port number: " \
-                        f"{self.staged_source.parameters.mongosync_port} " \
+                        f"{self.mongosync_port} " \
                         f"not available on staging host for Mongosync utility."
             raise plugin_error.InvalidParametersProvided(error_msg)
 
@@ -228,6 +240,9 @@ class MongoSync:
         conf_path = os.path.join(self.staged_source.parameters.mount_path,
                                  ".delphix",
                                  "mongosync.conf")
+        if self.mongosync_id:
+            conf_path = conf_path.replace(".conf",
+                                          f"_{self.mongosync_id}.conf")
         return conf_path
 
     def create_mongosync_conf(self) -> None:
@@ -257,6 +272,10 @@ class MongoSync:
             mongosync_log_path=conf_path.replace(".conf", ".log"),
             mongosync_port=self.staged_source.parameters.mongosync_port
         )
+        if self.mongosync_id:
+            conf_data += MongoSyncConstants.mongosync_conf_id_data.format(
+                shard_id=self.mongosync_id
+            )
 
         self.os_lib_obj.dump_to_file(content=conf_data, file_path=conf_path)
 
@@ -344,9 +363,7 @@ class MongoSync:
                 api_path=MongoSyncConstants.start_api,
                 params=MongoSyncConstants.start_api_params
             )
-            sync_started = int(http_code) == 200
-        else:
-            sync_started = True
+        sync_started = int(http_code) == 200
         if wait_cancommit:
             # TODO: timeout when timelagSeconds is same for one hour.
             max_timeout = 5*60

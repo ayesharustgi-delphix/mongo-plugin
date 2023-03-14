@@ -70,6 +70,29 @@ logger = plugin_logger.PluginLogger("MONGODB")
 
 plugin = Plugin()
 
+
+@plugin.upgrade.repository("2023.03.13.01")
+def add_mongosync_path(old_repository):
+    new_repository = dict(old_repository)
+    new_repository["mongosync_path"] = "Refresh environment to discover"
+    return new_repository
+
+
+@plugin.upgrade.linked_source("2023.03.13.02")
+def add_mongosync_variables(old_linked_source):
+    new_linked_source = dict(old_linked_source)
+    new_linked_source["mongosync_port"] = 0
+    new_linked_source["enable_clustersync"] = False
+    return new_linked_source
+
+
+@plugin.upgrade.source_config("2023.03.13.03")
+def modify_discovery_type(old_source_config):
+    new_source_config = dict(old_source_config)
+    new_source_config["discovery_type"] = "Manual"
+    return new_source_config
+
+
 @plugin.upgrade.repository("2022.08.02.04")
 def modify_repo_field(old_repository):
     new_repository = dict(old_repository)
@@ -80,6 +103,7 @@ def modify_repo_field(old_repository):
     new_repository["nameField"] = new_repository["pretty_name"]
     return new_repository
 
+
 @plugin.upgrade.linked_source("2022.08.02.03")
 def del_user_auth_param_linked(old_linked_source):
     new_linked_source = dict(old_linked_source)
@@ -88,15 +112,18 @@ def del_user_auth_param_linked(old_linked_source):
     del new_linked_source["source_sharded"]
     return new_linked_source
 
+
 @plugin.upgrade.virtual_source("2022.08.02.02")
 def del_user_auth_param_virtual(old_virtual_source):
     new_virtual_source = dict(old_virtual_source)
     del new_virtual_source["user_auth_mode"]
     return new_virtual_source
 
+
 @plugin.upgrade.snapshot("2021.09.20.009")
 def add_new_flag_to_snapshot(old_snapshot):
     return old_snapshot
+
 
 @plugin.discovery.repository()
 def repository_discovery(source_connection):

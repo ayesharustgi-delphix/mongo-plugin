@@ -9,6 +9,8 @@ class Globals:
     RS_INITIATE = "{mongo_shell_path} --port {port} --quiet --eval " \
                   "'rs.initiate()'"
 
+    # SOCKET PATH
+    MONGODB_SOCKET_FILE_PATH = "/tmp/mongodb-{port}.sock"
 
 
     EXPECTED_RS_INITIATE_ERROR = "MongoServerError: already initialized"

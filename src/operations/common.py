@@ -2375,6 +2375,13 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
             replicaset)
         for shard_config in shard_config_list:
             logger.info("shard config :{}".format(shard_config))
+        add_debug_heading_block("Removing temporary socket files for available "
+                                "ports.")
+        remove_temporary_mongodb_socket_files_of_ports(
+                sourceobj,
+                list([_config['port'] for _config in shard_config_list])
+            )
+
     elif dsource_type in ["nonshardedsource", "offlinemongodump",
                           "onlinemongodump", "extendedcluster", "stagingpush",
                           "seed"]:
@@ -2385,6 +2392,12 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
             nodes, start_portpool, mount_path, replicaset)
         for replicaset_config in replicaset_config_list:
             logger.info("replicaset_config :{}".format(replicaset_config))
+        add_debug_heading_block("Removing temporary socket files for available "
+                                    "ports.")
+        remove_temporary_mongodb_socket_files_of_ports(
+            sourceobj,
+            list([_config['port'] for _config in replicaset_config_list])
+        )
 
     add_debug_space()
 
@@ -3454,3 +3467,13 @@ def check_and_remove_clustersync_internal_database(sourceobj):
             password=mongo_db_password,
             db_name=MongoDBLibConstants.CLUSTERSYNC_RESERVED_DATABASE,
         )
+
+
+def remove_temporary_mongodb_socket_files_of_ports(sourceobj, ports=[]):
+    for port in ports:
+        file_path = constants.Globals.MONGODB_SOCKET_FILE_PATH.format(port=port)
+        if sourceobj.os_lib_obj.check_file_dir_exists(file_path):
+            sourceobj.os_lib_obj.delete_file(
+                    file_path=file_path,
+                    force=True
+            )

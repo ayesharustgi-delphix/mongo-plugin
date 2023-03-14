@@ -47,7 +47,9 @@ class MongoSyncConstants:
     mongosync_conf_data = 'cluster0: "{src_conn_string}"\n' \
                           'cluster1: "{dst_conn_string}"\n' \
                           'logPath: "{mongosync_log_path}"\n' \
-                          'port: {mongosync_port}'
+                          'port: {mongosync_port}\n'
+
+    mongosync_conf_id_data = 'id: "{shard_id}"'
 
     mongosync_start_cmd = "nohup bash -c '{mongosync_path} --config " \
                           "{conf_path}' > /dev/null 2>&1 &"

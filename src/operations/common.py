@@ -2392,6 +2392,12 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
             nodes, start_portpool, mount_path, replicaset)
         for replicaset_config in replicaset_config_list:
             logger.info("replicaset_config :{}".format(replicaset_config))
+        add_debug_heading_block("Removing temporary socket files for available "
+                                    "ports.")
+        remove_temporary_mongodb_socket_files_of_ports(
+            sourceobj,
+            list([_config['port'] for _config in replicaset_config_list])
+        )
 
     add_debug_space()
 

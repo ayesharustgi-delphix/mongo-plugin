@@ -470,13 +470,26 @@ def get_shard_host(shard_config_list, dirname):
 
 
 def get_node_conn(sourceobj, host, dataset_type="Virtual"):
-    node_reference = host.split(":")[0]
-    user_reference = host.split(":")[1]
+    # NOTE: CE-142
+    # In delphix replication setup, node reference and user reference could be
+    # different on primary and secondary.
+    # Hence, instead of reading node reference(UNIX_HOST_ENVIRONMENT-AA)
+    # and user reference(HOST_USER-AA) from .stg_dsourcecfg.txt, leverage it
+    # from sourceobj itself.
+    # This fixes the issue of missing node and user
+    # references on secondary after a failover.
+
+    # node_reference = host.split(":")[0]
+    # user_reference = host.split(":")[1]
 
     if dataset_type == "Virtual":
         node_host = sourceobj.connection.environment.host
+        node_reference = sourceobj.connection.environment.reference
+        user_reference = sourceobj.connection.user.reference
     elif dataset_type == "Staging":
         node_host = sourceobj.staged_connection.environment.host
+        node_reference = sourceobj.staged_connection.environment.reference
+        user_reference = sourceobj.staged_connection.user.reference
 
     try:
         # node_host:

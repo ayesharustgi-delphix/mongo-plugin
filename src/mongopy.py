@@ -4,16 +4,16 @@
 from __future__ import print_function
 
 import sys, os
-sys.path.append(os.path.join(
-    os.getcwd() if sys.path[0] == "" else sys.path[0],
-    "libs")
+
+sys.path.append(
+    os.path.join(os.getcwd() if sys.path[0] == "" else sys.path[0], "libs")
 )
 
 from dlpx.virtualization.platform import (
     Mount,
     MountSpecification,
     Plugin,
-    Status
+    Status,
 )
 
 from operations import linked
@@ -28,13 +28,16 @@ from utils import plugin_logger
 
 import json
 import os
+
 # import logging
 import pkgutil
 import re, copy
+
 # import pickle
 from datetime import datetime
 
 from dlpx.virtualization.platform.exceptions import UserError
+
 # raise UserError(
 #     "Stopped for debugging.",
 #     'Stopped for debugging. check logs',
@@ -97,9 +100,15 @@ def modify_discovery_type(old_source_config):
 def modify_repo_field(old_repository):
     new_repository = dict(old_repository)
     logger.debug(f"new_repo={new_repository}")
-    new_repository["mongo_dump_path"] = os.path.join(os.path.dirname(new_repository["mongo_install_path"]), "mongodump")
-    new_repository["mongo_restore_path"] = os.path.join(os.path.dirname(new_repository["mongo_install_path"]), "mongorestore")
-    new_repository["pretty_name"] = "MongoDB - (version: {}) [{}]".format(new_repository["version"], new_repository["mongo_install_path"])
+    new_repository["mongo_dump_path"] = os.path.join(
+        os.path.dirname(new_repository["mongo_install_path"]), "mongodump"
+    )
+    new_repository["mongo_restore_path"] = os.path.join(
+        os.path.dirname(new_repository["mongo_install_path"]), "mongorestore"
+    )
+    new_repository["pretty_name"] = "MongoDB - (version: {}) [{}]".format(
+        new_repository["version"], new_repository["mongo_install_path"]
+    )
     new_repository["nameField"] = new_repository["pretty_name"]
     return new_repository
 
@@ -132,34 +141,40 @@ def repository_discovery(source_connection):
 
     env = {
         "DELPHIX_DIR": source_connection.environment.host.binary_path,
-        "DLPX_PLUGIN_WORKFLOW": 'repoDiscovery',
-        "DLPX_TOOLKIT_WORKFLOW": 'repoDiscovery',
-        "TOOLKIT_VERSION": _version.Version
+        "DLPX_PLUGIN_WORKFLOW": "repoDiscovery",
+        "DLPX_TOOLKIT_WORKFLOW": "repoDiscovery",
+        "TOOLKIT_VERSION": _version.Version,
     }
     logger.debug("env: {}".format(env))
     repositories = []
-    script_content = pkgutil.get_data('resources', 'discover_repos.sh')
-    #logger.debug("discover_repos_repository_script: {}".format(script_content))
+    script_content = pkgutil.get_data("resources", "discover_repos.sh")
+    # logger.debug("discover_repos_repository_script: {}".format(script_content))
     res = libs.run_bash(source_connection, script_content.decode(), env)
 
     if res.exit_code != 0:
-        raise RuntimeError(('Could not execute {} script on the remote host.\n{} {}').format('discover_repos.sh', res.stderr))
+        raise RuntimeError(
+            ("Could not execute {} script on the remote host.\n{} {}").format(
+                "discover_repos.sh", res.stderr
+            )
+        )
 
     # logger.debug("res = {}".format(res))
     logger.debug("res.stdout = {}".format(res.stdout))
     logger.debug("res.stderr = {}".format(res.stderr))
-    repodiscovery = json.loads(res.stdout.split("DISCOVERED_REPOSITORIES=")[-1])
+    repodiscovery = json.loads(
+        res.stdout.split("DISCOVERED_REPOSITORIES=")[-1]
+    )
     logger.debug(f"repodiscovery: {repodiscovery}")
     for item in repodiscovery:
         logger.debug("item:{}".format(item))
         repository = RepositoryDefinition(
-            version=item['version'],
-            mongo_install_path=item['mongo_install_path'],
-            mongo_dump_path=item['mongo_dump_path'],
-            mongo_restore_path=item['mongo_restore_path'],
-            mongo_shell_path=item['mongo_shell_path'],
-            mongosync_path=item['mongosync_path'],
-            pretty_name=item['pretty_name']
+            version=item["version"],
+            mongo_install_path=item["mongo_install_path"],
+            mongo_dump_path=item["mongo_dump_path"],
+            mongo_restore_path=item["mongo_restore_path"],
+            mongo_shell_path=item["mongo_shell_path"],
+            mongosync_path=item["mongosync_path"],
+            pretty_name=item["pretty_name"],
         )
         repositories.append(repository)
 
@@ -206,141 +221,222 @@ def source_config_discovery(source_connection, repository):
 @plugin.linked.mount_specification()
 def staged_mount_specification(staged_source, repository):
     common.add_debug_heading_block("Start Staged Mount Specification")
-    helpers._record_hook("staging mount specification",
-                         staged_source.staged_connection)
+    helpers._record_hook(
+        "staging mount specification", staged_source.staged_connection
+    )
     logger.debug("mount_path={}".format(staged_source.parameters.mount_path))
-    mount = Mount(staged_source.staged_connection.environment,
-                  staged_source.parameters.mount_path)
+    mount = Mount(
+        staged_source.staged_connection.environment,
+        staged_source.parameters.mount_path,
+    )
     common.add_debug_heading_block("End Staged Mount Specification")
     return MountSpecification([mount])
 
 
 @plugin.linked.pre_snapshot()
-def staged_pre_snapshot(repository, source_config, staged_source, optional_snapshot_parameters):
+def staged_pre_snapshot(
+    repository, source_config, staged_source, optional_snapshot_parameters
+):
     common.add_debug_heading_block("Start Staged Pre Snapshot")
-    helpers._record_hook("staging pre snapshot",
-                         staged_source.staged_connection)
-    common.check_input_parameters(staged_source)
+    helpers._record_hook(
+        "staging pre snapshot", staged_source.staged_connection
+    )
+
+    # MongoDB object creation
+    resource = Resource(
+        connection=staged_source.staged_connection, hidden_directory=""
+    )
+    staged_source.mongodb_obj = MongoDB(
+        repository,
+        resource,
+    )
+    # OsLib object creation
+    staged_source.os_lib_obj = OSLib(resource=resource)
+    common.check_input_parameters(source_obj=staged_source, is_dsource=True)
+
     staged_source.mongo_install_path = repository.mongo_install_path
     staged_source.mongo_shell_path = repository.mongo_shell_path
     staged_source.mongo_dump_path = repository.mongo_dump_path
     staged_source.mongo_restore_path = repository.mongo_restore_path
 
-    # MongoDB object creation
-    resource = Resource(
-        connection=staged_source.staged_connection,
-        hidden_directory=""
+    logger.info(
+        "optional_snapshot_parameters={}".format(optional_snapshot_parameters)
     )
-    staged_source.mongodb_obj = MongoDB(
-            repository,
-            resource,
-    )
-
-    # OsLib object creation
-    staged_source.os_lib_obj = OSLib(resource=resource)
-
-
-    logger.info("optional_snapshot_parameters={}".format(optional_snapshot_parameters))
 
     # mongosync_obj = MongoSync(staged_source=staged_source,
     #                           repository=repository,
     #                           mongosync_host="localhost")
     # mongosync_obj.create_mongosync_conf()
-
-    if staged_source.parameters.d_source_type not in ["onlinemongodump",
-                                                      "extendedcluster",
-                                                      "stagingpush", "seed"]\
-            and not staged_source.parameters.enable_clustersync:
-
+    if (
+        staged_source.parameters.d_source_type
+        not in ["onlinemongodump", "extendedcluster", "stagingpush", "seed"]
+        and not staged_source.parameters.enable_clustersync
+    ):
         # Write backup information
         cmd = "cat {}".format(staged_source.parameters.backup_metadata_file)
         date_validate = common.execute_bash_cmd(
-            staged_source.staged_connection, cmd, {})
+            staged_source.staged_connection, cmd, {}
+        )
         date_format = "%m%d%Y_%H%M%S"
         try:
             datetime.strptime(date_validate, date_format)
-            logger.debug("The date string format: {} provided in backup_metadata_file: {} is correct."
-                         .format(date_validate, staged_source.parameters.backup_metadata_file))
+            logger.debug(
+                "The date string format: {} provided in backup_metadata_file: {} is correct.".format(
+                    date_validate,
+                    staged_source.parameters.backup_metadata_file,
+                )
+            )
         except Exception:
-            error_msg = "The date string format is incorrect in backup_metadata_file: {}. " \
-                        "It should be MMDDYYYY_HH24MISS".format(staged_source.parameters.backup_metadata_file)
+            error_msg = (
+                "The date string format is incorrect in backup_metadata_file: {}. "
+                "It should be MMDDYYYY_HH24MISS".format(
+                    staged_source.parameters.backup_metadata_file
+                )
+            )
             logger.exception(error_msg)
             raise UserError(error_msg)
 
-    if optional_snapshot_parameters is not None and optional_snapshot_parameters.resync:
+    if (
+        optional_snapshot_parameters is not None
+        and optional_snapshot_parameters.resync
+    ):
         common.add_debug_heading_block("Start Staged Pre Snapshot Resync")
 
         if staged_source.parameters.d_source_type == "stagingpush":
             cmd = "(ls {}/.delphix/MongoOps_Automation_DSOURCE_RESYNC.cfg >> /dev/null 2>&1 && echo yes) || echo no".format(
-                staged_source.parameters.mount_path)
-            result = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
+                staged_source.parameters.mount_path
+            )
+            result = common.execute_bash_cmd(
+                staged_source.staged_connection, cmd, {}
+            )
 
             if result == "yes":
                 logger.error(
                     "dSource Re-Syncronization is not a valid option for {} ingestion type on host: {}".format(
-                        staged_source.parameters.d_source_type,staged_source.parameters.mongo_host))
+                        staged_source.parameters.d_source_type,
+                        staged_source.parameters.mongo_host,
+                    )
+                )
                 raise UserError(
-                    "dSource Re-Syncronization is not a valid option for {} ingestion type on host: {}".format(staged_source.parameters.d_source_type,staged_source.parameters.mongo_host), '\nPlease remove / cleanup the dSource manually in case of re-syncronizing dSource')
+                    "dSource Re-Syncronization is not a valid option for {} ingestion type on host: {}".format(
+                        staged_source.parameters.d_source_type,
+                        staged_source.parameters.mongo_host,
+                    ),
+                    "\nPlease remove / cleanup the dSource manually in case of re-syncronizing dSource",
+                )
 
-        cmd = "(ls {}/.delphix/DSOURCE_RESYNC.cfg >> /dev/null 2>&1 && echo yes) || echo no".format(staged_source.parameters.mount_path)
+        cmd = "(ls {}/.delphix/DSOURCE_RESYNC.cfg >> /dev/null 2>&1 && echo yes) || echo no".format(
+            staged_source.parameters.mount_path
+        )
         res = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
 
         if res == "yes":
-            logger.info("Its resync operation on dSource as File {}/.delphix/DSOURCE_RESYNC.cfg exists.".format(staged_source.parameters.mount_path))
-            mongosync_obj = MongoSync(staged_source, repository, check_params=False)
+            logger.info(
+                "Its resync operation on dSource as File {}/.delphix/DSOURCE_RESYNC.cfg exists.".format(
+                    staged_source.parameters.mount_path
+                )
+            )
+            mongosync_obj = MongoSync(
+                staged_source, repository, check_params=False
+            )
             mongosync_obj.stop_mongosync(force_stop=True)
             linked.stg_cleanup_pre_snapsync(staged_source, repository, None)
         else:
-            logger.info("Its new dSource as File {}/.delphix/DSOURCE_RESYNC.cfg does not exists.".format(
-                staged_source.parameters.mount_path))
+            logger.info(
+                "Its new dSource as File {}/.delphix/DSOURCE_RESYNC.cfg does not exists.".format(
+                    staged_source.parameters.mount_path
+                )
+            )
 
         if staged_source.parameters.d_source_type == "shardedsource":
             if staged_source.parameters.enable_clustersync:
-                mongosync_obj = MongoSync(staged_source, repository, check_params=True)
+                mongosync_obj = MongoSync(
+                    staged_source, repository, check_params=True
+                )
             else:
                 mongosync_obj = None
-            common.setup_dataset(staged_source, 'Staging', None, "shardedsource")
+            common.setup_dataset(
+                staged_source, "Staging", None, "shardedsource"
+            )
             if mongosync_obj is not None:
                 mongosync_obj.start_mongosync()
                 mongosync_obj.start_sync(wait_cancommit=True)
 
         elif staged_source.parameters.d_source_type == "nonshardedsource":
-            staged_source.parameters.mongos_port = staged_source.parameters.start_portpool
-            common.setup_dataset(staged_source, 'Staging', None, "nonshardedsource")
+            staged_source.parameters.mongos_port = (
+                staged_source.parameters.start_portpool
+            )
+            common.setup_dataset(
+                staged_source, "Staging", None, "nonshardedsource"
+            )
 
         elif staged_source.parameters.d_source_type == "offlinemongodump":
-            staged_source.parameters.mongos_port = staged_source.parameters.start_portpool
-            linked.setup_dataset_mongodump_offline(staged_source, 'Staging', None, "offlinemongodump")
+            staged_source.parameters.mongos_port = (
+                staged_source.parameters.start_portpool
+            )
+            linked.setup_dataset_mongodump_offline(
+                staged_source, "Staging", None, "offlinemongodump"
+            )
 
             # Write backup information
             linked.write_first_backup_timestamp(staged_source)
 
         elif staged_source.parameters.d_source_type == "onlinemongodump":
-            staged_source.parameters.mongos_port = staged_source.parameters.start_portpool
-            linked.setup_dataset_mongodump_online(staged_source, 'Staging', None, "onlinemongodump")
+            staged_source.parameters.mongos_port = (
+                staged_source.parameters.start_portpool
+            )
+            linked.setup_dataset_mongodump_online(
+                staged_source, "Staging", None, "onlinemongodump"
+            )
 
         elif staged_source.parameters.d_source_type == "seed":
-            staged_source.parameters.mongos_port = staged_source.parameters.start_portpool
-            linked.setup_dataset_seed(staged_source, 'Staging', None, "seed")
+            staged_source.parameters.mongos_port = (
+                staged_source.parameters.start_portpool
+            )
+            linked.setup_dataset_seed(staged_source, "Staging", None, "seed")
 
         elif staged_source.parameters.d_source_type == "extendedcluster":
-            staged_source.parameters.mongo_db_user = staged_source.parameters.src_db_user
-            staged_source.parameters.mongo_db_password = staged_source.parameters.src_db_password
-            staged_source.parameters.mongos_port = staged_source.parameters.start_portpool
-            linked.setup_replicaset_dsource(staged_source, 'Staging', "extendedcluster")
+            staged_source.parameters.mongo_db_user = (
+                staged_source.parameters.src_db_user
+            )
+            staged_source.parameters.mongo_db_password = (
+                staged_source.parameters.src_db_password
+            )
+            staged_source.parameters.mongos_port = (
+                staged_source.parameters.start_portpool
+            )
+            linked.setup_replicaset_dsource(
+                staged_source, "Staging", "extendedcluster"
+            )
 
         elif staged_source.parameters.d_source_type == "stagingpush":
-            staged_source.parameters.mongo_db_user = staged_source.parameters.src_db_user
-            staged_source.parameters.mongo_db_password = staged_source.parameters.src_db_password
-            staged_source.parameters.mongos_port = staged_source.parameters.start_portpool
-            linked.initiate_emptyfs_for_dsource(staged_source, 'Staging', "stagingpush")
-            cmd = "echo \"DO NOT DELETE THIS FILE. It is used to check if its resync or new dsource\" >> {}/.delphix/MongoOps_Automation_DSOURCE_RESYNC.cfg".format(staged_source.parameters.mount_path)
-            status = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
+            staged_source.parameters.mongo_db_user = (
+                staged_source.parameters.src_db_user
+            )
+            staged_source.parameters.mongo_db_password = (
+                staged_source.parameters.src_db_password
+            )
+            staged_source.parameters.mongos_port = (
+                staged_source.parameters.start_portpool
+            )
+            linked.initiate_emptyfs_for_dsource(
+                staged_source, "Staging", "stagingpush"
+            )
+            cmd = 'echo "DO NOT DELETE THIS FILE. It is used to check if its resync or new dsource" >> {}/.delphix/MongoOps_Automation_DSOURCE_RESYNC.cfg'.format(
+                staged_source.parameters.mount_path
+            )
+            status = common.execute_bash_cmd(
+                staged_source.staged_connection, cmd, {}
+            )
 
-        cmd = "echo \"DO NOT DELETE THIS FILE. It is used to check if its resync or new dsource\" >> {}/.delphix/DSOURCE_RESYNC.cfg".format(staged_source.parameters.mount_path)
+        cmd = 'echo "DO NOT DELETE THIS FILE. It is used to check if its resync or new dsource" >> {}/.delphix/DSOURCE_RESYNC.cfg'.format(
+            staged_source.parameters.mount_path
+        )
         res = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
 
-        cmd = "echo \"DO NOT DELETE THIS FILE. It is used to check if its new dsource for snapsyncs\" >> {}/.delphix/NEWDSOURCEFILE.cfg".format(staged_source.parameters.mount_path)
+        cmd = 'echo "DO NOT DELETE THIS FILE. It is used to check if its new dsource for snapsyncs" >> {}/.delphix/NEWDSOURCEFILE.cfg'.format(
+            staged_source.parameters.mount_path
+        )
         res = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
 
         common.add_debug_heading_block("End Staged Pre Snapshot Resync")
@@ -348,22 +444,49 @@ def staged_pre_snapshot(repository, source_config, staged_source, optional_snaps
     common.add_debug_space()
     common.add_debug_heading_block("Pre-Snapshot")
     if staged_source.parameters.d_source_type == "extendedcluster":
-        linked.check_pre_snapshot_possible(staged_source, optional_snapshot_parameters)
-        staged_source.parameters.mongo_db_user = staged_source.parameters.src_db_user
-        staged_source.parameters.mongo_db_password = staged_source.parameters.src_db_password
+        linked.check_pre_snapshot_possible(
+            staged_source, optional_snapshot_parameters
+        )
+        staged_source.parameters.mongo_db_user = (
+            staged_source.parameters.src_db_user
+        )
+        staged_source.parameters.mongo_db_password = (
+            staged_source.parameters.src_db_password
+        )
 
-    if staged_source.parameters.d_source_type not in ["onlinemongodump","extendedcluster","stagingpush","seed"]:
-        if staged_source.parameters.d_source_type == "shardedsource" and staged_source.parameters.enable_clustersync:
-            mongosync_obj = MongoSync(staged_source, repository, check_params=False)
+    if staged_source.parameters.d_source_type not in [
+        "onlinemongodump",
+        "extendedcluster",
+        "stagingpush",
+        "seed",
+    ]:
+        if (
+            staged_source.parameters.d_source_type == "shardedsource"
+            and staged_source.parameters.enable_clustersync
+        ):
+            mongosync_obj = MongoSync(
+                staged_source, repository, check_params=False
+            )
             ret_mongosync, error_mongosync = mongosync_obj.status_mongosync()
             if ret_mongosync:
-                http_code, response, progress_json = mongosync_obj.progress_sync()
-                if int(http_code) == 200 and progress_json["progress"]["state"] == "RUNNING":
+                (
+                    http_code,
+                    response,
+                    progress_json,
+                ) = mongosync_obj.progress_sync()
+                if (
+                    int(http_code) == 200
+                    and progress_json["progress"]["state"] == "RUNNING"
+                ):
                     ret = 1
                 else:
-                    raise UserError(f"Not able to reach Mongosync API. http_code={http_code} , response={response}")
+                    raise UserError(
+                        f"Not able to reach Mongosync API. http_code={http_code} , response={response}"
+                    )
             else:
-                raise UserError(f"Mongosync not running! error={error_mongosync}")
+                raise UserError(
+                    f"Mongosync not running! error={error_mongosync}"
+                )
         else:
             ret = linked.stg_pre_snapsync(staged_source)
     else:
@@ -371,96 +494,161 @@ def staged_pre_snapshot(repository, source_config, staged_source, optional_snaps
 
     if ret == 0:
         if staged_source.parameters.d_source_type == "shardedsource":
-            common.setup_dataset(staged_source, 'Staging', None, "shardedsource")
+            common.setup_dataset(
+                staged_source, "Staging", None, "shardedsource"
+            )
         elif staged_source.parameters.d_source_type == "nonshardedsource":
-            staged_source.parameters.mongos_port = staged_source.parameters.start_portpool
-            common.setup_dataset(staged_source, 'Staging', None, "nonshardedsource")
+            staged_source.parameters.mongos_port = (
+                staged_source.parameters.start_portpool
+            )
+            common.setup_dataset(
+                staged_source, "Staging", None, "nonshardedsource"
+            )
         elif staged_source.parameters.d_source_type == "offlinemongodump":
-            staged_source.parameters.mongos_port = staged_source.parameters.start_portpool
-            linked.setup_dataset_mongodump_offline(staged_source, 'Staging', None, "offlinemongodump")
+            staged_source.parameters.mongos_port = (
+                staged_source.parameters.start_portpool
+            )
+            linked.setup_dataset_mongodump_offline(
+                staged_source, "Staging", None, "offlinemongodump"
+            )
         elif staged_source.parameters.d_source_type == "onlinemongodump":
             cmd = "(ls {}/.delphix/NEWDSOURCEFILE.cfg >> /dev/null 2>&1 && echo yes) || echo no".format(
-                staged_source.parameters.mount_path)
-            res = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
+                staged_source.parameters.mount_path
+            )
+            res = common.execute_bash_cmd(
+                staged_source.staged_connection, cmd, {}
+            )
 
             if res == "yes":
-                logger.info("Its a new dSource as File {}/.delphix/NEWDSOURCEFILE.cfg exists.".format(
-                    staged_source.parameters.mount_path))
+                logger.info(
+                    "Its a new dSource as File {}/.delphix/NEWDSOURCEFILE.cfg exists.".format(
+                        staged_source.parameters.mount_path
+                    )
+                )
                 logger.info("Skipping pre-snapsync workflow")
             else:
-                logger.info("File {}/.delphix/NEWDSOURCEFILE.cfg does not exists.".format(
-                    staged_source.parameters.mount_path))
+                logger.info(
+                    "File {}/.delphix/NEWDSOURCEFILE.cfg does not exists.".format(
+                        staged_source.parameters.mount_path
+                    )
+                )
 
-                staged_source.parameters.mongos_port = staged_source.parameters.start_portpool
-                linked.presync_mongodump_online(staged_source, 'Staging', None, "onlinemongodump")
-        elif staged_source.parameters.d_source_type in ["seed","stagingpush"]:
-            staged_source.parameters.mongos_port = staged_source.parameters.start_portpool
+                staged_source.parameters.mongos_port = (
+                    staged_source.parameters.start_portpool
+                )
+                linked.presync_mongodump_online(
+                    staged_source, "Staging", None, "onlinemongodump"
+                )
+        elif staged_source.parameters.d_source_type in ["seed", "stagingpush"]:
+            staged_source.parameters.mongos_port = (
+                staged_source.parameters.start_portpool
+            )
 
-        if staged_source.parameters.d_source_type not in ["onlinemongodump", "extendedcluster", "stagingpush", "seed"]:
+        if staged_source.parameters.d_source_type not in [
+            "onlinemongodump",
+            "extendedcluster",
+            "stagingpush",
+            "seed",
+        ]:
             # Write backup information
-            cmd = "cat {}".format(staged_source.parameters.backup_metadata_file)
-            src_lastbackup_datetime = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
-            cmd = "echo {} > {}/.delphix/.stg_lastbackup_datetime.txt".format(src_lastbackup_datetime,
-                                                                              staged_source.parameters.mount_path)
-            res = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
+            cmd = "cat {}".format(
+                staged_source.parameters.backup_metadata_file
+            )
+            src_lastbackup_datetime = common.execute_bash_cmd(
+                staged_source.staged_connection, cmd, {}
+            )
+            cmd = "echo {} > {}/.delphix/.stg_lastbackup_datetime.txt".format(
+                src_lastbackup_datetime, staged_source.parameters.mount_path
+            )
+            res = common.execute_bash_cmd(
+                staged_source.staged_connection, cmd, {}
+            )
 
-    #logger.debug("Staging Pre Snapshot - Freeze IO")
-    #common.fsync_lock_sharded_mongo(staged_source, 'Staging')
-    #logger.debug("Staging Pre Snapshot - Freeze IO - done")
+    # logger.debug("Staging Pre Snapshot - Freeze IO")
+    # common.fsync_lock_sharded_mongo(staged_source, 'Staging')
+    # logger.debug("Staging Pre Snapshot - Freeze IO - done")
 
     logger.debug("End of pre snapshot")
     common.add_debug_heading_block("End Staged Pre Snapshot")
     logger.debug(" ")
 
+
 @plugin.linked.post_snapshot()
-def staged_post_snapshot(repository, source_config, staged_source, optional_snapshot_parameters):
+def staged_post_snapshot(
+    repository, source_config, staged_source, optional_snapshot_parameters
+):
     common.add_debug_heading_block("Start Staged Post Snapshot")
-    helpers._record_hook("staging post snapshot",
-                         staged_source.staged_connection)
+    helpers._record_hook(
+        "staging post snapshot", staged_source.staged_connection
+    )
     helpers._set_running(staged_source.staged_connection, staged_source.guid)
     staged_source.mongo_install_path = repository.mongo_install_path
     staged_source.mongo_shell_path = repository.mongo_shell_path
 
     if staged_source.parameters.d_source_type == "extendedcluster":
-        staged_source.parameters.mongo_db_user = staged_source.parameters.src_db_user
-        staged_source.parameters.mongo_db_password = staged_source.parameters.src_db_password
+        staged_source.parameters.mongo_db_user = (
+            staged_source.parameters.src_db_user
+        )
+        staged_source.parameters.mongo_db_password = (
+            staged_source.parameters.src_db_password
+        )
 
-        snapshot_possible_file_path = "{}/{}".format(staged_source.parameters.mount_path,
-                                                     ".delphix/snapshot_not_possible.txt")
-        cmd = "test -f {} && cat {} || echo 'file does not exist.'".format(snapshot_possible_file_path,
-                                                                           snapshot_possible_file_path)
+        snapshot_possible_file_path = "{}/{}".format(
+            staged_source.parameters.mount_path,
+            ".delphix/snapshot_not_possible.txt",
+        )
+        cmd = "test -f {} && cat {} || echo 'file does not exist.'".format(
+            snapshot_possible_file_path, snapshot_possible_file_path
+        )
         res = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
         if res != "file does not exist.":
             cmd = "rm {}".format(snapshot_possible_file_path)
-            res_rm = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
-            errorMsg = "Cannot perform Snapshot as the host {} is in state {}".format(
-                res.split("  ")[1].split(" : ")[1], res.split("  ")[2].split(" : ")[1])
+            res_rm = common.execute_bash_cmd(
+                staged_source.staged_connection, cmd, {}
+            )
+            errorMsg = (
+                "Cannot perform Snapshot as the host {} is in state {}".format(
+                    res.split("  ")[1].split(" : ")[1],
+                    res.split("  ")[2].split(" : ")[1],
+                )
+            )
             logger.info(errorMsg)
             raise UserError(errorMsg)
 
     elif staged_source.parameters.d_source_type == "stagingpush":
-        staged_source.parameters.mongo_db_user = staged_source.parameters.src_db_user
-        staged_source.parameters.mongo_db_password = staged_source.parameters.src_db_password
+        staged_source.parameters.mongo_db_user = (
+            staged_source.parameters.src_db_user
+        )
+        staged_source.parameters.mongo_db_password = (
+            staged_source.parameters.src_db_password
+        )
 
     if staged_source.parameters.d_source_type == "nonshardedsource":
-        staged_source.parameters.mongos_port = staged_source.parameters.start_portpool
+        staged_source.parameters.mongos_port = (
+            staged_source.parameters.start_portpool
+        )
 
     logger.info("In Post snapshot...")
-    logger.debug("len shard_backupfiles: {}".format(len(staged_source.parameters.shard_backupfiles)))
+    logger.debug(
+        "len shard_backupfiles: {}".format(
+            len(staged_source.parameters.shard_backupfiles)
+        )
+    )
     script_content = 'echo "$(uname):$(uname -p):$(cat /etc/*-release)"'
-    res = common.execute_bash_cmd(staged_source.staged_connection, script_content, {})
+    res = common.execute_bash_cmd(
+        staged_source.staged_connection, script_content, {}
+    )
     output = res.strip().split(":")
     logger.debug("output = {}".format(output))
 
-    if staged_source.parameters.d_source_type in ["shardedsource",
-                                                  "offlinemongodump",
-                                                  "nonshardedsource"] \
-            and staged_source.parameters.backup_metadata_file:
+    if (
+        staged_source.parameters.d_source_type
+        in ["shardedsource", "offlinemongodump", "nonshardedsource"]
+        and staged_source.parameters.backup_metadata_file
+    ):
         cmd = "cat {}".format(staged_source.parameters.backup_metadata_file)
         lastbackup_datetime = common.execute_bash_cmd(
-            staged_source.staged_connection,
-            cmd,
-            {}
+            staged_source.staged_connection, cmd, {}
         )
         dateTimeObj = datetime.strptime(lastbackup_datetime, "%m%d%Y_%H%M%S")
     else:
@@ -473,7 +661,9 @@ def staged_post_snapshot(repository, source_config, staged_source, optional_snap
     snapshot.timestamp = timestampStr
     snapshot.architecture = output[1]
     snapshot.os_type = output[0]
-    snapshot.os_version = re.search('.*"VERSION="([\d\.]+).*', output[2]).group(1)
+    snapshot.os_version = re.search(
+        '.*"VERSION="([\d\.]+).*', output[2]
+    ).group(1)
     snapshot.mongo_version = repository.version
     snapshot.delphix_mount = staged_source.parameters.mount_path
     snapshot.storage_engine = staged_source.parameters.storage_engine
@@ -485,21 +675,23 @@ def staged_post_snapshot(repository, source_config, staged_source, optional_snap
     snapshot.append_db_path = "N/A"
     snapshot.mongo_db_user = staged_source.parameters.mongo_db_user
     snapshot.mongo_db_password = staged_source.parameters.mongo_db_password
-    #snapshot.source_sharded = staged_source.parameters.source_sharded
+    # snapshot.source_sharded = staged_source.parameters.source_sharded
     if staged_source.parameters.d_source_type == "shardedsource":
         snapshot.source_sharded = True
     else:
         snapshot.source_sharded = False
 
     if staged_source.parameters.enable_clustersync:
-        cmd = "cat {}/.delphix/.stg_config.txt " \
-              "|grep SHARD_COUNT|awk -F: '{{ print $2 }}'".format(
+        cmd = (
+            "cat {}/.delphix/.stg_config.txt "
+            "|grep SHARD_COUNT|awk -F: '{{ print $2 }}'".format(
                 staged_source.parameters.mount_path
-                )
+            )
+        )
         res = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
         snapshot.shard_count = int(res.strip())
     else:
-        snapshot.shard_count = (len(staged_source.parameters.shard_backupfiles))
+        snapshot.shard_count = len(staged_source.parameters.shard_backupfiles)
 
     snapshot.source_encrypted = staged_source.parameters.source_encrypted
     snapshot.cluster_auth_mode = staged_source.parameters.cluster_auth_mode
@@ -507,22 +699,23 @@ def staged_post_snapshot(repository, source_config, staged_source, optional_snap
     snapshot.encryption_keyfile = ".delphix/.dlpx_enckeyfile"
     snapshot.kmip_params = staged_source.parameters.kmip_params
 
-    #logger.debug("Staging Post Snapshot - Unfreeze IO")
-    #common.fsync_unlock_sharded_mongo(staged_source, 'Staging')
-    #logger.debug("Staging Post Snapshot - Unfreeze IO - done")
+    # logger.debug("Staging Post Snapshot - Unfreeze IO")
+    # common.fsync_unlock_sharded_mongo(staged_source, 'Staging')
+    # logger.debug("Staging Post Snapshot - Unfreeze IO - done")
 
     mask_snap = copy.deepcopy(snapshot)
-    mask_snap.mongo_db_password = 'xxxxxxxxxx'
+    mask_snap.mongo_db_password = "xxxxxxxxxx"
     logger.debug("snapshot schema: {}".format(mask_snap))
 
-
     cmd = "(ls {}/.delphix/NEWDSOURCEFILE.cfg >> /dev/null 2>&1 && echo yes) || echo no".format(
-        staged_source.parameters.mount_path)
+        staged_source.parameters.mount_path
+    )
     res = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
 
     if res == "yes":
         cmd = "(rm -f {}/.delphix/NEWDSOURCEFILE.cfg >> /dev/null 2>&1 && echo yes) || echo no".format(
-            staged_source.parameters.mount_path)
+            staged_source.parameters.mount_path
+        )
         res = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
 
     common.add_debug_heading_block("End Staged Post Snapshot")
@@ -540,34 +733,46 @@ def start_staging(repository, source_config, staged_source):
     staged_source.mongo_shell_path = repository.mongo_shell_path
 
     if staged_source.parameters.d_source_type == "extendedcluster":
-        staged_source.parameters.mongos_port = staged_source.parameters.start_portpool
-        staged_source.parameters.mongo_db_user = staged_source.parameters.src_db_user
-        staged_source.parameters.mongo_db_password = staged_source.parameters.src_db_password
-        linked.add_staging_to_primary(staged_source, 'Staging', "extendedcluster")
+        staged_source.parameters.mongos_port = (
+            staged_source.parameters.start_portpool
+        )
+        staged_source.parameters.mongo_db_user = (
+            staged_source.parameters.src_db_user
+        )
+        staged_source.parameters.mongo_db_password = (
+            staged_source.parameters.src_db_password
+        )
+        linked.add_staging_to_primary(
+            staged_source, "Staging", "extendedcluster"
+        )
     elif staged_source.parameters.d_source_type == "stagingpush":
         logger.info("No action needed for stagingpsuh")
     else:
-
         if staged_source.parameters.d_source_type == "nonshardedsource":
-            staged_source.parameters.mongos_port = staged_source.parameters.start_portpool
+            staged_source.parameters.mongos_port = (
+                staged_source.parameters.start_portpool
+            )
 
-        common.start_sharded_mongo('Staging', staged_source)
+        common.start_sharded_mongo("Staging", staged_source)
 
         if staged_source.parameters.enable_clustersync:
             # NOTE:
             # In case of Clustersync, once database is started, start the
             # mongosync process and resume the sync.
-            mongosync_obj = MongoSync(staged_source, repository, check_params=False)
+            mongosync_obj = MongoSync(
+                staged_source, repository, check_params=False
+            )
 
             # start mongosync process because it was killed in the "disable".
             logger.info("Starting mongosync process.")
             mongosync_obj.start_mongosync(create_conf=False)
 
             # No need to wait for canCommit:true because it is idempotent
-            logger.info("Resuming synchronisation between source and staging "
-                        "databases.")
+            logger.info(
+                "Resuming synchronisation between source and staging "
+                "databases."
+            )
             mongosync_obj.resume_sync()
-
 
     logger.debug("End of start staging")
     common.add_debug_heading_block("End Staged - Start Staging")
@@ -584,25 +789,36 @@ def stop_staging(repository, source_config, staged_source):
     staged_source.mongo_shell_path = repository.mongo_shell_path
 
     if staged_source.parameters.d_source_type == "extendedcluster":
-        staged_source.parameters.mongos_port = staged_source.parameters.start_portpool
-        staged_source.parameters.mongo_db_user = staged_source.parameters.src_db_user
-        staged_source.parameters.mongo_db_password = staged_source.parameters.src_db_password
-        linked.drop_staging_from_primary(staged_source, 'Staging', "extendedcluster")
+        staged_source.parameters.mongos_port = (
+            staged_source.parameters.start_portpool
+        )
+        staged_source.parameters.mongo_db_user = (
+            staged_source.parameters.src_db_user
+        )
+        staged_source.parameters.mongo_db_password = (
+            staged_source.parameters.src_db_password
+        )
+        linked.drop_staging_from_primary(
+            staged_source, "Staging", "extendedcluster"
+        )
     elif staged_source.parameters.d_source_type == "stagingpush":
         logger.info("No action needed for stagingpsuh")
     else:
-
         if staged_source.parameters.d_source_type == "nonshardedsource":
-            staged_source.parameters.mongos_port = staged_source.parameters.start_portpool
+            staged_source.parameters.mongos_port = (
+                staged_source.parameters.start_portpool
+            )
 
         if staged_source.parameters.enable_clustersync:
             # NOTE:
             # For Clustersync, pause mongosync and then kill the
             # mongosync process
-            mongosync_obj = MongoSync(staged_source, repository, check_params=False)
+            mongosync_obj = MongoSync(
+                staged_source, repository, check_params=False
+            )
             mongosync_obj.stop_mongosync(force_stop=False)
 
-        common.stop_sharded_mongo('Staging', staged_source)
+        common.stop_sharded_mongo("Staging", staged_source)
 
     logger.debug("End of stop staging")
     common.add_debug_heading_block("End Staged  - Stop Staging")
@@ -623,14 +839,27 @@ def staged_status(staged_source, repository, source_config):
     staged_source.mongo_install_path = repository.mongo_install_path
     staged_source.mongo_shell_path = repository.mongo_shell_path
 
-    if staged_source.parameters.d_source_type in ["extendedcluster","stagingpush"] :
-        staged_source.parameters.mongo_db_user = staged_source.parameters.src_db_user
-        staged_source.parameters.mongo_db_password = staged_source.parameters.src_db_password
+    if staged_source.parameters.d_source_type in [
+        "extendedcluster",
+        "stagingpush",
+    ]:
+        staged_source.parameters.mongo_db_user = (
+            staged_source.parameters.src_db_user
+        )
+        staged_source.parameters.mongo_db_password = (
+            staged_source.parameters.src_db_password
+        )
 
-    if staged_source.parameters.d_source_type in ["nonshardedsource","extendedcluster","stagingpush"] :
-        staged_source.parameters.mongos_port = staged_source.parameters.start_portpool
+    if staged_source.parameters.d_source_type in [
+        "nonshardedsource",
+        "extendedcluster",
+        "stagingpush",
+    ]:
+        staged_source.parameters.mongos_port = (
+            staged_source.parameters.start_portpool
+        )
 
-    get_status = common.get_status_sharded_mongo("Staging",staged_source)
+    get_status = common.get_status_sharded_mongo("Staging", staged_source)
     logger.debug("Staging : get_status : {}".format(get_status))
     if get_status == 0:
         return Status.ACTIVE
@@ -652,7 +881,7 @@ def mount_specification(repository, virtual_source):
     nodes = []
     nodes.append(virtual_source.connection.environment.reference)
     for node in virtual_source.parameters.additional_nodes:
-        nodes.append(node['environment'])
+        nodes.append(node["environment"])
     totalnodes = len(nodes)
     logger.info("Total Nodes : {}".format(totalnodes))
     logger.info("Nodes = {}".format(nodes))
@@ -698,20 +927,33 @@ def configure(virtual_source, repository, snapshot):
     logger.info("snapshot:{}".format(snapshot))
     logger.info("d_source_type:{}".format(snapshot.d_source_type))
     d_source_type = snapshot.d_source_type
-    if d_source_type in  ["nonshardedsource","offlinemongodump","onlinemongodump","seed","stagingpush","extendedcluster"]:
-        virtual_source.parameters.mongos_port = virtual_source.parameters.start_portpool
-    common.setup_dataset(virtual_source, 'Virtual', snapshot, d_source_type)
+    if d_source_type in [
+        "nonshardedsource",
+        "offlinemongodump",
+        "onlinemongodump",
+        "seed",
+        "stagingpush",
+        "extendedcluster",
+    ]:
+        virtual_source.parameters.mongos_port = (
+            virtual_source.parameters.start_portpool
+        )
+    common.setup_dataset(virtual_source, "Virtual", snapshot, d_source_type)
 
     logger.debug("End of virtual configure")
     logger.debug(" ")
 
     discovery_type = "Manual"
-    pretty_name = "{}-{}-{}".format(d_source_type, virtual_source.parameters.mount_path, virtual_source.parameters.start_portpool)
+    pretty_name = "{}-{}-{}".format(
+        d_source_type,
+        virtual_source.parameters.mount_path,
+        virtual_source.parameters.start_portpool,
+    )
 
     return SourceConfigDefinition(
-        discovery_type=discovery_type,
-        pretty_name=pretty_name
+        discovery_type=discovery_type, pretty_name=pretty_name
     )
+
 
 @plugin.virtual.pre_snapshot()
 def pre_snapshot(repository, source_config, virtual_source):
@@ -732,9 +974,9 @@ def pre_snapshot(repository, source_config, virtual_source):
     # Get all nodes information
 
     # Freeze IO
-    #logger.debug("Virtual Pre Snapshot - Freeze IO")
-    #common.fsync_lock_sharded_mongo(virtual_source, 'Virtual')
-    #logger.debug("Virtual Pre Snapshot - Freeze IO - done")
+    # logger.debug("Virtual Pre Snapshot - Freeze IO")
+    # common.fsync_lock_sharded_mongo(virtual_source, 'Virtual')
+    # logger.debug("Virtual Pre Snapshot - Freeze IO - done")
 
     virtual_source.mongo_install_path = repository.mongo_install_path
     virtual_source.mongo_shell_path = repository.mongo_shell_path
@@ -753,8 +995,7 @@ def post_snapshot(repository, source_config, virtual_source):
 
     # MongoDB object creation
     resource = Resource(
-        connection=virtual_source.connection,
-        hidden_directory=""
+        connection=virtual_source.connection, hidden_directory=""
     )
     virtual_source.mongodb_obj = MongoDB(
         repository,
@@ -780,8 +1021,12 @@ def post_snapshot(repository, source_config, virtual_source):
     shard_count = 0
 
     if d_source_type == "shardedsource":
-        cmd = "cat {}|grep SHARD_COUNT|awk -F: '{{ print $2 }}'".format(cfgfile)
-        shard_count = common.execute_bash_cmd(virtual_source.connection, cmd, {})
+        cmd = "cat {}|grep SHARD_COUNT|awk -F: '{{ print $2 }}'".format(
+            cfgfile
+        )
+        shard_count = common.execute_bash_cmd(
+            virtual_source.connection, cmd, {}
+        )
         if not isinstance(shard_count, int):
             shard_count = int(shard_count)
 
@@ -791,7 +1036,6 @@ def post_snapshot(repository, source_config, virtual_source):
         # So check if this database exist and then remove it.
         common.check_and_remove_clustersync_internal_database(virtual_source)
 
-
     cmd = "cat {}|grep DSOURCE_TYPE|awk -F: '{{ print $2 }}'".format(cfgfile)
     d_source_type = common.execute_bash_cmd(virtual_source.connection, cmd, {})
 
@@ -800,11 +1044,19 @@ def post_snapshot(repository, source_config, virtual_source):
     else:
         source_sharded = False
 
-    cmd = "cat {}|grep SOURCE_ENCRYPTED|awk -F: '{{ print $2 }}'".format(cfgfile)
-    source_encrypted = common.execute_bash_cmd(virtual_source.connection, cmd, {})
+    cmd = "cat {}|grep SOURCE_ENCRYPTED|awk -F: '{{ print $2 }}'".format(
+        cfgfile
+    )
+    source_encrypted = common.execute_bash_cmd(
+        virtual_source.connection, cmd, {}
+    )
 
-    cmd = "cat {}|grep ENCRYPTION_METHOD|awk -F: '{{ print $2 }}'".format(cfgfile)
-    encryption_method = common.execute_bash_cmd(virtual_source.connection, cmd, {})
+    cmd = "cat {}|grep ENCRYPTION_METHOD|awk -F: '{{ print $2 }}'".format(
+        cfgfile
+    )
+    encryption_method = common.execute_bash_cmd(
+        virtual_source.connection, cmd, {}
+    )
 
     if encryption_method == "KeyFile":
         encryption_keyfile = ".delphix/.dlpx_enckeyfile"
@@ -827,7 +1079,7 @@ def post_snapshot(repository, source_config, virtual_source):
     snapshot.timestamp = timestampStr
     snapshot.architecture = output[1]
     snapshot.os_type = output[0]
-    snapshot.os_version = re.sub(r".*\s(\d)", r'\1', output[2]).split(" ")[0]
+    snapshot.os_version = re.sub(r".*\s(\d)", r"\1", output[2]).split(" ")[0]
 
     snapshot.mongo_version = repository.version
     snapshot.delphix_mount = virtual_source.parameters.mount_path
@@ -847,7 +1099,11 @@ def post_snapshot(repository, source_config, virtual_source):
 
     logger.debug("source_sharded = {}".format(source_sharded))
     # logger.debug("source_sharded = {}".format(ast.literal_eval(source_sharded)))
-    if source_sharded == 1 or source_sharded == True or source_sharded == "True":
+    if (
+        source_sharded == 1
+        or source_sharded == True
+        or source_sharded == "True"
+    ):
         snapshot.source_sharded = True
     else:
         snapshot.source_sharded = False
@@ -856,7 +1112,11 @@ def post_snapshot(repository, source_config, virtual_source):
 
     logger.debug("source_encrypted = {}".format(source_encrypted))
     # logger.debug("source_encrypted = {}".format(ast.literal_eval(source_encrypted)))
-    if source_encrypted == 1 or source_encrypted == True or source_encrypted == "True":
+    if (
+        source_encrypted == 1
+        or source_encrypted == True
+        or source_encrypted == "True"
+    ):
         snapshot.source_encrypted = True
     else:
         snapshot.source_encrypted = False
@@ -867,12 +1127,12 @@ def post_snapshot(repository, source_config, virtual_source):
     snapshot.kmip_params = []
 
     # Unlock Freeze
-    #logger.debug("Virtual Post Snapshot - Unfreeze IO")
-    #common.fsync_unlock_sharded_mongo(virtual_source, 'Virtual')
-    #logger.debug("Virtual Post Snapshot - Unfreeze IO - done")
+    # logger.debug("Virtual Post Snapshot - Unfreeze IO")
+    # common.fsync_unlock_sharded_mongo(virtual_source, 'Virtual')
+    # logger.debug("Virtual Post Snapshot - Unfreeze IO - done")
 
     mask_snap = copy.deepcopy(snapshot)
-    mask_snap.mongo_db_password = 'xxxxxxxxxx'
+    mask_snap.mongo_db_password = "xxxxxxxxxx"
     logger.debug("snapshot schema: {}".format(mask_snap))
     common.add_debug_heading_block("End Virtual Post Snapshot")
     return snapshot
@@ -887,7 +1147,7 @@ def reconfigure(snapshot, repository, source_config, virtual_source):
     virtual_source.mongo_install_path = repository.mongo_install_path
     virtual_source.mongo_shell_path = repository.mongo_shell_path
 
-    common.start_sharded_mongo('Virtual', virtual_source)
+    common.start_sharded_mongo("Virtual", virtual_source)
 
     return source_config
 
@@ -900,7 +1160,7 @@ def start(repository, source_config, virtual_source):
     virtual_source.mongo_install_path = repository.mongo_install_path
     virtual_source.mongo_shell_path = repository.mongo_shell_path
 
-    common.start_sharded_mongo('Virtual', virtual_source)
+    common.start_sharded_mongo("Virtual", virtual_source)
 
     logger.debug("End of start virtual")
     logger.debug(" ")
@@ -914,7 +1174,7 @@ def stop(repository, source_config, virtual_source):
     virtual_source.mongo_install_path = repository.mongo_install_path
     virtual_source.mongo_shell_path = repository.mongo_shell_path
 
-    common.stop_sharded_mongo('Virtual', virtual_source)
+    common.stop_sharded_mongo("Virtual", virtual_source)
 
     logger.debug("End of stop virtual")
     logger.debug(" ")
@@ -942,6 +1202,7 @@ def status(repository, source_config, virtual_source):
     else:
         return Status.INACTIVE
 
+
 @plugin.virtual.unconfigure()
 def unconfigure(repository, source_config, virtual_source):
     helpers._record_hook("virtual unconfigure", virtual_source.connection)
@@ -949,8 +1210,8 @@ def unconfigure(repository, source_config, virtual_source):
 
     virtual_source.mongo_install_path = repository.mongo_install_path
     virtual_source.mongo_shell_path = repository.mongo_shell_path
-    
-    common.stop_sharded_mongo('Virtual', virtual_source)
+
+    common.stop_sharded_mongo("Virtual", virtual_source)
 
 
 # @plugin.linked.source_size()

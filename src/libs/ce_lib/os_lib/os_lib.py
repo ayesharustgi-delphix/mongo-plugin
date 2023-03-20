@@ -936,3 +936,29 @@ class OSLib:
         )
         return cmd_res.stdout
 
+    def is_file_tar_or_gz(self, tarfile_path: str) -> bool:
+        """
+        Check if File is tar / tar.gz.
+
+        :param tarfile_path: Path of tarfile
+        :type tarfile_path: ``str``
+
+        :raises: ``CommandFailed, if command OS command returns non zero status``
+        :return: True if given file is .tar / .tar.gz , False otherwise
+        :rtype: ``bool``
+        """
+        command = f"tar -tvf {tarfile_path} | head -1"
+
+        cmd_res = self._resource.execute_bash(
+            cmd=command, raise_exception=False
+        )
+        self._resource.check_and_raise_exception(
+            cmd_res, command, plugin_error.CommandFailed
+        )
+
+        err_if_not_tar = "tar: This does not look like a tar archive"
+
+        if err_if_not_tar.lower().strip() in cmd_res.stderr.lower().strip():
+            return False
+
+        return True

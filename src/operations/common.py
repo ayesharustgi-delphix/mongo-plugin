@@ -3951,7 +3951,8 @@ def check_input_parameters(source_obj, is_dsource=False):
             "nonshardedsource",
         ]
 
-        if source_obj.parameters.d_source_type in dsource_types:
+        if source_obj.parameters.d_source_type in dsource_types \
+                and not source_obj.parameters.enable_clustersync:
             # Check if backup metadata file path is provided in input
             if not source_obj.parameters.backup_metadata_file:
                 raise UserError(
@@ -3997,7 +3998,8 @@ def check_input_parameters(source_obj, is_dsource=False):
                 )
 
         # Checking Shard backup files
-        if source_obj.parameters.d_source_type == "shardedsource":
+        if source_obj.parameters.d_source_type == "shardedsource" \
+                and not source_obj.parameters.enable_clustersync:
             if not source_obj.parameters.shard_backupfiles:
                 raise UserError(
                     "Shard Backup files must be provided, "

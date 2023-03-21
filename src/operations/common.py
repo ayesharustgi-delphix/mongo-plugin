@@ -1195,7 +1195,7 @@ def stop_sharded_mongo(dataset_type, sourceobj):
             )
             res = execute_bash_cmd(mongod_conn, cmd, {})
             if int(res) == 1:
-                cmd = "ps -ef|grep mongo|grep {}|grep {}|grep {}|grep -v grep|awk '{{ print \"kill \"$2 }}'|sh".format(
+                cmd = "ps -ef|grep mongo|grep {}|grep {}|grep {}|grep -v grep|awk '{{ print \"kill -9 \"$2 }}'|sh".format(
                     mount_path, mongod_dirname, mongod_port
                 )
                 res = execute_bash_cmd(mongod_conn, cmd, {})

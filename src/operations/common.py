@@ -470,13 +470,26 @@ def get_shard_host(shard_config_list, dirname):
 
 
 def get_node_conn(sourceobj, host, dataset_type="Virtual"):
-    node_reference = host.split(":")[0]
-    user_reference = host.split(":")[1]
+    # NOTE: CE-142
+    # In delphix replication setup, node reference and user reference could be
+    # different on primary and secondary.
+    # Hence, instead of reading node reference(UNIX_HOST_ENVIRONMENT-AA)
+    # and user reference(HOST_USER-AA) from .stg_dsourcecfg.txt, leverage it
+    # from sourceobj itself.
+    # This fixes the issue of missing node and user
+    # references on secondary after a failover.
+
+    # node_reference = host.split(":")[0]
+    # user_reference = host.split(":")[1]
 
     if dataset_type == "Virtual":
         node_host = sourceobj.connection.environment.host
+        node_reference = sourceobj.connection.environment.reference
+        user_reference = sourceobj.connection.user.reference
     elif dataset_type == "Staging":
         node_host = sourceobj.staged_connection.environment.host
+        node_reference = sourceobj.staged_connection.environment.reference
+        user_reference = sourceobj.staged_connection.user.reference
 
     try:
         # node_host:
@@ -3938,7 +3951,8 @@ def check_input_parameters(source_obj, is_dsource=False):
             "nonshardedsource",
         ]
 
-        if source_obj.parameters.d_source_type in dsource_types:
+        if source_obj.parameters.d_source_type in dsource_types \
+                and not source_obj.parameters.enable_clustersync:
             # Check if backup metadata file path is provided in input
             if not source_obj.parameters.backup_metadata_file:
                 raise UserError(
@@ -3984,7 +3998,8 @@ def check_input_parameters(source_obj, is_dsource=False):
                 )
 
         # Checking Shard backup files
-        if source_obj.parameters.d_source_type == "shardedsource":
+        if source_obj.parameters.d_source_type == "shardedsource" \
+                and not source_obj.parameters.enable_clustersync:
             if not source_obj.parameters.shard_backupfiles:
                 raise UserError(
                     "Shard Backup files must be provided, "

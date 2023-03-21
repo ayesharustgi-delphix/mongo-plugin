@@ -911,6 +911,19 @@ def configure(virtual_source, repository, snapshot):
     virtual_source.mongo_install_path = repository.mongo_install_path
     virtual_source.mongo_shell_path = repository.mongo_shell_path
 
+    # MongoDB object creation
+    resource = Resource(
+        connection=virtual_source.connection,
+        hidden_directory=""
+    )
+    virtual_source.mongodb_obj = MongoDB(
+        repository,
+        resource,
+    )
+
+    # OsLib object creation
+    virtual_source.os_lib_obj = OSLib(resource=resource)
+
     logger.info("snapshot:{}".format(snapshot))
     logger.info("d_source_type:{}".format(snapshot.d_source_type))
     d_source_type = snapshot.d_source_type

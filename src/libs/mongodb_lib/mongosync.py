@@ -223,8 +223,7 @@ class MongoSync:
         )
         present_roles = {x["role"] for x in user_roles["roles"]}
         mandatory_roles = MongoSyncConstants.source_user_mandatory_roles
-        if ("root" not in present_roles and
-                len(mandatory_roles-present_roles) > 0):
+        if len(mandatory_roles-present_roles) > 0:
             error_string = f"User privilege invalid. " \
                            f"Required roles are {mandatory_roles} while " \
                            f"roles present are {present_roles}"

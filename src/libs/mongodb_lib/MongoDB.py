@@ -220,7 +220,6 @@ class MongoDB:
 
         return list(database_dict["name"] for database_dict in res["databases"])
 
-
     def db_exists(
             self,
             host_conn_string: str,

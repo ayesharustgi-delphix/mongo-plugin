@@ -73,6 +73,10 @@ class MongoSync:
         )
         self.logger = self.resource.logger
 
+        if not self.os_lib_obj.check_file_dir_exists(
+                path=self.get_mongosync_data_dir(), is_directory=True):
+            self.os_lib_obj.make_directory(self.get_mongosync_data_dir())
+
         if check_params:
             self.check_input_parameters()
 
@@ -230,6 +234,20 @@ class MongoSync:
 
         # TODO: verify if source is sharded and not replicaset.
 
+    def get_mongosync_data_dir(self) -> str:
+        """
+        Returns mongosync reserved directory inside .delphix.
+
+        :return: Path to .delphix/mongosync
+        :rtype: ``str``
+        """
+        mongosync_dir = os.path.join(self.staged_source.parameters.mount_path,
+                                 ".delphix", "mongosync")
+        if self.mongosync_id:
+            mongosync_dir = f"{mongosync_dir}_{self.mongosync_id}"
+
+        return mongosync_dir
+
     def get_mongosync_conf_path(self) -> str:
         """
         Generates and returns path of mongosync.conf
@@ -237,8 +255,7 @@ class MongoSync:
         :return: Path for mongosync.conf
         :rtype: ``str``
         """
-        conf_path = os.path.join(self.staged_source.parameters.mount_path,
-                                 ".delphix",
+        conf_path = os.path.join(self.get_mongosync_data_dir(),
                                  "mongosync.conf")
         if self.mongosync_id:
             conf_path = conf_path.replace(".conf",
@@ -269,7 +286,7 @@ class MongoSync:
         conf_data = MongoSyncConstants.mongosync_conf_data.format(
             src_conn_string=src_conn_string,
             dst_conn_string=dst_conn_string,
-            mongosync_log_path=conf_path.replace(".conf", ".log"),
+            mongosync_log_path=os.path.dirname(conf_path),
             mongosync_port=self.staged_source.parameters.mongosync_port
         )
         if self.mongosync_id:

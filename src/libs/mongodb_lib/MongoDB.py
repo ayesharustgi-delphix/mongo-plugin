@@ -282,6 +282,34 @@ class MongoDB:
             )
         )
 
+    def fsync_dump(self,
+                   host_conn_string: str,
+                   username: str,
+                   password: str,
+                   ):
+        """
+        Runs fsync command on database and forces it to dump all in memory
+        data to disk.
+
+        :param host_conn_string: Connection string of database
+        :type host_conn_string: ``str``
+        :param username: Username of database
+        :type username: ``str``
+        :param password: Password of database
+        :type password: ``str``
+
+        :return: None
+        :rtype: ``None``
+        :raises:
+            Exception: stdout/stderr
+        """
+        self.run_mongo_shell_command(
+            host_conn_string=host_conn_string,
+            username=username,
+            password=password,
+            cmd=MongoDBLibConstants.FSYNC_DUMP
+        )
+
     @staticmethod
     def get_standard_conn_string(host_conn_string: str, username: str,
                                  password: str, database: str = "",

@@ -11,6 +11,7 @@ class MongoDBLibConstants:
     SHOW_DBS = "JSON.stringify(db.adminCommand({listDatabases: 1, nameOnly: true}))"
     DROP_DATABASE = "JSON.stringify(db.getSiblingDB('{db_name}')" \
                     ".dropDatabase())"
+    FSYNC_DUMP = "EJSON.stringify(db.runCommand({fsync: 1, lock: false}))"
 
     RUN_MONGODB_CMD = '{mongo_shell_path} "{host_details}" --quiet --eval "{cmd}"'
 

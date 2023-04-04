@@ -479,17 +479,20 @@ def get_shard_port(shard_config_list, dirname):
 def get_shard_host(shard_config_list, dirname, sourceobj, dataset_type="Virtual"):
     for shard_config in shard_config_list:
         if shard_config["dirname"] == dirname:
-            if shard_config["node_num"] == 0:
-                if dataset_type == "Virtual":
-                    node_reference = sourceobj.connection.environment.reference
-                    user_reference = sourceobj.connection.user.reference
+            if "node_num" in shard_config.keys():
+                if shard_config["node_num"] == 0:
+                    if dataset_type == "Virtual":
+                        node_reference = sourceobj.connection.environment.reference
+                        user_reference = sourceobj.connection.user.reference
+                    else:
+                        node_reference = sourceobj.staged_connection.environment.reference
+                        user_reference = sourceobj.staged_connection.user.reference
                 else:
-                    node_reference = sourceobj.staged_connection.environment.reference
-                    user_reference = sourceobj.staged_connection.user.reference
+                    if dataset_type == "Virtual":
+                        node_reference = sourceobj.parameters.additional_nodes[shard_config["node_num"]-1]["environment"]
+                        user_reference = sourceobj.parameters.additional_nodes[shard_config["node_num"]-1]["environment_user"]
             else:
-                if dataset_type == "Virtual":
-                    node_reference = sourceobj.parameters.additional_nodes[shard_config["node_num"]-1]["environment"]
-                    user_reference = sourceobj.parameters.additional_nodes[shard_config["node_num"]-1]["environment_user"]
+                return shard_config["node"]
             return f"{node_reference}:{user_reference}"
 
 

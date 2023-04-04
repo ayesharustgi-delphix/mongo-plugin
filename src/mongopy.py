@@ -4,6 +4,7 @@
 from __future__ import print_function
 
 import sys, os
+import time
 
 sys.path.append(
     os.path.join(os.getcwd() if sys.path[0] == "" else sys.path[0], "libs")
@@ -479,6 +480,25 @@ def staged_pre_snapshot(
                     and progress_json["progress"]["state"] == "RUNNING"
                 ):
                     ret = 1
+                    logger.info("Pausing Mongosync....")
+                    # Addition of pause and fsync to handle CE-227
+                    # IncompleteTransactionHistory error. The pause helps in
+                    # stopping all write transactions on staging host while
+                    # fsync forces the mongod server to dump all inmemory
+                    # data to disk so that backup with snapshots are usable.
+                    mongosync_obj.pause_sync()
+                    time.sleep(30)
+                    resource_obj = Resource(
+                        connection=staged_source.staged_connection,
+                        hidden_directory="")
+                    mongo_obj = MongoDB(repository, resource_obj)
+                    mongo_obj.fsync_dump(
+                        host_conn_string=f"{staged_source.parameters.mongo_host}:"
+                                         f"{staged_source.parameters.mongos_port}",
+                        username=staged_source.parameters.mongo_db_user,
+                        password=staged_source.parameters.mongo_db_password
+                    )
+                    time.sleep(30)
                 else:
                     raise UserError(
                         f"Not able to reach Mongosync API. http_code={http_code} , response={response}"
@@ -719,7 +739,25 @@ def staged_post_snapshot(
         res = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
 
     common.add_debug_heading_block("End Staged Post Snapshot")
-    # ADD start Balancer
+    # Resuming mongosync if cluster to cluster sync is enabled after
+    # doing pause sync and snapshot.
+    if staged_source.parameters.enable_clustersync:
+        mongosync_obj = MongoSync(staged_source=staged_source,
+                                  repository=repository,
+                                  check_params=False)
+        ret_mongosync, err = mongosync_obj.status_mongosync()
+        if ret_mongosync:
+            http_code, _, response_json = mongosync_obj.progress_sync()
+            if int(http_code) == 200 and response_json["progress"]["state"] == "PAUSED":
+                mongosync_obj.resume_sync()
+                time.sleep(30)
+                http_code, _, response_json = mongosync_obj.progress_sync()
+                if int(http_code) == 200 and response_json["progress"][
+                    "state"] != "RUNNING":
+                    logger.debug("Did not get RUNNING state after resume!")
+            else:
+                logger.debug(f"Cannot resume! Current state is not PAUSED, but {response_json['progress']['state']}")
+
     return snapshot
 
 

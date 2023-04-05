@@ -2,6 +2,7 @@ import json
 
 from mongodb_lib.constants import MongoDBLibConstants
 from ce_lib import helpers
+import urllib.parse
 
 
 class MongoDB:
@@ -337,13 +338,8 @@ class MongoDB:
         :return: Standard connection string
         :rtype: ``str``
         """
-        percent_encoding_dict = MongoDBLibConstants.STANDARD_CONN_STRING_ENCODING
-        encoded_username = "".join(
-            [percent_encoding_dict[s] if s in percent_encoding_dict else s for s
-             in username])
-        encoded_password = "".join(
-            [percent_encoding_dict[s] if s in percent_encoding_dict else s for s
-             in password])
+        encoded_username = urllib.parse.quote(username)
+        encoded_password = urllib.parse.quote(password)
 
         host_param_dict = helpers.parse_shell_params(host_conn_string)
 

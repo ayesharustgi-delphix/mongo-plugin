@@ -17,14 +17,6 @@ class MongoDBLibConstants:
 
     CLUSTERSYNC_RESERVED_DATABASE = "mongosync_reserved_for_internal_use"
 
-    STANDARD_CONN_STRING_ENCODING = {":": "%3A",
-                                "/": "%2F",
-                                "?": "%3F",
-                                "#": "%23",
-                                "[": "%5B",
-                                "]": "%5D",
-                                "@": "%40"
-                                     }
     #standard_conn_string_format = "mongodb://{username}:{password}@{host_conn_string}?{additional_auth_params}/{database}"
     STANDARD_CONN_STRING_FORMAT = "mongodb://{username}:{password}@{host_conn_string}/{database}?{additional_auth_params}"
 

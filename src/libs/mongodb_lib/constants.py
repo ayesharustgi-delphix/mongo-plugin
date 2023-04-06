@@ -17,7 +17,7 @@ class MongoDBLibConstants:
 
     CLUSTERSYNC_RESERVED_DATABASE = "mongosync_reserved_for_internal_use"
 
-    #standard_conn_string_format = "mongodb://{username}:{password}@{host_conn_string}?{additional_auth_params}/{database}"
+    
     STANDARD_CONN_STRING_FORMAT = "mongodb://{username}:{password}@{host_conn_string}/{database}?{additional_auth_params}"
 
 

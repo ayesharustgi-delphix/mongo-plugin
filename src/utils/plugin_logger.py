@@ -3,6 +3,7 @@ import threading
 from typing import Callable
 import sys
 import os
+import re
 
 __lock = threading.Lock()
 
@@ -44,7 +45,8 @@ class PluginLogger:
         self.masked_password_len = masked_password_len
         self.password_keywords = [
             ("pwd :  '", "'"),
-            ("--password ", " ")
+            ("--password ", " "),
+            ("mongodb://.*?:", "@")
         ]
         self.initialize_logger()
 
@@ -52,23 +54,27 @@ class PluginLogger:
         self.logger_object = setup_logger._setup_logger(self.name)
 
     def mask_instance(self, log_msg, pass_key, pass_end_sep=None):
-        if pass_key in log_msg:
+        key_search = [x for x in re.finditer(pass_key, log_msg)]
+        if key_search:
             masked_log = ""
-            pwd_split = log_msg.split(pass_key)
-
-            masked_log += pwd_split[0]
-            if pass_end_sep:
-                for s in pwd_split[1:]:
-                    pwd = s.split(pass_end_sep, 1)[0]
-                    s = pass_key + s
-                    masked_pwd = pass_key + "x" * self.masked_password_len
-                    masked_str = s.replace(pass_key+pwd, masked_pwd)
-                    masked_log += masked_str
-            else:
-                for s in pwd_split[1:]:
-                    masked_pwd = "x" * self.masked_password_len
-                    masked_log += masked_pwd + s
-
+            for k_num in range(len(key_search) + 1):
+                current_start = key_search[k_num].start() if k_num < len(
+                    key_search) else None
+                current_end = key_search[k_num].end() if k_num < len(
+                    key_search) else None
+                if k_num == 0:
+                    masked_log += log_msg[:current_start]
+                else:
+                    prev_k = key_search[k_num - 1]
+                    s = log_msg[prev_k.end():current_start] if current_start is not None else log_msg[prev_k.end():]
+                    s_split = s.split(pass_end_sep, 1) if pass_end_sep else [s]
+                    if len(s_split) > 1:
+                        masked_s = "x" * self.masked_password_len + pass_end_sep + s_split[1]
+                    else:
+                        masked_s = "x" * self.masked_password_len
+                    masked_log += masked_s
+                if current_start is not None and current_end is not None:
+                    masked_log += log_msg[current_start:current_end]
             return masked_log
         return log_msg
 

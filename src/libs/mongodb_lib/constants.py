@@ -12,6 +12,7 @@ class MongoDBLibConstants:
     DROP_DATABASE = "JSON.stringify(db.getSiblingDB('{db_name}')" \
                     ".dropDatabase())"
     FSYNC_DUMP = "EJSON.stringify(db.runCommand({fsync: 1, lock: false}))"
+    GET_TIMESTAMP = "EJSON.stringify(ISODate())"
 
     RUN_MONGODB_CMD = '{mongo_shell_path} "{host_details}" --quiet --eval "{cmd}"'
 

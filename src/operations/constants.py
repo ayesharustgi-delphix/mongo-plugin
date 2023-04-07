@@ -1,4 +1,5 @@
 class Globals:
+    LAGTIMESECONDS_OUTPUT_FILE = "mongosync_lag.txt"
     SERVER_SHUTDOWN = (
         "{mongo_shell_path} admin --port {port} --quiet --eval "
         "'db.shutdownServer()'"

@@ -19,6 +19,7 @@ from dlpx.virtualization.platform import (
 
 from operations import linked
 from operations import common
+from operations.constants import Globals
 from mongodb_lib.MongoDB import MongoDB
 from ce_lib.resource import Resource
 from ce_lib.os_lib.os_lib import OSLib
@@ -73,6 +74,23 @@ logger = plugin_logger.PluginLogger("MONGODB")
 # logger.setLevel(logging.DEBUG)
 
 plugin = Plugin()
+
+
+@plugin.upgrade.snapshot("2023.04.06.02")
+def update_lagtime(old_snapshot):
+    new_snapshot = dict(old_snapshot)
+    new_snapshot["lag_time_seconds"] = "NA"
+    if "lagTimeSeconds" in new_snapshot.keys():
+        del new_snapshot["lagTimeSeconds"]
+    return new_snapshot
+
+
+@plugin.upgrade.snapshot("2023.04.06.01")
+def update_snapshot(old_snapshot):
+    new_snapshot = dict(old_snapshot)
+    new_snapshot["source_time"] = "NA"
+    new_snapshot["lagTimeSeconds"] = "NA"
+    return new_snapshot
 
 
 @plugin.upgrade.repository("2023.03.13.01")
@@ -479,6 +497,18 @@ def staged_pre_snapshot(
                     int(http_code) == 200
                     and progress_json["progress"]["state"] == "RUNNING"
                 ):
+                    source_db_time = staged_source.mongodb_obj.get_db_time(
+                        host_conn_string=staged_source.parameters.src_mongo_host_conn,
+                        username=staged_source.parameters.src_db_user,
+                        password=staged_source.parameters.src_db_password
+                    )
+                    file_content = f'{progress_json["progress"]["lagTimeSeconds"]}\n{source_db_time}'
+                    staged_source.os_lib_obj.dump_to_file(
+                        content=file_content,
+                        file_path=os.path.join(staged_source.parameters.mount_path,
+                                               ".delphix",
+                                               Globals.LAGTIMESECONDS_OUTPUT_FILE)
+                    )
                     ret = 1
                     logger.info("Pausing Mongosync....")
                     # Addition of pause and fsync to handle CE-227
@@ -723,10 +753,6 @@ def staged_post_snapshot(
     # common.fsync_unlock_sharded_mongo(staged_source, 'Staging')
     # logger.debug("Staging Post Snapshot - Unfreeze IO - done")
 
-    mask_snap = copy.deepcopy(snapshot)
-    mask_snap.mongo_db_password = "xxxxxxxxxx"
-    logger.debug("snapshot schema: {}".format(mask_snap))
-
     cmd = "(ls {}/.delphix/NEWDSOURCEFILE.cfg >> /dev/null 2>&1 && echo yes) || echo no".format(
         staged_source.parameters.mount_path
     )
@@ -738,7 +764,6 @@ def staged_post_snapshot(
         )
         res = common.execute_bash_cmd(staged_source.staged_connection, cmd, {})
 
-    common.add_debug_heading_block("End Staged Post Snapshot")
     # Resuming mongosync if cluster to cluster sync is enabled after
     # doing pause sync and snapshot.
     if staged_source.parameters.enable_clustersync:
@@ -755,9 +780,26 @@ def staged_post_snapshot(
                 if int(http_code) == 200 and response_json["progress"][
                     "state"] != "RUNNING":
                     logger.debug("Did not get RUNNING state after resume!")
+                else:
+                    resource_obj = Resource(connection=staged_source.staged_connection,
+                                            hidden_directory="")
+                    os_lib_obj = OSLib(resource=resource_obj)
+                    lag_file = os.path.join(staged_source.parameters.mount_path,
+                                               ".delphix",
+                                               Globals.LAGTIMESECONDS_OUTPUT_FILE)
+                    file_data = os_lib_obj.cat_file(file_path=lag_file)
+                    snapshot.lag_time_seconds = file_data.split("\n")[0]
+                    os_lib_obj.delete_file(file_path=lag_file)
+                    snapshot.source_time = file_data.split("\n")[1]
             else:
                 logger.debug(f"Cannot resume! Current state is not PAUSED, but {response_json['progress']['state']}")
+    else:
+        snapshot.lag_time_seconds = "NA"
+        snapshot.source_time = "NA"
 
+    logger.debug(f"snapshot={snapshot}")
+
+    common.add_debug_heading_block("End Staged Post Snapshot")
     return snapshot
 
 
@@ -1163,15 +1205,15 @@ def post_snapshot(repository, source_config, virtual_source):
     snapshot.encryption_method = encryption_method
     snapshot.encryption_keyfile = encryption_keyfile
     snapshot.kmip_params = []
+    snapshot.lag_time_seconds = "NA"
+    snapshot.source_time = "NA"
 
     # Unlock Freeze
     # logger.debug("Virtual Post Snapshot - Unfreeze IO")
     # common.fsync_unlock_sharded_mongo(virtual_source, 'Virtual')
     # logger.debug("Virtual Post Snapshot - Unfreeze IO - done")
 
-    mask_snap = copy.deepcopy(snapshot)
-    mask_snap.mongo_db_password = "xxxxxxxxxx"
-    logger.debug("snapshot schema: {}".format(mask_snap))
+    logger.debug("snapshot schema: {}".format(snapshot))
     common.add_debug_heading_block("End Virtual Post Snapshot")
     return snapshot
 

@@ -46,7 +46,8 @@ class PluginLogger:
         self.password_keywords = [
             ("pwd :  '", "'"),
             ("--password ", " "),
-            ("mongodb://.*?:", "@")
+            ("mongodb://.*?:", "@"),
+            ("'mongo_db_password': '", "'")
         ]
         self.initialize_logger()
 

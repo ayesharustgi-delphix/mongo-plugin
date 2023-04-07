@@ -962,6 +962,14 @@
       },
       "kmip_params": {
         "type": "array"
+      },
+      "source_time": {
+        "prettyName" : "Source Database Timestamp (UTC Timezone)",
+        "type": "string"
+      },
+      "lag_time_seconds": {
+        "prettyName" : "LagtimeSeconds (w.r.t. Source Database Time)",
+        "type": "string"
       }
     }
   },

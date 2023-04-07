@@ -310,6 +310,29 @@ class MongoDB:
             cmd=MongoDBLibConstants.FSYNC_DUMP
         )
 
+    def get_db_time(self, host_conn_string: str, username: str, password: str
+                    ) -> str:
+        """
+        Fetch timestamp (ISO 8601 format) of database in UTC Timezone.
+
+        :param host_conn_string: Connection string of database
+        :type host_conn_string: ``str``
+        :param username: Username of database
+        :type username: ``str``
+        :param password: Password of database
+        :type password: ``str``
+
+        :return: Timestamp string in ISO 8601 format
+        :rtype: ``str``
+        """
+        res = self.run_mongo_shell_command(
+            host_conn_string=host_conn_string,
+            username=username,
+            password=password,
+            cmd=MongoDBLibConstants.GET_TIMESTAMP
+        )
+        return res["$date"]
+
     @staticmethod
     def get_standard_conn_string(host_conn_string: str, username: str,
                                  password: str, database: str = "",

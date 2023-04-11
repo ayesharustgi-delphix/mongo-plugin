@@ -1,6 +1,5 @@
 import json
 import os
-from threading import Thread
 
 from ce_lib.os_lib.os_lib import OSLib
 from ce_lib.resource import Resource

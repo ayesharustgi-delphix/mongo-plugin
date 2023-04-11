@@ -1,14 +1,20 @@
 import json
+import os
 
+from ce_lib.os_lib.os_lib import OSLib
+from ce_lib.resource import Resource
+from generated.definitions import RepositoryDefinition
 from mongodb_lib.constants import MongoDBLibConstants
 from ce_lib import helpers
 import urllib.parse
+from dlpx.virtualization.platform.exceptions import UserError
 
 
 class MongoDB:
-    def __init__(self, repository, resource):
+    def __init__(self, repository: RepositoryDefinition, resource: Resource):
         self.repository = repository
         self.resource = resource
+        self.logger = self.resource.logger
 
     def get_version(self, host_conn_string: str, username: str, password: str
                     ) -> json:
@@ -332,6 +338,64 @@ class MongoDB:
             cmd=MongoDBLibConstants.GET_TIMESTAMP
         )
         return res["$date"]
+
+    def run_mongodump(self,
+                      host_conn_string: str,
+                      username: str,
+                      password: str,
+                      authentication_db: str,
+                      output_dir: str,
+                      log_sync: bool,
+                      os_lib_obj: OSLib,
+                      mount_path: str
+                      ):
+        """
+        Runs Mongodump to generate cluster backup.
+
+        :param host_conn_string: Connection string of database
+        :type host_conn_string: ``str``
+        :param username: Username of database
+        :type username: ``str``
+        :param password: Password of database
+        :type password: ``str``
+        :param authentication_db: Database for connection
+        :type authentication_db: ``str``
+        :param output_dir: mongodump directory
+        :type output_dir: ``str``
+        :param log_sync: enable oplog sync boolean
+        :type log_sync: ``bool``
+        :param os_lib_obj: OSLib object
+        :type os_lib_obj: ``ce_lib.os_lib.os_lib.OSLib``
+        :param mount_path: Mount path of dataset
+        :type mount_path: ``str``
+
+        :return: RunBashResponse output for command run
+        :rtype: ``RunBashResponse``
+        """
+        config_file_path = os.path.join(mount_path, ".delphix/config.yaml")
+        std_conn_string = self.__class__.get_standard_conn_string(
+            host_conn_string, username, password, authentication_db)
+        os_lib_obj.dump_to_file(
+            content=f'uri: {std_conn_string}',
+            file_path=config_file_path
+        )
+        file_content = os_lib_obj.cat_file(file_path=config_file_path)
+        self.logger.debug(f"config_file_content : {file_content}")
+        dump_cmd = MongoDBLibConstants.DUMP_CMD.format(
+            mongo_dump_path=self.repository.mongo_dump_path,
+            config_file_path=config_file_path,
+            param='--oplog' if log_sync else '',
+            output_dir=output_dir
+        )
+        run_cmd = MongoDBLibConstants.DELETE_SHELL.format(
+            cmd=dump_cmd,
+            config_file_path=config_file_path
+        )
+        res = self.resource.execute_bash(run_cmd, raise_exception=False)
+        res.exit_code = int(res.stdout.split("DLPX_RET=")[1].split("__")[0])
+        if res.exit_code != 0:
+            raise UserError(f"Mongodump failed with error : {res.stderr}")
+        return res
 
     @staticmethod
     def get_standard_conn_string(host_conn_string: str, username: str,

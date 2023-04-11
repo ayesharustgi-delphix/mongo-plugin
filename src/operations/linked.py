@@ -1,4 +1,7 @@
 from dlpx.virtualization.platform.exceptions import UserError
+
+from ce_lib.resource import Resource
+from mongodb_lib.MongoDB import MongoDB
 from utils import plugin_logger
 from operations import common
 import datetime
@@ -471,42 +474,54 @@ def setup_dataset_mongodump_online(sourceobj, dataset_type, snapshot, dsource_ty
     # logsync is not reliable. Cannot guarantee presence of oplogs as it is circular and may get overwritten
     # So disabling/removing this functionality
     # Modified to use same variable to capture or not capture oplogs. TRue = capture oplogs
-    if logsync:
-        # common.add_debug_heading_block("Get oplog position")
-        # cmd = "mkdir -p {}/s0m0/oplogs/local".format(mount_path)
-        # res = common.execute_bash_cmd(rx_connection, cmd, {})
-        #
-        # # common.fsync_lock_mongo(sourceobj, dataset_type)
-        #
-        # curroplogpos = get_current_oplog_position(sourceobj, dataset_type)
-        # logger.info("Write oplog position to file")
-        # cmd = "echo \"{}\" > {}/.delphix/oplog.pos".format(curroplogpos, mount_path)
-        # res = common.execute_bash_cmd(rx_connection, cmd, {})
-        # cmd = "echo \"{}\" > {}/.delphix/oplog.pos.incr".format(curroplogpos, mount_path)
-        # res = common.execute_bash_cmd(rx_connection, cmd, {})
-        # logger.info("Write oplog position to file done.")
 
-        # generate mongodump backup
-        common.add_debug_heading_block("Generate mongodump backup")
-        cmd = "{}/mongodump --username {} --password {} --host {} --authenticationDatabase=admin --oplog --gzip -o {}".format(
-            os.path.dirname(sourceobj.mongo_dump_path), src_db_user, src_db_password, src_mongo_host_conn,
-            mongo_backup_dir)
-        res = common.execute_bash_cmd(rx_connection, cmd, {})
+    sourceobj.mongodb_obj.run_mongodump(
+        host_conn_string=src_mongo_host_conn,
+        username=src_db_user,
+        password=src_db_password,
+        authentication_db="",
+        output_dir=mongo_backup_dir,
+        log_sync=logsync,
+        os_lib_obj=sourceobj.os_lib_obj,
+        mount_path=sourceobj.parameters.mount_path
+    )
 
-    else:
-        # generate mongodump backup
-        common.add_debug_heading_block("Generate mongodump backup")
-        cmd = "{}/mongodump --username {} --password {} --host {} --authenticationDatabase=admin --gzip -o {}".format(
-            os.path.dirname(sourceobj.mongo_dump_path), src_db_user, src_db_password, src_mongo_host_conn,
-            mongo_backup_dir)
-        res = common.execute_bash_cmd(rx_connection, cmd, {})
+    # if logsync:
+    #     # common.add_debug_heading_block("Get oplog position")
+    #     # cmd = "mkdir -p {}/s0m0/oplogs/local".format(mount_path)
+    #     # res = common.execute_bash_cmd(rx_connection, cmd, {})
+    #     #
+    #     # # common.fsync_lock_mongo(sourceobj, dataset_type)
+    #     #
+    #     # curroplogpos = get_current_oplog_position(sourceobj, dataset_type)
+    #     # logger.info("Write oplog position to file")
+    #     # cmd = "echo \"{}\" > {}/.delphix/oplog.pos".format(curroplogpos, mount_path)
+    #     # res = common.execute_bash_cmd(rx_connection, cmd, {})
+    #     # cmd = "echo \"{}\" > {}/.delphix/oplog.pos.incr".format(curroplogpos, mount_path)
+    #     # res = common.execute_bash_cmd(rx_connection, cmd, {})
+    #     # logger.info("Write oplog position to file done.")
+    #
+    #     # generate mongodump backup
+    #     common.add_debug_heading_block("Generate mongodump backup")
+    #     cmd = "{}/mongodump --username {} --password {} --host {} --authenticationDatabase=admin --oplog --gzip -o {}".format(
+    #         os.path.dirname(sourceobj.mongo_dump_path), src_db_user, src_db_password, src_mongo_host_conn,
+    #         mongo_backup_dir)
+    #     res = common.execute_bash_cmd(rx_connection, cmd, {})
+    #
+    # else:
+    #     # generate mongodump backup
+    #     common.add_debug_heading_block("Generate mongodump backup")
+    #     cmd = "{}/mongodump --username {} --password {} --host {} --authenticationDatabase=admin --gzip -o {}".format(
+    #         os.path.dirname(sourceobj.mongo_dump_path), src_db_user, src_db_password, src_mongo_host_conn,
+    #         mongo_backup_dir)
+    #     res = common.execute_bash_cmd(rx_connection, cmd, {})
 
     cmd = "du -sh {}".format(mongo_backup_dir)
     res = common.execute_bash_cmd(rx_connection, cmd, {})
 
-    if logsync:
-        # common.fsync_unlock_mongo(sourceobj, dataset_type)
-        pass
+    # if logsync:
+    #     # common.fsync_unlock_mongo(sourceobj, dataset_type)
+    #     pass
 
     restore_mongodump_online(sourceobj, dataset_type, mongo_backup_dir)
 

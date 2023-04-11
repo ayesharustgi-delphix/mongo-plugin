@@ -18,6 +18,8 @@ class MongoDBLibConstants:
 
     CLUSTERSYNC_RESERVED_DATABASE = "mongosync_reserved_for_internal_use"
 
+    DUMP_CMD = "{mongo_dump_path} --config={config_file_path} {param} --gzip -o {output_dir}"
+    DELETE_SHELL = '(({cmd}; echo "DLPX_RET=$?__") &); sleep 5s; rm {config_file_path}; wait'
     
     STANDARD_CONN_STRING_FORMAT = "mongodb://{username}:{password}@{host_conn_string}/{database}?{additional_auth_params}"
 

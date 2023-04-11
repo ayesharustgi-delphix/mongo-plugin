@@ -61,3 +61,5 @@ class MongoSyncConstants:
 
     commit_api = "api/v1/commit"
     commit_api_params = {}
+
+    curl_connection_refused_code = 7

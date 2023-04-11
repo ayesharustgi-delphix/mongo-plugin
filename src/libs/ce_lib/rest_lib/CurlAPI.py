@@ -6,6 +6,9 @@ from typing import Tuple, Union, List, Dict
 
 from dlpx.virtualization.common import RemoteConnection
 from ce_lib.resource import Resource
+from ce_lib.plugin_exception.plugin_error import CurlException
+
+
 
 
 class CurlAPI(RestAPI):
@@ -66,9 +69,9 @@ class CurlAPI(RestAPI):
             port=self.port,
             api_path=api_path
         )
-        res = self.resource.execute_bash(cmd=api_cmd)
+        res = self.resource.execute_bash(cmd=api_cmd, raise_exception=False)
         if res.exit_code:
-            raise RuntimeError(f"Cannot execute API, failed with error: "
+            raise CurlException(exit_code=res.exit_code ,message=f"Cannot execute API, failed with error: "
                                f"{res.stderr}")
         else:
             response, http_code = res.stdout.split("DLPX_API_HTTP_CODE=")
@@ -104,9 +107,9 @@ class CurlAPI(RestAPI):
             api_path=api_path,
             data_params=param_string
         )
-        res = self.resource.execute_bash(cmd=api_cmd)
+        res = self.resource.execute_bash(cmd=api_cmd, raise_exception=False)
         if res.exit_code:
-            raise RuntimeError(f"Cannot execute API, failed with error: "
+            raise CurlException(exit_code=res.exit_code ,message=f"Cannot execute API, failed with error: "
                                f"{res.stderr}")
         else:
             response, http_code = res.stdout.split("DLPX_API_HTTP_CODE=")

@@ -220,3 +220,11 @@ class RepositoryNotValid(UserError):
         msg = f"Repository not valid. Please correct and refresh the environment. {err_msg}"
         action = "Please provide the correct parameters and try again."
         super().__init__(msg, action)
+
+
+class CurlException(Exception):
+    """Initialise and raise CurlException error"""
+
+    def __init__(self, exit_code: int = 0, message: str = ""):
+        self.exit_code = exit_code
+        self.message = message

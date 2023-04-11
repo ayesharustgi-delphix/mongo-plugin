@@ -1,4 +1,7 @@
 import shlex
+import json
+
+from dlpx.virtualization import libs
 
 
 def parse_shell_params(shell_string: str) -> dict:
@@ -39,7 +42,9 @@ def parse_shell_params(shell_string: str) -> dict:
                 if "=" in k:
                     k, value = k.split("=")
                     increment = 1
-                elif i < len(param_list)-1 and not param_list[i+1].startswith("--"):
+                elif i < len(param_list) - 1 and not param_list[
+                    i + 1
+                ].startswith("--"):
                     value = param_list[i + 1]
                     increment = 2
                 else:
@@ -99,3 +104,153 @@ def compare_version(v1: str, v2: str, version_checking: str) -> bool:
             break
 
     return comp in version_checking
+
+
+def _get_mongod_logpath_from_commandline(mongod_cmd: str) -> str:
+    """
+    Gets the log path from the command line.
+
+    :param mongod_cmd: Command line string
+    :type mongod_cmd: ``str``
+    """
+    # check if cmd contains logpath
+    # e.g. /u01/mongo509/bin/mongod --dbpath /mnt/provision/seed_vdb_test/s0m0 \
+    # --logpath /mnt/provision/seed_vdb_test/logs/dlpx.s0m0.28101.mongod.log \
+    # --bind_ip 0.0.0.0 --port 28101 --auth \
+    # --keyFile /home/delphix/keyfile/keyfile --clusterAuthMode keyFile \
+    # --replSet dlpx-repl --fork
+    log_path = ""
+    try:
+        log_path = mongod_cmd.split("--logpath")[1].split()[0]
+    except IndexError:
+        log_path = ""
+    return log_path
+
+
+def _get_mongod_logpath_from_conf(
+    connection, mongod_cmd: str, env: dict
+) -> str:
+    """
+    Gets the log path from the conf file.
+
+    :param connection: Connection object
+    :type connection: ``Connection``
+    :param mongod_cmd: Command line string
+    :type mongod_cmd: ``str``
+    :param env: Environment variables
+    :type env: ``dict``
+    """
+    # check if cmd contains any name of the conf file
+    # e.g. /u01/mongo509/bin/mongod -f \
+    #   /mnt/provision/seed_vdb_test/cfg/dlpx.s0m0.28101.conf
+    log_path = ""
+    try:
+        mongod_conf_file: str = mongod_cmd.split("-f")[-1].split()[0]
+    except IndexError:
+        return log_path
+
+    cmd = f"grep 'path:' {mongod_conf_file}"
+    res = libs.run_bash(connection, cmd, env)
+    exit_code = res.exit_code
+    if exit_code:
+        log_path = ""
+    else:
+        log_path = str(res.stdout).replace("\n", "").strip().split()[-1]
+    return log_path
+
+
+def _get_mongosync_logpath_from_conf(
+    connection, conf_path: str, env: dict
+) -> str:
+    """
+    Retrieves log path from given Mongosync Conf file.
+    """
+
+    cmd = f"grep 'logPath:' {conf_path}"
+    res = libs.run_bash(connection, cmd, env)
+    exit_code = res.exit_code
+    if exit_code:
+        log_path = ""
+    else:
+        log_path = str(res.stdout).replace("\n", "").strip().split()[-1]
+    return log_path
+
+
+def _get_logpath(
+    connection, env: dict, command: str = "", mongosync_conf_path: str = ""
+) -> str:
+    """
+    Retrieves the log path for the given command or conf path.
+    """
+    if "mongosync" in command or mongosync_conf_path:
+        return _get_mongosync_logpath_from_conf(
+            connection, mongosync_conf_path, env
+        )
+
+    if "mongod" in command:
+        if "--logpath" in command:
+            return _get_mongod_logpath_from_commandline(command)
+        if " -f " in command:
+            return _get_mongod_logpath_from_conf(connection, command, env)
+
+
+def _parse_error_from_logpath(connection, logpath: str, env: dict) -> str:
+    """
+    Checks for errors in the file and parses out the last error message.
+    """
+    cmd = f"grep 'error\":' {logpath}"
+    res = libs.run_bash(connection, cmd, env)
+    exit_code = res.exit_code
+
+    if exit_code:
+        error_message = f"No possible errors were found in {logpath}."
+    else:
+        # We need pick the last most error message. However,
+        # keep -2 index because the last element in the split list is ''
+        mongo_full_errmsg_raw = res.stdout.split("\n")[-2].strip()
+        # logger.debug("mongo_full_errmsg_raw\n{}".format(mongo_full_errmsg_raw))
+
+        mongo_errmsg_raw_json = json.loads(mongo_full_errmsg_raw)
+        error_message = mongo_errmsg_raw_json.get("error")
+        if not error_message and mongo_errmsg_raw_json.get("attr"):
+            error_message = mongo_errmsg_raw_json["attr"].get("error", "")
+
+    return error_message
+
+
+def get_error_from_logfile(
+    connection, env: dict, command: str = "", conf_path: str = ""
+) -> str:
+    """Returns the error from the mongod logpath for the specified mongod
+    command.
+    :param connection: connection object
+    :type: dlpx.virtualization.common._common_classes.RemoteConnection
+    :param mongod_cmd: mongod command line
+    :type: str
+    :param env: Environment variables
+    :type: dict
+    :return: logpath.
+    :rtype: str
+    :raises Exception: In case of failure.
+    """
+    # Check if logpath is found in the mongod command line or in conf.
+    log_error = ""
+    if "/mongosync " in command or conf_path:
+        logpath = _get_logpath(
+            connection=connection,
+            env=env,
+            command=command,
+            mongosync_conf_path=conf_path,
+        )
+        if not logpath:
+            log_error = "Log path not found in Conf file."
+        else:
+            logpath = f"{logpath}/mongosync.log"
+    elif "/mongod " in command:
+        logpath = _get_logpath(connection=connection, env=env, command=command)
+        if not logpath:
+            log_error = "Log path not found in Conf file."
+
+    if not log_error:
+        log_error = _parse_error_from_logpath(connection, logpath, env)
+    return log_error

@@ -13,6 +13,7 @@ from dlpx.virtualization.platform.exceptions import UserError
 from dlpx.virtualization import libs
 from mongodb_lib.constants import MongoDBLibConstants
 from mongodb_lib.MongoDB import MongoDB
+from ce_lib import helpers
 
 import json
 import time
@@ -155,7 +156,7 @@ def gen_shard_config_list(
                 shard_cfg_dict = {}
                 shard_cfg_dict = {
                     "node": nodes[n][0],
-                    "node_num":nodes[n][1],
+                    "node_num": nodes[n][1],
                     "type": "config",
                     "mount_path": "{}".format(mount_path),
                     "dirname": "c{}m{}".format(i, j),
@@ -180,7 +181,7 @@ def gen_shard_config_list(
                 shard_cfg_dict = {}
                 shard_cfg_dict = {
                     "node": nodes[n][0],
-                    "node_num":nodes[n][1],
+                    "node_num": nodes[n][1],
                     "type": "config",
                     "mount_path": "{}".format(mount_path),
                     "dirname": "c{}m{}".format(i, j),
@@ -203,7 +204,7 @@ def gen_shard_config_list(
                 shard_cfg_dict = {}
                 shard_cfg_dict = {
                     "node": nodes[n][0],
-                    "node_num":nodes[n][1],
+                    "node_num": nodes[n][1],
                     "type": "config",
                     "mount_path": "{}".format(mount_path),
                     "dirname": "c{}m{}".format(i, j),
@@ -230,7 +231,7 @@ def gen_shard_config_list(
                 shard_cfg_dict = {}
                 shard_cfg_dict = {
                     "node": nodes[n][0],
-                    "node_num":nodes[n][1],
+                    "node_num": nodes[n][1],
                     "type": "shard",
                     "mount_path": "{}".format(mount_path),
                     "dirname": "s{}m{}".format(i, j),
@@ -255,7 +256,7 @@ def gen_shard_config_list(
                 shard_cfg_dict = {}
                 shard_cfg_dict = {
                     "node": nodes[n][0],
-                    "node_num":nodes[n][1],
+                    "node_num": nodes[n][1],
                     "type": "shard",
                     "mount_path": "{}".format(mount_path),
                     "dirname": "s{}m{}".format(i, j),
@@ -282,7 +283,7 @@ def gen_shard_config_list(
                 shard_cfg_dict = {}
                 shard_cfg_dict = {
                     "node": nodes[n][0],
-                    "node_num":nodes[n][1],
+                    "node_num": nodes[n][1],
                     "type": "shard",
                     "mount_path": "{}".format(mount_path),
                     "dirname": "s{}m{}".format(i, j),
@@ -306,7 +307,7 @@ def gen_shard_config_list(
                 shard_cfg_dict = {}
                 shard_cfg_dict = {
                     "node": nodes[n][0],
-                    "node_num":nodes[n][1],
+                    "node_num": nodes[n][1],
                     "type": "shard",
                     "mount_path": "{}".format(mount_path),
                     "dirname": "s{}m{}".format(i, j),
@@ -327,7 +328,7 @@ def gen_shard_config_list(
     n = 0
     shard_cfg_dict = {
         "node": nodes[n][0],
-        "node_num":nodes[n][1],
+        "node_num": nodes[n][1],
         "type": "mongos",
         "mount_path": "{}".format(mount_path),
         "dirname": "mgs{}".format(0),
@@ -360,7 +361,7 @@ def gen_replicaset_config_list(nodes, start_portpool, mount_path, replicaset):
                 replicaset_cfg_dict = {}
                 replicaset_cfg_dict = {
                     "node": nodes[n][0],
-                    "node_num":nodes[n][1],
+                    "node_num": nodes[n][1],
                     "type": "repset",
                     "mount_path": "{}".format(mount_path),
                     "dirname": "s{}m{}".format(i, j),
@@ -384,7 +385,7 @@ def gen_replicaset_config_list(nodes, start_portpool, mount_path, replicaset):
                 replicaset_cfg_dict = {}
                 replicaset_cfg_dict = {
                     "node": nodes[n][0],
-                    "node_num":nodes[n][1],
+                    "node_num": nodes[n][1],
                     "type": "repset",
                     "mount_path": "{}".format(mount_path),
                     "dirname": "s{}m{}".format(i, j),
@@ -411,7 +412,7 @@ def gen_replicaset_config_list(nodes, start_portpool, mount_path, replicaset):
                 replicaset_cfg_dict = {}
                 replicaset_cfg_dict = {
                     "node": nodes[n][0],
-                    "node_num":nodes[n][1],
+                    "node_num": nodes[n][1],
                     "type": "repset",
                     "mount_path": "{}".format(mount_path),
                     "dirname": "s{}m{}".format(i, j),
@@ -435,7 +436,7 @@ def gen_replicaset_config_list(nodes, start_portpool, mount_path, replicaset):
                 replicaset_cfg_dict = {}
                 replicaset_cfg_dict = {
                     "node": nodes[n][0],
-                    "node_num":nodes[n][1],
+                    "node_num": nodes[n][1],
                     "type": "repset",
                     "mount_path": "{}".format(mount_path),
                     "dirname": "s{}m{}".format(i, j),
@@ -476,21 +477,33 @@ def get_shard_port(shard_config_list, dirname):
             return shard_config["port"]
 
 
-def get_shard_host(shard_config_list, dirname, sourceobj, dataset_type="Virtual"):
+def get_shard_host(
+    shard_config_list, dirname, sourceobj, dataset_type="Virtual"
+):
     for shard_config in shard_config_list:
         if shard_config["dirname"] == dirname:
             if "node_num" in shard_config.keys():
                 if shard_config["node_num"] == 0:
                     if dataset_type == "Virtual":
-                        node_reference = sourceobj.connection.environment.reference
+                        node_reference = (
+                            sourceobj.connection.environment.reference
+                        )
                         user_reference = sourceobj.connection.user.reference
                     else:
-                        node_reference = sourceobj.staged_connection.environment.reference
-                        user_reference = sourceobj.staged_connection.user.reference
+                        node_reference = (
+                            sourceobj.staged_connection.environment.reference
+                        )
+                        user_reference = (
+                            sourceobj.staged_connection.user.reference
+                        )
                 else:
                     if dataset_type == "Virtual":
-                        node_reference = sourceobj.parameters.additional_nodes[shard_config["node_num"]-1]["environment"]
-                        user_reference = sourceobj.parameters.additional_nodes[shard_config["node_num"]-1]["environment_user"]
+                        node_reference = sourceobj.parameters.additional_nodes[
+                            shard_config["node_num"] - 1
+                        ]["environment"]
+                        user_reference = sourceobj.parameters.additional_nodes[
+                            shard_config["node_num"] - 1
+                        ]["environment_user"]
             else:
                 return shard_config["node"]
             return f"{node_reference}:{user_reference}"
@@ -602,8 +615,25 @@ def execute_bash_cmd(connection, cmd, env):
     errmsg = res.stderr.replace("\n", "").strip()
     exit_code = res.exit_code
 
-    # Verify the exit code of each executed command. 0 means command ran successfully and for other code it is failed.
-    # For failed cases we need to find the scenario in which programs will die and otherwise execution will continue.
+    # Fetch the real root cause from the mongod logs
+    if exit_code != 0 and 'the "--fork" option' in res.stdout:
+        logger.debug("Exploring the real root cause from the mongod logs.")
+        try:
+            mongod_error_raw = helpers.get_error_from_logfile(
+                connection=connection, env=env, command=cmd
+            )
+            # Append the error message that we got from the logpath to the
+            # original errmsg
+            errmsg = f"{errmsg}\n{mongod_error_raw}"
+        except Exception as e:
+            # In case of Exception, we don't want to fail the execution but
+            # display the Exception error in UI
+            errmsg = f"{errmsg}\n{str(e)}"
+
+    # Verify the exit code of each executed command. 0 means command ran
+    # successfully and for other code it is failed.
+    # For failed cases we need to find the scenario in which programs will die
+    # and otherwise execution will continue.
     _handle_exit_code(exit_code, errmsg, outputmsg, callback_func, "N")
 
     return outputmsg
@@ -731,7 +761,9 @@ def gen_shardserver_setting_list(
         shard_setting_dict = {}
         snm0 = "s{}m0".format(shardnum)
         snm0_port = get_shard_port(shard_config_list, snm0)
-        snm0_host = get_shard_host(shard_config_list, snm0, sourceobj, dataset_type)
+        snm0_host = get_shard_host(
+            shard_config_list, snm0, sourceobj, dataset_type
+        )
         snm0_conn = get_node_conn(sourceobj, snm0_host, dataset_type)
         snm0_host_name = execute_bash_cmd(snm0_conn, "hostname", {})
 
@@ -751,7 +783,9 @@ def gen_shardserver_setting_list(
             for member in range(1, 3):
                 snm0 = "s{}m{}".format(shardnum, member)
                 snmn_port = get_shard_port(shard_config_list, snm0)
-                snmn_host = get_shard_host(shard_config_list, snm0, sourceobj, dataset_type)
+                snmn_host = get_shard_host(
+                    shard_config_list, snm0, sourceobj, dataset_type
+                )
                 snmn_conn = get_node_conn(sourceobj, snmn_host, dataset_type)
                 snmn_host_name = execute_bash_cmd(snmn_conn, "hostname", {})
                 shardservercfg = (
@@ -769,7 +803,9 @@ def gen_configsvrstring(dataset_type, sourceobj, shard_config_list):
     mount_path = sourceobj.parameters.mount_path
     # Generate configsvrstring
     c0m0_port = get_shard_port(shard_config_list, "c0m0")
-    c0m0_host = get_shard_host(shard_config_list, "c0m0", sourceobj, dataset_type)
+    c0m0_host = get_shard_host(
+        shard_config_list, "c0m0", sourceobj, dataset_type
+    )
     c0m0_conn = get_node_conn(sourceobj, c0m0_host, dataset_type)
     c0m0_host_name = execute_bash_cmd(c0m0_conn, "hostname", {})
 
@@ -791,7 +827,9 @@ def gen_configsvrstring(dataset_type, sourceobj, shard_config_list):
     # if sourceobj.parameters.make_shards_replicaset:
     if replicaset:
         c0m1_port = get_shard_port(shard_config_list, "c0m1")
-        c0m1_host = get_shard_host(shard_config_list, "c0m1", sourceobj, dataset_type)
+        c0m1_host = get_shard_host(
+            shard_config_list, "c0m1", sourceobj, dataset_type
+        )
         c0m1_conn = get_node_conn(sourceobj, c0m1_host, dataset_type)
         c0m1_host_name = execute_bash_cmd(c0m1_conn, "hostname", {})
         configsvrstring = (
@@ -799,7 +837,9 @@ def gen_configsvrstring(dataset_type, sourceobj, shard_config_list):
         )
 
         c0m2_port = get_shard_port(shard_config_list, "c0m2")
-        c0m2_host = get_shard_host(shard_config_list, "c0m2", sourceobj, dataset_type)
+        c0m2_host = get_shard_host(
+            shard_config_list, "c0m2", sourceobj, dataset_type
+        )
         c0m2_conn = get_node_conn(sourceobj, c0m2_host, dataset_type)
         c0m2_host_name = execute_bash_cmd(c0m2_conn, "hostname", {})
         configsvrstring = (
@@ -854,7 +894,9 @@ def gen_mongo_conf_files(dataset_type, sourceobj, shard_config_list, snapshot):
         # mongod_port = jsonobj["port"]
         mongod_dirname = jsonobj["dirname"]
         mongod_port = get_shard_port([jsonobj], mongod_dirname)
-        mongod_host = get_shard_host([jsonobj], mongod_dirname, sourceobj, dataset_type)
+        mongod_host = get_shard_host(
+            [jsonobj], mongod_dirname, sourceobj, dataset_type
+        )
         mongod_conn = get_node_conn(sourceobj, mongod_host, dataset_type)
         mongo_process_type = jsonobj["type"]
         mongo_host_name = execute_bash_cmd(mongod_conn, "hostname", {})
@@ -1114,7 +1156,9 @@ def start_sharded_mongo(dataset_type, sourceobj):
         # mongod_port = jsonobj["port"]
         mongod_dirname = jsonobj["dirname"]
         mongod_port = get_shard_port([jsonobj], mongod_dirname)
-        mongod_host = get_shard_host([jsonobj], mongod_dirname, sourceobj, dataset_type)
+        mongod_host = get_shard_host(
+            [jsonobj], mongod_dirname, sourceobj, dataset_type
+        )
         mongod_conn = get_node_conn(sourceobj, mongod_host, dataset_type)
 
         start_string = "{}/cfg/dlpx.{}.{}.conf".format(
@@ -1205,11 +1249,10 @@ def stop_sharded_mongo(dataset_type, sourceobj):
             # mongod_port = jsonobj["port"]
             mongod_dirname = jsonobj["dirname"]
             mongod_port = get_shard_port([jsonobj], mongod_dirname)
-            mongod_host = get_shard_host([jsonobj], mongod_dirname, sourceobj, dataset_type)
-            mongod_conn = get_node_conn(
-                sourceobj, mongod_host, dataset_type
+            mongod_host = get_shard_host(
+                [jsonobj], mongod_dirname, sourceobj, dataset_type
             )
-
+            mongod_conn = get_node_conn(sourceobj, mongod_host, dataset_type)
 
             cmd = "ps -ef|grep mongo|grep {}|grep {}|grep {}|grep dlpx|grep -v grep|wc -l".format(
                 mount_path, mongod_dirname, mongod_port
@@ -1273,10 +1316,10 @@ def get_status_sharded_mongo(dataset_type, sourceobj):
             # mongod_port = jsonobj["port"]
             mongod_dirname = jsonobj["dirname"]
             mongod_port = get_shard_port([jsonobj], mongod_dirname)
-            mongod_host = get_shard_host([jsonobj], mongod_dirname, sourceobj, dataset_type)
-            mongod_conn = get_node_conn(
-                sourceobj, mongod_host, dataset_type
+            mongod_host = get_shard_host(
+                [jsonobj], mongod_dirname, sourceobj, dataset_type
             )
+            mongod_conn = get_node_conn(sourceobj, mongod_host, dataset_type)
 
             if dsource_type == "stagingpush":
                 cmd = "netstat -an|grep {}|wc -l".format(mongod_port)
@@ -1351,7 +1394,9 @@ def create_mongoadmin_user(
             "Create {} user in Shard s{}".format(mongo_db_user, shardnum)
         )
         snm0_port = get_shard_port(shard_config_list, "s{}m0".format(shardnum))
-        snm0_host = get_shard_host(shard_config_list, "s{}m0".format(shardnum), sourceobj, "Staging")
+        snm0_host = get_shard_host(
+            shard_config_list, "s{}m0".format(shardnum), sourceobj, "Staging"
+        )
         snm0_conn = get_node_conn(sourceobj, snm0_host, "Staging")
 
         cmd = "{} --port {} --quiet --eval \"db.getSiblingDB('admin').createUser({{ user : '{}', pwd :  '{}', roles : [{{ role: 'userAdminAnyDatabase', db: 'admin'}},{{ role: 'dbAdminAnyDatabase', db: 'admin'}},{{ role: 'readWriteAnyDatabase', db: 'admin'}},{{ role: 'clusterAdmin', db: 'admin'}}]}});\"".format(
@@ -1389,7 +1434,9 @@ def update_mongoadmin_pwd(
             "Update {} password in Shard s{}".format(mongo_db_user, shardnum)
         )
         snm0_port = get_shard_port(shard_config_list, "s{}m0".format(shardnum))
-        snm0_host = get_shard_host(shard_config_list, "s{}m0".format(shardnum), sourceobj, "Virtual")
+        snm0_host = get_shard_host(
+            shard_config_list, "s{}m0".format(shardnum), sourceobj, "Virtual"
+        )
         snm0_conn = get_node_conn(sourceobj, snm0_host, "Virtual")
 
         cmd = "{} --port {} --eval \"db.getSiblingDB('admin').updateUser('{}', {{pwd :  '{}'}});\"".format(
@@ -1483,8 +1530,9 @@ def fsync_lock_sharded_mongo(sourceobj, dataset_type="Virtual"):
 
         mongod_dirname = jsonobj["dirname"]
         mongod_port = get_shard_port([jsonobj], mongod_dirname)
-        mongod_host = get_shard_host([jsonobj], mongod_dirname, sourceobj,
-                                     dataset_type)
+        mongod_host = get_shard_host(
+            [jsonobj], mongod_dirname, sourceobj, dataset_type
+        )
         mongod_conn = get_node_conn(sourceobj, mongod_host, dataset_type)
 
         if jsonobj["type"] != "mongos":
@@ -1530,8 +1578,9 @@ def fsync_unlock_sharded_mongo(sourceobj, dataset_type="Virtual"):
 
         mongod_dirname = jsonobj["dirname"]
         mongod_port = get_shard_port([jsonobj], mongod_dirname)
-        mongod_host = get_shard_host([jsonobj], mongod_dirname, sourceobj,
-                                     dataset_type)
+        mongod_host = get_shard_host(
+            [jsonobj], mongod_dirname, sourceobj, dataset_type
+        )
         mongod_conn = get_node_conn(sourceobj, mongod_host, dataset_type)
 
         if jsonobj["type"] != "mongos":
@@ -1585,8 +1634,9 @@ def fsync_lock_mongo(sourceobj, dataset_type):
 
         mongod_dirname = jsonobj["dirname"]
         mongod_port = get_shard_port([jsonobj], mongod_dirname)
-        mongod_host = get_shard_host([jsonobj], mongod_dirname, sourceobj,
-                                     dataset_type)
+        mongod_host = get_shard_host(
+            [jsonobj], mongod_dirname, sourceobj, dataset_type
+        )
         mongod_conn = get_node_conn(sourceobj, mongod_host, dataset_type)
 
         if jsonobj["type"] != "mongos":
@@ -1631,8 +1681,9 @@ def fsync_unlock_mongo(sourceobj, dataset_type):
 
         mongod_dirname = jsonobj["dirname"]
         mongod_port = get_shard_port([jsonobj], mongod_dirname)
-        mongod_host = get_shard_host([jsonobj], mongod_dirname, sourceobj,
-                                     dataset_type)
+        mongod_host = get_shard_host(
+            [jsonobj], mongod_dirname, sourceobj, dataset_type
+        )
         mongod_conn = get_node_conn(sourceobj, mongod_host, dataset_type)
 
         if jsonobj["type"] != "mongos":
@@ -1831,7 +1882,9 @@ def setup_config_replset_members(
 ):
     confignum = 0
     c0m0_port = get_shard_port(shard_config_list, "c0m0")
-    c0m0_host = get_shard_host(shard_config_list, "c0m0", sourceobj, dataset_type)
+    c0m0_host = get_shard_host(
+        shard_config_list, "c0m0", sourceobj, dataset_type
+    )
     c0m0_conn = get_node_conn(sourceobj, c0m0_host, dataset_type)
 
     for i in range(1, 3):
@@ -1841,8 +1894,10 @@ def setup_config_replset_members(
             shard_config_list, "c{}m{}".format(confignum, membernum)
         )
         cnmn_host = get_shard_host(
-            shard_config_list, "c{}m{}".format(confignum, membernum),
-            sourceobj, dataset_type
+            shard_config_list,
+            "c{}m{}".format(confignum, membernum),
+            sourceobj,
+            dataset_type,
         )
         cnmn_conn = get_node_conn(sourceobj, cnmn_host, dataset_type)
         cnmn_host_name = execute_bash_cmd(cnmn_conn, "hostname", {})
@@ -1944,7 +1999,12 @@ def setup_shard_replset_members(
     logger.debug("mount_path  :{}".format(mount_path))
     for shardnum in range(shard_count):
         snm0_port = get_shard_port(shard_config_list, "s{}m0".format(shardnum))
-        snm0_host = get_shard_host(shard_config_list, "s{}m0".format(shardnum), virtual_source, dataset_type)
+        snm0_host = get_shard_host(
+            shard_config_list,
+            "s{}m0".format(shardnum),
+            virtual_source,
+            dataset_type,
+        )
         snm0_conn = get_node_conn(virtual_source, snm0_host, dataset_type)
 
         if encryption_method == "KMIP":
@@ -1968,8 +2028,10 @@ def setup_shard_replset_members(
                 shard_config_list, "s{}m{}".format(shardnum, membernum)
             )
             snmn_host = get_shard_host(
-                shard_config_list, "s{}m{}".format(shardnum, membernum),
-                virtual_source, dataset_type
+                shard_config_list,
+                "s{}m{}".format(shardnum, membernum),
+                virtual_source,
+                dataset_type,
             )
             snmn_conn = get_node_conn(virtual_source, snmn_host, dataset_type)
             snmn_host_name = execute_bash_cmd(snmn_conn, "hostname", {})
@@ -2096,7 +2158,9 @@ def add_replset_members(
         rx_connection = sourceobj.staged_connection
 
     s0m0_port = start_portpool
-    s0m0_host = get_shard_host(replicaset_config_list, "s0m0", sourceobj, dataset_type)
+    s0m0_host = get_shard_host(
+        replicaset_config_list, "s0m0", sourceobj, dataset_type
+    )
     s0m0_conn = get_node_conn(sourceobj, s0m0_host)
 
     for i in range(1, 3):
@@ -2106,8 +2170,10 @@ def add_replset_members(
             replicaset_config_list, "s0m{}".format(membernum)
         )
         snmn_host = get_shard_host(
-            replicaset_config_list, "s0m{}".format(membernum),
-            sourceobj, dataset_type
+            replicaset_config_list,
+            "s0m{}".format(membernum),
+            sourceobj,
+            dataset_type,
         )
         snmn_conn = get_node_conn(sourceobj, snmn_host)
         snmn_host_name = execute_bash_cmd(snmn_conn, "hostname", {})
@@ -2697,18 +2763,26 @@ def create_node_array(dataset_type, sourceobj):
         connection = sourceobj.staged_connection
 
     nodes = []
-    nodes.append([
-        "{}:{}".format(
-            connection.environment.reference, connection.user.reference
-        ), 0]
+    nodes.append(
+        [
+            "{}:{}".format(
+                connection.environment.reference, connection.user.reference
+            ),
+            0,
+        ]
     )
     if dataset_type == "Virtual":
         if sourceobj.parameters.make_shards_replicaset:
-            for node_num, node in enumerate(sourceobj.parameters.additional_nodes):
-                nodes.append([
-                    "{}:{}".format(
-                        node["environment"], node["environment_user"]
-                    ), node_num+1]
+            for node_num, node in enumerate(
+                sourceobj.parameters.additional_nodes
+            ):
+                nodes.append(
+                    [
+                        "{}:{}".format(
+                            node["environment"], node["environment_user"]
+                        ),
+                        node_num + 1,
+                    ]
                 )
 
     totalnodes = len(nodes)
@@ -2838,12 +2912,12 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
         )
         for shard_config in shard_config_list:
             logger.info("shard config :{}".format(shard_config))
-        add_debug_heading_block("Removing temporary socket files for available "
-                                "ports.")
+        add_debug_heading_block(
+            "Removing temporary socket files for available " "ports."
+        )
         remove_temporary_mongodb_socket_files_of_ports(
-                sourceobj,
-                list([_config['port'] for _config in shard_config_list])
-            )
+            sourceobj, list([_config["port"] for _config in shard_config_list])
+        )
 
     elif dsource_type in [
         "nonshardedsource",
@@ -2861,11 +2935,12 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
         )
         for replicaset_config in replicaset_config_list:
             logger.info("replicaset_config :{}".format(replicaset_config))
-        add_debug_heading_block("Removing temporary socket files for available "
-                                    "ports.")
+        add_debug_heading_block(
+            "Removing temporary socket files for available " "ports."
+        )
         remove_temporary_mongodb_socket_files_of_ports(
             sourceobj,
-            list([_config['port'] for _config in replicaset_config_list])
+            list([_config["port"] for _config in replicaset_config_list]),
         )
 
     add_debug_space()
@@ -2958,7 +3033,9 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
         # Generate configsvrstring
         add_debug_heading_block("Generate configsvrstring")
         c0m0_port = get_shard_port(shard_config_list, "c0m0")
-        c0m0_host = get_shard_host(shard_config_list, "c0m0", sourceobj, dataset_type)
+        c0m0_host = get_shard_host(
+            shard_config_list, "c0m0", sourceobj, dataset_type
+        )
         c0m0_conn = get_node_conn(sourceobj, c0m0_host, dataset_type)
         c0m0_host_name = execute_bash_cmd(c0m0_conn, "hostname", {})
 
@@ -2977,7 +3054,9 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
         # if sourceobj.parameters.make_shards_replicaset:
         if replicaset:
             c0m1_port = get_shard_port(shard_config_list, "c0m1")
-            c0m1_host = get_shard_host(shard_config_list, "c0m1", sourceobj, dataset_type)
+            c0m1_host = get_shard_host(
+                shard_config_list, "c0m1", sourceobj, dataset_type
+            )
             c0m1_conn = get_node_conn(sourceobj, c0m1_host, dataset_type)
             c0m1_host_name = execute_bash_cmd(c0m1_conn, "hostname", {})
             configsvrstring = (
@@ -2987,7 +3066,9 @@ def setup_dataset(sourceobj, dataset_type, snapshot, dsource_type):
             )
 
             c0m2_port = get_shard_port(shard_config_list, "c0m2")
-            c0m2_host = get_shard_host(shard_config_list, "c0m2", sourceobj, dataset_type)
+            c0m2_host = get_shard_host(
+                shard_config_list, "c0m2", sourceobj, dataset_type
+            )
             c0m2_conn = get_node_conn(sourceobj, c0m2_host, dataset_type)
             c0m2_host_name = execute_bash_cmd(c0m2_conn, "hostname", {})
             configsvrstring = (
@@ -3559,7 +3640,9 @@ def setup_sharded_mongo_dataset(sourceobj, dataset_type, snapshot):
     # Generate configsvrstring
     add_debug_heading_block("Generate configsvrstring")
     c0m0_port = get_shard_port(shard_config_list, "c0m0")
-    c0m0_host = get_shard_host(shard_config_list, "c0m0", sourceobj, dataset_type)
+    c0m0_host = get_shard_host(
+        shard_config_list, "c0m0", sourceobj, dataset_type
+    )
     c0m0_conn = get_node_conn(sourceobj, c0m0_host, dataset_type)
     c0m0_host_name = execute_bash_cmd(c0m0_conn, "hostname", {})
 
@@ -3576,7 +3659,9 @@ def setup_sharded_mongo_dataset(sourceobj, dataset_type, snapshot):
     # if sourceobj.parameters.make_shards_replicaset:
     if replicaset:
         c0m1_port = get_shard_port(shard_config_list, "c0m1")
-        c0m1_host = get_shard_host(shard_config_list, "c0m1", sourceobj, dataset_type)
+        c0m1_host = get_shard_host(
+            shard_config_list, "c0m1", sourceobj, dataset_type
+        )
         c0m1_conn = get_node_conn(sourceobj, c0m1_host, dataset_type)
         c0m1_host_name = execute_bash_cmd(c0m1_conn, "hostname", {})
         configsvrstring = (
@@ -3584,7 +3669,9 @@ def setup_sharded_mongo_dataset(sourceobj, dataset_type, snapshot):
         )
 
         c0m2_port = get_shard_port(shard_config_list, "c0m2")
-        c0m2_host = get_shard_host(shard_config_list, "c0m2", sourceobj, dataset_type)
+        c0m2_host = get_shard_host(
+            shard_config_list, "c0m2", sourceobj, dataset_type
+        )
         c0m2_conn = get_node_conn(sourceobj, c0m2_host, dataset_type)
         c0m2_host_name = execute_bash_cmd(c0m2_conn, "hostname", {})
         configsvrstring = (
@@ -3949,7 +4036,7 @@ def check_ops_center_backup_files(
 
 
 def check_mongodump_utility_dir(
-    backup_dir: str, os_lib_obj, raise_exception: bool
+    backup_dir: str, os_lib_obj, raise_exception: bool = False
 ) -> int:
     """Checks if Backup created by Mongodump utility is present on host and is a directory.
 
@@ -3986,8 +4073,10 @@ def check_input_parameters(source_obj, is_dsource=False):
             "nonshardedsource",
         ]
 
-        if source_obj.parameters.d_source_type in dsource_types \
-                and not source_obj.parameters.enable_clustersync:
+        if (
+            source_obj.parameters.d_source_type in dsource_types
+            and not source_obj.parameters.enable_clustersync
+        ):
             # Check if backup metadata file path is provided in input
             if not source_obj.parameters.backup_metadata_file:
                 raise UserError(
@@ -4033,8 +4122,10 @@ def check_input_parameters(source_obj, is_dsource=False):
                 )
 
         # Checking Shard backup files
-        if source_obj.parameters.d_source_type == "shardedsource" \
-                and not source_obj.parameters.enable_clustersync:
+        if (
+            source_obj.parameters.d_source_type == "shardedsource"
+            and not source_obj.parameters.enable_clustersync
+        ):
             if not source_obj.parameters.shard_backupfiles:
                 raise UserError(
                     "Shard Backup files must be provided, "
@@ -4344,9 +4435,8 @@ def check_and_remove_clustersync_internal_database(sourceobj):
 
 def remove_temporary_mongodb_socket_files_of_ports(sourceobj, ports=[]):
     for port in ports:
-        file_path = constants.Globals.MONGODB_SOCKET_FILE_PATH.format(port=port)
+        file_path = constants.Globals.MONGODB_SOCKET_FILE_PATH.format(
+            port=port
+        )
         if sourceobj.os_lib_obj.check_file_dir_exists(file_path):
-            sourceobj.os_lib_obj.delete_file(
-                    file_path=file_path,
-                    force=True
-            )
+            sourceobj.os_lib_obj.delete_file(file_path=file_path, force=True)

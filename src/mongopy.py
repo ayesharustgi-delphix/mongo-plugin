@@ -535,7 +535,7 @@ def staged_pre_snapshot(
                     )
             else:
                 raise UserError(
-                    f"Mongosync not running! error={error_mongosync}"
+                    f"Mongosync not running! \n Possible error inside Mongosync Logs: {error_mongosync}"
                 )
         else:
             ret = linked.stg_pre_snapsync(staged_source)

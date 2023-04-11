@@ -845,7 +845,7 @@ def start_staging(repository, source_config, staged_source):
 
             # start mongosync process because it was killed in the "disable".
             logger.info("Starting mongosync process.")
-            mongosync_obj.start_mongosync(create_conf=False)
+            mongosync_obj.start_mongosync()
 
             # No need to wait for canCommit:true because it is idempotent
             logger.info(

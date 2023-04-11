@@ -310,6 +310,22 @@ class MongoSync:
             conf_path=conf_path
         )
         res = self.resource.execute_bash(start_cmd, raise_exception=False)
+        time.sleep(10)
+
+        # NOTE: We are deliberatly removing the conf file to avoid any
+        # further vulnerability exploitation. Wait of N seconds is to make sure
+        # the file contents are loaded in the memory safely and the file on
+        # disk is no more required. However, displaying file contents in the
+        # log file could raise some concerns but be assured as logging masks
+        # the sensitive data.
+        try:
+            self.os_lib_obj.cat_file(file_path=conf_path)
+        except Exception as e:
+            raise plugin_error.PluginError(f"Unable to log the contents "
+                                           f"of {conf_path} : {str(e)}")
+        finally:
+            self.os_lib_obj.delete_file(file_path=conf_path, force=True)
+
         if res.exit_code != 0:
             # TODO: fetch logs from error
             raise plugin_error.PluginError(f"Mongosync start failed with "

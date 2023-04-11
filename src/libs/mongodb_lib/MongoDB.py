@@ -3,6 +3,8 @@ import os
 from threading import Thread
 
 from ce_lib.os_lib.os_lib import OSLib
+from ce_lib.resource import Resource
+from generated.definitions import RepositoryDefinition
 from mongodb_lib.constants import MongoDBLibConstants
 from ce_lib import helpers
 import urllib.parse
@@ -10,9 +12,10 @@ from dlpx.virtualization.platform.exceptions import UserError
 
 
 class MongoDB:
-    def __init__(self, repository, resource):
+    def __init__(self, repository: RepositoryDefinition, resource: Resource):
         self.repository = repository
         self.resource = resource
+        self.logger = self.resource.logger
 
     def get_version(self, host_conn_string: str, username: str, password: str
                     ) -> json:
@@ -367,7 +370,8 @@ class MongoDB:
         :param mount_path: Mount path of dataset
         :type mount_path: ``str``
 
-        :return:
+        :return: RunBashResponse output for command run
+        :rtype: ``RunBashResponse``
         """
         config_file_path = os.path.join(mount_path, ".delphix/config.yaml")
         std_conn_string = self.__class__.get_standard_conn_string(
@@ -376,6 +380,8 @@ class MongoDB:
             content=f'uri: {std_conn_string}',
             file_path=config_file_path
         )
+        file_content = os_lib_obj.cat_file(file_path=config_file_path)
+        self.logger.debug(f"config_file_content : {file_content}")
         dump_cmd = MongoDBLibConstants.DUMP_CMD.format(
             mongo_dump_path=self.repository.mongo_dump_path,
             config_file_path=config_file_path,

@@ -12,6 +12,6 @@
 
 ```shell
 Defaults:delphixos !requiretty
-delphixos ALL=NOPASSWD: \
+delphix_os ALL=NOPASSWD: \
 /bin/mount, /bin/umount
 ```  

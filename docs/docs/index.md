@@ -4,22 +4,23 @@ MongoDB plugin helps to virtualize mongoDB data source leveraging the built-in m
 
 Supported Mongo Technologies for Ingestion (create dSource) :
 
-- **Mongodump**        : Export source data and import into Staging mongo instance (dSource). Useful for offline/online backups of small databases (onprem, Saas, MongoAtlas)
-- **Replication**      : Add replicaset member to existing cluster. Fastest way to capture incrementals from the source.
-- **Mongo Ops Manager**: Leverage existing backups, downloaded as compressed file(s), from Mongo OPS Manager. This mechanism can be used for ingesting sharded mongo database backups.
-
+- **Mongodump**              : Export source data and import into Staging mongo instance (dSource). Useful for offline/online backups of small databases (onprem, Saas, MongoAtlas)
+- **Replication**            : Add replicaset member to existing cluster. Fastest way to capture incrementals from the replicaset source.
+- **Mongo Ops Manager**      : Leverage existing backups, downloaded as compressed file(s), from Mongo OPS Manager. This mechanism can be used for ingesting sharded mongo database backups.
+- **Cluster to cluster Sync**: Leverage MongoSync utility to synchronise Non-Production Sharded cluster with existing cluster. Fastest way to get incrementals from sharded source. 
 
 ## <a id="Ingestion_Types"></a> Ingestion Types:
 
-| dSource Type         | Mechanism                        | Zero Touch Prod | Description | Support Incrementals |
-| :-------------       | :----------                      | :----------: | :---------- | :---------- |
-| Seed                 | New Mongo Instance               | N/A | New empty mongo instance created by delphix. This is for development of new applications without ingesting data from any source. | N/A |
-| extendedcluster      | Add member to existing replicaset| N | Add member to existing source replicaset. Instant and near realtime incremental data capture in delphix | Y |
-| onlinemongodump      | mongodump                        | N | Delphix connects to source from staging environments, executes mongodump utility and captures source data. Delphix captures all databases from the mongo instance. | N |
-| offlinemongodump     | mongodump                        | Y | Delphix leverages existing mongodumps made available to staging host. Supports backups taken using  `mongodump --oplog --gzip -o < bkp_dir >` OR `mongodump --gzip -o < bkp_dir >` command. database dumps for 1 or more database OR 1 or more collections is supported. | N |
-| shardedsource        | Mongo OPS Manager Backups        | Y | Delphix leverages existing mongo ops manager backups of sharded source as backup files presented to staging host. Delphix expects 1 configserver backup file and 1 backup file per shard available in backup location. | N |
-| nonshardedsource     | Mongo OPS Manager Backups        | Y | Delphix leverages existing mongo ops manager backup of non sharded source. Backup file need to be available on staging host file system. | N |
-| stagingpush          | User created mongo instance      | Y/N | Delphix provides filesystem on Staging host that can be used for deploying mongo instance by User. User responsible to create working mongo instance on staging host either manually or using any tools like mongo ops manager after the filesystem creation.| Y/N |
+| dSource Type         | Mechanism                         | Zero Touch Prod | Description                                                                                                                                                                                                                                                              | Support Incrementals |
+| :-------------       |:----------------------------------|:---------------:|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:---------------------|
+| Seed                 | New Mongo Instance                |       N/A       | New empty mongo instance created by delphix. This is for development of new applications without ingesting data from any source.                                                                                                                                         | N/A                  |
+| extendedcluster      | Add member to existing replicaset |        N        | Add member to existing source replicaset. Instant and near realtime incremental data capture in delphix                                                                                                                                                                  | Y                    |
+| onlinemongodump      | mongodump                         |        N        | Delphix connects to source from staging environments, executes mongodump utility and captures source data. Delphix captures all databases from the mongo instance.                                                                                                       | N                    |
+| offlinemongodump     | mongodump                         |        Y        | Delphix leverages existing mongodumps made available to staging host. Supports backups taken using  `mongodump --oplog --gzip -o < bkp_dir >` OR `mongodump --gzip -o < bkp_dir >` command. database dumps for 1 or more database OR 1 or more collections is supported. | N                    |
+| shardedsource        | Mongo OPS Manager Backups         |        Y        | Delphix leverages existing mongo ops manager backups of sharded source as backup files presented to staging host. Delphix expects 1 configserver backup file and 1 backup file per shard available in backup location.                                                   | N                    |
+| shardedsource        | Cluster-to-cluster Sync           |        N        | Delphix leverages MongoSync utility to synchronise Non-Production Sharded Cluster with existing sharded cluster.                                                                                                                                                         | Y                    |
+| nonshardedsource     | Mongo OPS Manager Backups         |        Y        | Delphix leverages existing mongo ops manager backup of non sharded source. Backup file need to be available on staging host file system.                                                                                                                                 | N                    |
+| stagingpush          | User created mongo instance       |       Y/N       | Delphix provides filesystem on Staging host that can be used for deploying mongo instance by User. User responsible to create working mongo instance on staging host either manually or using any tools like mongo ops manager after the filesystem creation.            | Y/N                  |
 
 <small>
 
@@ -44,7 +45,10 @@ This type of dsource is created by adding secondary member to existing source cl
 ### <a id="opsmgr_sharded"></a>Mongo OPS Manager backups (shardedmongo)
 This type of dsource is created using backup files of source mongo instance created by mongo ops manager. It helps to create dsource of sharded source cluster. It helps to create dsource using zero touch production. Periodic backups can be loaded to create timeline of dsource.
 
-### <a id="opsmgr_nonsharded"></a>Mongo OPS Manager backups (nonshardedmongo replicaet)
+### <a id="c2c_sharded"></a>Cluster to Cluster Sync (shardedmongo)
+This type of dsource is created by setting up a MongoSync synchronisation pipeline between dsource and source sharded cluster. It helps to create dsource of sharded source cluster. Its fastest way of capturing incrementals of a sharded cluster. Policy can be set to take snapshots to generate desired timeline.
+
+### <a id="opsmgr_nonsharded"></a>Mongo OPS Manager backups (nonshardedmongo replicaset)
 This type of dsource is created using backup file of source mongo instance created by mongo ops manager. It helps to create dsource of non-sharded source cluster. It helps to create dsource using zero touch production. Periodic backups can be loaded to create timeline of dsource.
 
 ### <a id="stagingpush"></a>Staging Push (stagingpush)

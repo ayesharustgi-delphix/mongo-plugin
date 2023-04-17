@@ -8,7 +8,7 @@ There are three key concepts when using Delphix with any data platform:
 1. **Environments**: The server and software required to run a data set. For Mongo, this will be an operating system host with Mongo instances running on it.  
     a. Staging Environment: Source data is ingested into Delphix using Staging Host. These will be used to create dSources.  
     b. Target Environment: Target hosts to provision VDBs. These need Mongo installations that correspond to the versions of the Source environments, per our Mongo Support Matrix.
-2. **dSource**: A database that the Delphix Virtualization Engine uses to create and update virtual copies of your database
+2. **dSource**: A database that the Delphix Virtualization Engine uses to create and update virtual copies of your database.
 3. **VDB**: A database provisioned from either a dSource or another VDB which is a copy of the source data. A VDB is created and managed by the Delphix Virtualization Engine.  
 Explore how Delphix connects to Mongo environments and creates Mongo dSources and VDBs, with these concepts in mind.  
 

@@ -29,10 +29,23 @@
 
 ### <a id="engine compatibility"></a>Engine Compatibility Matrix
 
-| Engine Version      | Mongopy 1.0.0                     | Mongopy 1.0.1                     | Mongopy 1.0.2                     | Mongopy 1.1.0                     |
-| :-                  | :-:                               | :-:                               | :-:                               | :-:                               |
-| 6.0.7.x  - 6.0.11.x | ![Screenshot](../image/check.svg) | ![Screenshot](../image/check.svg) | ![Screenshot](../image/error.svg) | ![Screenshot](../image/error.svg) | 
-| 6.0.12.x - 6.0.15.x | ![Screenshot](../image/check.svg) | ![Screenshot](../image/check.svg) | ![Screenshot](../image/check.svg) |  ![Screenshot](../image/check.svg) | 
+| Engine Version      | Mongopy 1.0.0                     | Mongopy 1.0.1                     | Mongopy 1.0.2                     | Mongopy 1.1.0                     | Mongopy 1.2.0                     |
+| :-                  | :-:                               | :-:                               | :-:                               | :-:                               | :-:                               |
+| 6.0.7.x  - 6.0.11.x | ![Screenshot](../image/check.svg) | ![Screenshot](../image/check.svg) | ![Screenshot](../image/error.svg) | ![Screenshot](../image/error.svg) | ![Screenshot](../image/error.svg) |
+| 6.0.12.x - 6.0.15.x | ![Screenshot](../image/check.svg) | ![Screenshot](../image/check.svg) | ![Screenshot](../image/check.svg) | ![Screenshot](../image/check.svg) | ![Screenshot](../image/check.svg) |
+| 7.x - 9.x           | ![Screenshot](../image/error.svg) | ![Screenshot](../image/error.svg) | ![Screenshot](../image/error.svg) | ![Screenshot](../image/error.svg) | ![Screenshot](../image/check.svg) |
+
+### <a id="plugin db compatibility"></a>Mongo/Plugin Version Compatibility Matrix
+| MongoDB Version     | Mongopy 1.0.0                     | Mongopy 1.0.1                     | Mongopy 1.0.2                     | Mongopy 1.1.0                     | Mongopy 1.2.0                     |
+| :-                  | :-:                               | :-:                               | :-:                               | :-:                               | :-:                               |
+| 4.x  - 5.x          | ![Screenshot](../image/check.svg) | ![Screenshot](../image/check.svg) | ![Screenshot](../image/check.svg) | ![Screenshot](../image/check.svg) | ![Screenshot](../image/check.svg) |
+| 6.x                 | ![Screenshot](../image/error.svg) | ![Screenshot](../image/error.svg) | ![Screenshot](../image/error.svg) | ![Screenshot](../image/error.svg) | ![Screenshot](../image/check.svg) |
+
+### <a id="mongosync db compatibility"></a>Mongo/Mongosync Compatibility Matrix
+| MongoDB Version     | MongoSync v1.0.0                  | 
+| :-                  | :-:                               |
+| 4.x  - 5.x          | ![Screenshot](../image/error.svg) |
+| 6.x                 | ![Screenshot](../image/check.svg) |
 
 <!--
 | 6.0.2.x             | ![Screenshot](../image/check.svg) | ![Screenshot](../image/check.svg) | ![Screenshot](../image/check.svg) | 

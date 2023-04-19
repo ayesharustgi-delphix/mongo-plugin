@@ -26,7 +26,7 @@ Every environment contains `repositories` and each environment may have any numb
  - `discoveryType`: Keep it as manual
  - Click `Add` button
 
-    ![Screenshot](../image/image11.png)
+    ![Screenshot](../image/source_cfg.png)
 
 Create dSource
 --------------
@@ -35,7 +35,7 @@ dSource is delphix representation of source database copy. Following are the ste
 1. Login to Delphix Management application.
 2. Click Manage >  Datasets
 3. Click on `Add dSource`.
-    ![Screenshot](../image/mongo_linking.png)
+    ![Screenshot](../image/add_dsource.png)
 4. In the Add dSource wizard, select the mongo source config you just created on the staging host.
 5. Select the dSource type from the drop-down available on dSource wizard. Refer different [dSource Types](https://delphix.github.io/mongo-plugin/index.html#ingestion-types)  
 6. Enter the mongo-specific parameters for your dSource configuration.  

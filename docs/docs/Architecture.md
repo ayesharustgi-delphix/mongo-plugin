@@ -15,8 +15,40 @@ Explore how Delphix connects to Mongo environments and creates Mongo dSources an
 ## Environment Linking and Provisioning Architecture
 As shown in the diagram below Delphix begins by ingesting data from your source database / backups to create dSources. Data is ingested using existing backups on Disk or by connecting to Source. Once you have added an environment, Delphix will `discover` required Mongo binaries on it.  
 
-#### Consolidated Seed, Extended Cluster, Offline/Online mongodump, Mongo Atlas, Non-Sharded Ingestion Types 
-![Screenshot](../image/consolidated_architectures.png)
+[//]: # (#### Consolidated Seed, Extended Cluster, Offline/Online mongodump, Mongo Atlas, Non-Sharded Ingestion Types )
 
-#### Sharded Mongo Ingestion Type 
-![Screenshot](../image/sharded_architecture.png)
+[//]: # (![Screenshot]&#40;../image/consolidated_architectures.png&#41;)
+
+[//]: # ()
+[//]: # (#### Sharded Mongo Ingestion Type )
+
+[//]: # (![Screenshot]&#40;../image/sharded_architecture.png&#41;)
+
+#### Seed Ingestion Type
+
+![Screenshot](../image/seed.png)
+
+
+#### Extended Cluster Ingestion Type
+
+![Screenshot](../image/extendedcluster.png)
+
+
+#### Offline / Online mongodump Ingestion Type
+
+![Screenshot](../image/mongodump.png)
+
+
+#### Staging Push Ingestion Type
+
+![Screenshot](../image/stagingpush.png)
+
+
+#### Sharded Source (Mongo Ops Manager)
+
+![Screenshot](../image/sharding.png)
+
+
+#### Sharded Source (Cluster to Cluster Sync)
+
+![Screenshot](../image/mongosync.png)

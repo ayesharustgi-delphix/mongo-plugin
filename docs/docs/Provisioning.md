@@ -6,7 +6,7 @@ A dSource is a virtualized representation of a physical or logical source databa
 
 Snapshots accumulate over time. To view a snapshot:
 
-1. From the Datasets panel, click the group containing the dSource.
+1. From the **Datasets** panel, click the group containing the dSource.
 2. Select dSource.
 3. Click the TimeFlow tab.
 
@@ -33,10 +33,10 @@ Create VDB
 ----------
 Procedure:
 
-1. Login to the Delphix Management GUI.  
-2. Click Manage.  
-3. Select Datasets.  
-4. Select a dSource.  
+1. Login to the **Delphix Management GUI**.  
+2. Click **Manage**.  
+3. Select **Datasets**.  
+4. Select a **dSource**.  
 5. Select a snapshot from which you want to provision.  
 6. Click Provision VDB icon to open Provision VDB wizard. 
 
@@ -104,14 +104,14 @@ Procedure:
         -   sslAllowConnectionsWithoutCertificates  
     
 
-11. Select a Target Group for the VDB.  
+11. Select a **Target Group** for the VDB.  
 12. Add a new group, if required.  
-13. Select a Snapshot Policy for the VDB.  
-14. Click Next.  
+13. Select a **Snapshot Policy** for the VDB.  
+14. Click **Next**.  
 15. Specify any desired hook operations.  
-16. Click Next.  
-17. Review the Provisioning Configuration and Data Management information.  
-18. Click Submit.  
+16. Click **Next**.  
+17. Review the **Provisioning Configuration** and Data Management information.  
+18. Click **Submit**.  
 
 When provisioning starts, you can review the progress of the job in the Databases panel, or in the Job History panel of the Dashboard. When provisioning is complete, the VDB will be included in the group you designated and listed in the Databases panel. If you select the VDB in the Databases panel and click the Open icon, you can view its card, which contains information about the database and its Data Management settings.
 

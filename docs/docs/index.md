@@ -7,7 +7,7 @@ Supported Mongo Technologies for Ingestion (create dSource) :
 - **Mongodump**              : Export source data and import into Staging mongo instance (dSource). Useful for offline/online backups of small databases (onprem, Saas, MongoAtlas)
 - **Replication**            : Add replicaset member to existing cluster. Fastest way to capture incrementals from the replicaset source.
 - **Mongo Ops Manager**      : Leverage existing backups, downloaded as compressed file(s), from Mongo OPS Manager. This mechanism can be used for ingesting sharded mongo database backups.
-- **Cluster to cluster Sync**: Leverage MongoSync utility to synchronise Non-Production Sharded cluster with existing cluster. Fastest way to get incrementals from sharded source. 
+- **Cluster to cluster Sync**: Leverage MongoSync utility to synchronise Non-Production Sharded cluster (Staging Cluster) with existing Source Cluster. Fastest way to get incrementals from sharded source. 
 
 ## <a id="Ingestion_Types"></a> Ingestion Types:
 

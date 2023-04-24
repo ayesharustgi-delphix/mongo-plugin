@@ -75,12 +75,12 @@ Steps:
     ```
     For additional info refer [this section](#pts_repo_cfg)
 
-5. Login to the Delphix Management application.
-6. Click Manage.
-7. Select Environments.
-8. In the Environments panel, click the name of the environment you want to refresh.
-9. Select the Refresh icon.
-10. In the Refresh confirmation dialog select Refresh.
+5. Login to the **Delphix Management application**.
+6. Click **Manage**.
+7. Select **Environments**.
+8. In the **Environments** panel, click the name of the environment you want to refresh.
+9. Select the **Refresh icon**.
+10. In the Refresh confirmation dialog select **Refresh**.
 
     ![Screenshot](../image/image9.png)
 

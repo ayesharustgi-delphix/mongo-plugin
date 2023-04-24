@@ -13,18 +13,18 @@ Create Sourceconfig
 ----------------------
 Every environment contains `repositories` and each environment may have any number of repositories associated with it. `Repository` represents the binaries for mongo instance. Each repository can have many `SourceConfig` which represent mongo instance. There is no sourceconfig generated automatically in mongo-plugin. We need to configure `SourceConfig` objects through which we can create a dSource. 
 
-1. Login to the Delphix Management application.
-2. Click Manage.
-3. Select Environments.
+1. Login to the **Delphix Management application**.
+2. Click **Manage**.
+3. Select **Environments**.
 4. Select the repository
-5. Click on `+` icon ( Shown in next image )
+5. Click on **`+`** icon ( Shown in next image )
 
     ![Screenshot](../image/mongo_discovery.png)
 
-6. Add required details in `Add database` section.  
- - `identity field`: Proivide unique name for staging database
- - `discoveryType`: Keep it as manual
- - Click `Add` button
+6. Add required details in **Add database** section.  
+ - **`identity field`**: Proivide unique name for staging database
+ - **`discoveryType`**: Keep it as manual
+ - Click **Add** button
 
     ![Screenshot](../image/source_cfg.png)
 
@@ -32,9 +32,9 @@ Create dSource
 --------------
 dSource is delphix representation of source database copy. Following are the steps to create dSource.
 
-1. Login to Delphix Management application.
-2. Click Manage >  Datasets
-3. Click on `Add dSource`.
+1. Login to **Delphix Management application**.
+2. Click **Manage** >  **Datasets**
+3. Click on **Add dSource**.
     ![Screenshot](../image/add_dsource.png)
 4. In the Add dSource wizard, select the mongo source config you just created on the staging host.
 5. Select the dSource type from the drop-down available on dSource wizard. Refer different [dSource Types](https://delphix.github.io/mongo-plugin/index.html#ingestion-types)  

@@ -859,7 +859,7 @@
 <li>Access to source instance backup file(s) from Staging host logged as delphix user (applicable for mongo ops mgr / offline mongodump use case).  </li>
 <li>sudo privileges for mount, umount. See sample below assuming <code>delphix_os</code> is used as delphix user.  </li>
 </ul>
-<div class="highlight"><pre><span></span><code>Defaults:delphixos !requiretty
+<div class="highlight"><pre><span></span><code>Defaults:delphix_os !requiretty
 delphix_os <span class="nv">ALL</span><span class="o">=</span>NOPASSWD: <span class="se">\</span>
 /bin/mount, /bin/umount
 </code></pre></div>

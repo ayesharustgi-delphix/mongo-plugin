@@ -10,7 +10,7 @@
 - sudo privileges for mount, umount. See sample below assuming `delphix_os` is used as delphix user.  
 
 ```shell
-Defaults:delphixos !requiretty
+Defaults:delphix_os !requiretty
 delphix_os ALL=NOPASSWD: \
 /bin/mount
 ```

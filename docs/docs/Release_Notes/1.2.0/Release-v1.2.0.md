@@ -5,6 +5,7 @@ refer to [Overview](/).
 
 ## New & Improved
 * CE-143 Support for MongoDB v6.x and Cluster to Cluster Sync
+* CE-272 Source Sizing for MongoDB Plugin
 * CE-222 Source mongo instance password is visible on the staging host in "ps" output
 * CE-68 MongoDB Plugin: Capture Mongo error from MongoDB logs
 * IDEA-3171 Support MongoDB 6 on RHEL 8

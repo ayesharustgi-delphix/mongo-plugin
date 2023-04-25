@@ -32,3 +32,19 @@ db.createUser({user: "clusteradmin",pwd: "xxxxxx", roles: ["clusterAdmin","chang
 use admin 
 db.createUser({user: "clusteradmin",pwd: "xxxxxx", roles: ["clusterAdmin","backup"]})
 ```
+
+***Database user with following privileges ( for shardedsource dSource type with cluster to cluster sync) ***  
+```shell
+use admin
+db.createUser(
+    {
+        user: "syncadmin", 
+        pwd: "xxxxx", 
+        roles: [
+            {role: "readAnyDatabase", db: "admin"}, 
+            {role: "clusterMonitor", db: "admin"}, 
+            {role: "backup", db: "admin"}
+        ]
+    }
+)
+```

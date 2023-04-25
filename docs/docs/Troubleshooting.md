@@ -21,3 +21,10 @@ where
     port = port number of mongo instance.
 
 **Note** : Most of the mongo related errors are always hidden in logfile for the mongo instance. Please examine logs under DSOURCE_MOUNT_PATH/logs and VDB_MOUNT_PATH/logs for further investigation. 
+
+
+MongoSync
+-----------
+
+- MongoSync logs are located at DSOURCE_MOUNT_PATH/.delphix/mongosync/mongosync.log
+- **Oplog sizing for staging database:** It can be decided as per the [MongoDB documentation](https://www.mongodb.com/docs/cluster-to-cluster-sync/current/reference/oplog-sizing/)

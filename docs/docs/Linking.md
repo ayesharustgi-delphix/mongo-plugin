@@ -7,7 +7,20 @@ Prerequisites
 
 - Install delphix engine 7.0 and above  
 - Install mongo binaries on staging host  
-- Execute Discovery on staging host  
+- Execute Discovery on staging host
+- For shardedsource(Cluster to Cluster Sync),
+    * Please refer the following pre-requisites and limitations
+         * [User Permissions](https://www.mongodb.com/docs/cluster-to-cluster-sync/current/reference/permissions)(syncType: default, Target: source cluster) for 
+             the source cluster.
+         * [Limitations](https://www.mongodb.com/docs/cluster-to-cluster-sync/current/reference/limitations/)
+    * For larger datasets,
+         * Physical RAM size should atleast be 64GB or greater on the staging 
+           host.
+         * Refer [Oplog size requirements](https://www.mongodb.com/docs/cluster-to-cluster-sync/current/reference/oplog-sizing/) for the source cluster.
+         * To limit the MongoDB memory utilisation at staging cluster, set the following 
+           parameter with appropriate value, in the "Set Parameter" section of 
+           "Add dSource" UI page.
+             * _wiredTigerCacheSizeGB_
 
 Create Sourceconfig
 ----------------------

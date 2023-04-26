@@ -28,3 +28,8 @@ MongoSync
 
 - MongoSync logs are located at DSOURCE_MOUNT_PATH/.delphix/mongosync/mongosync.log
 - **Oplog sizing for staging database:** It can be decided as per the [MongoDB documentation](https://www.mongodb.com/docs/cluster-to-cluster-sync/current/reference/oplog-sizing/)
+- If memory utilisation is higher, the kernel running on staging host might 
+  kill MongoDB processes to recover memory where we could see Out of Memory 
+  error in the syslogs of staging host. To avoid this, we could limit the 
+  memory utilisation of MongoDB processes by tuning _wiredTigerCacheSizeGB_ 
+  in the "Set Parameters" section of the "Add dSource " UI.

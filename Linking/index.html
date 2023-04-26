@@ -920,7 +920,28 @@
 <ul>
 <li>Install delphix engine 7.0 and above  </li>
 <li>Install mongo binaries on staging host  </li>
-<li>Execute Discovery on staging host  </li>
+<li>Execute Discovery on staging host</li>
+<li>For shardedsource(Cluster to Cluster Sync),<ul>
+<li>Please refer the following pre-requisites and limitations<ul>
+<li><a href="https://www.mongodb.com/docs/cluster-to-cluster-sync/current/reference/permissions">User Permissions</a>(syncType: default, Target: source cluster) for 
+     the source cluster.</li>
+<li><a href="https://www.mongodb.com/docs/cluster-to-cluster-sync/current/reference/limitations/">Limitations</a></li>
+</ul>
+</li>
+<li>For larger datasets,<ul>
+<li>Physical RAM size should atleast be 64GB or greater on the staging 
+   host.</li>
+<li>Refer <a href="https://www.mongodb.com/docs/cluster-to-cluster-sync/current/reference/oplog-sizing/">Oplog size requirements</a> for the source cluster.</li>
+<li>To limit the MongoDB memory utilisation at staging cluster, set the following 
+   parameter with appropriate value, in the &ldquo;Set Parameter&rdquo; section of 
+   &ldquo;Add dSource&rdquo; UI page.<ul>
+<li><em>wiredTigerCacheSizeGB</em></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 <h2 id="create-sourceconfig">Create Sourceconfig</h2>
 <p>Every environment contains <code>repositories</code> and each environment may have any number of repositories associated with it. <code>Repository</code> represents the binaries for mongo instance. Each repository can have many <code>SourceConfig</code> which represent mongo instance. There is no sourceconfig generated automatically in mongo-plugin. We need to configure <code>SourceConfig</code> objects through which we can create a dSource. </p>

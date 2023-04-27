@@ -875,7 +875,8 @@ db.createUser<span class="o">({</span>user: <span class="s2">&quot;clusteradmin&
 </code></pre></div>
 <p><strong><em>Database user with following privileges ( for onlinemongodump dSource type ) </em></strong><br />
 <div class="highlight"><pre><span></span><code>use admin 
-db.createUser({user: &quot;clusteradmin&quot;,pwd: &quot;xxxxxx&quot;, roles: [&quot;clusterAdmin&quot;,&quot;backup&quot;]})
+db.createUser<span class="o">({</span>user:<span class="s2">&quot;backupadmin&quot;</span>, pwd:<span class="s2">&quot;xxxxxx&quot;</span>, roles:<span class="o">[{</span>role:<span class="s2">&quot;backup&quot;</span>, db: 
+<span class="s2">&quot;admin&quot;</span><span class="o">}]})</span>
 </code></pre></div></p>
 <p><strong><em>Database user with following privileges ( for shardedsource dSource type with cluster to cluster sync) </em></strong><br />
 <div class="highlight"><pre><span></span><code>use admin

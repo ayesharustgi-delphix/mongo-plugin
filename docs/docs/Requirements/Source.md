@@ -28,9 +28,10 @@ db.createUser({user: "clusteradmin",pwd: "xxxxxx", roles: ["clusterAdmin","chang
 ```
 
 ***Database user with following privileges ( for onlinemongodump dSource type ) ***  
-```
+```shell
 use admin 
-db.createUser({user: "clusteradmin",pwd: "xxxxxx", roles: ["clusterAdmin","backup"]})
+db.createUser({user:"backupadmin", pwd:"xxxxxx", roles:[{role:"backup", db: 
+"admin"}]})
 ```
 
 ***Database user with following privileges ( for shardedsource dSource type with cluster to cluster sync) ***  
